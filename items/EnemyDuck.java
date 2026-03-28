@@ -16,5 +16,10 @@ public class EnemyDuck extends Item {
         character.takeDamage(damage); // útočí na hráča
     }
 
+    @Override
+    public String getIconPath() {
+        return "";
+    }
+
     public int getDamage() { return damage; }
 }

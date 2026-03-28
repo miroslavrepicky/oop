@@ -12,6 +12,7 @@ import sk.stuba.fiit.projectiles.Arrow;
 import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.projectiles.TurdflyProjectile;
+import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.world.Level;
 
 public class GameRenderer {
@@ -19,13 +20,16 @@ public class GameRenderer {
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private HUDRenderer hudRenderer;
+    private ItemIconRenderer itemIconRenderer;
+    private CollisionManager collisionManager;
 
     public GameRenderer() {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
-        hudRenderer = new HUDRenderer(batch);
+        hudRenderer = new HUDRenderer(batch, collisionManager);
+        itemIconRenderer = new ItemIconRenderer();
     }
 
     public void render(float deltaTime) {
@@ -48,11 +52,13 @@ public class GameRenderer {
             level.getMapManager().render(camera);
         }
 
-        // 2. ShapeRenderer – fallback pre objekty bez animácie (nepriatelia)
+        // 2. ShapeRenderer – fallback pre objekty BEZ animácie
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
+        // nepriatelia bez animácie (obranný fallback)
         for (EnemyCharacter enemy : level.getEnemies()) {
+            if (enemy.getAnimationManager() != null) continue;
             shapeRenderer.setColor(1, 0, 0, 1);
             shapeRenderer.rect(enemy.getPosition().getX(), enemy.getPosition().getY(), 32, 32);
         }
@@ -89,6 +95,17 @@ public class GameRenderer {
                 !player.isFacingRight());
         }
 
+        // nepriatelia – animácia
+        for (EnemyCharacter enemy : level.getEnemies()) {
+            if (enemy.getAnimationManager() == null) continue;
+            enemy.updateAnimation(deltaTime);
+            enemy.getAnimationManager().render(batch,
+                enemy.getPosition().getX(),
+                enemy.getPosition().getY(),
+                96, 84,
+                !enemy.isFacingRight());
+        }
+
         // kačky – animácia walk/idle, flip podľa smeru chôdze
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
@@ -100,6 +117,9 @@ public class GameRenderer {
                     !duck.isFacingRight());
             }
         }
+
+        // ikony itemov na zemi
+        itemIconRenderer.render(batch, level.getItems());
 
         // projektily s animáciou: EggProjectile a TurdflyProjectile
         for (Projectile projectile : level.getProjectiles()) {
@@ -146,9 +166,15 @@ public class GameRenderer {
         camera.setToOrtho(false, width, height);
     }
 
+    public void setCollisionManager(CollisionManager cm) {
+        this.collisionManager = cm;
+        this.hudRenderer = new HUDRenderer(batch, cm);
+    }
+
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();
         hudRenderer.dispose();
+        itemIconRenderer.dispose();
     }
 }

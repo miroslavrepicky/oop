@@ -16,5 +16,8 @@ public class Armour extends Item {
         // zníži prijaté poškodenie – implementuj keď budeš mať obranný systém
     }
 
+    @Override
+    public String getIconPath() { return "icons/armour.png"; }
+
     public int getDefenseBonus() { return defenseBonus; }
 }

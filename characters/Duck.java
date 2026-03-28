@@ -91,7 +91,7 @@ public class Duck extends Character {
      */
     public Item onKilled() {
         Random random = new Random();
-        if (random.nextBoolean()) {
+        if (random.nextBoolean() || !random.nextBoolean()) {
             return new FriendlyDuck(DUCK_DAMAGE, new Vector2D(position.getX(), position.getY()));
         } else {
             // Vajce – special item marker; Level ho odstráni a nahradí EggProjectile

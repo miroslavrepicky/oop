@@ -3,6 +3,7 @@ package sk.stuba.fiit.world;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.Updatable;
+import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
@@ -59,6 +60,9 @@ public class Level implements Updatable {
                     break;
                 case "healing_potion":
                     addItem(new HealingPotion(50, new Vector2D(x, y)));
+                    break;
+                case "armour":
+                    addItem(new Armour(50, new Vector2D(x, y)));
                     break;
                 case "enemy_archer":
                     EnemyArcher enemyArcher = new EnemyArcher(new Vector2D(x, y));

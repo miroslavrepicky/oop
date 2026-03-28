@@ -10,30 +10,21 @@ import sk.stuba.fiit.world.Level;
 
 public class PlayerController {
     private Inventory inventory;
+    private CollisionManager collisionManager;
 
-    public PlayerController() {
+    public PlayerController(CollisionManager collisionManager) {
         this.inventory = GameManager.getInstance().getInventory();
-    }
-
-    private void performPlayerAttack(PlayerCharacter player) {
-        Level level = GameManager.getInstance().getCurrentLevel();
-        if (level == null) return;
-
-        for (EnemyCharacter enemy : level.getEnemies()) {
-            if (!enemy.isAlive()) continue;
-            if (player.getHitbox().overlaps(enemy.getHitbox())) {
-                enemy.takeDamage(player.getAttackPower());
-                System.out.println("Nepriateľ HP: " + enemy.getHp());
-            }
-        }
+        this.collisionManager = collisionManager;
     }
 
     public void update(float deltaTime) {
-
         PlayerCharacter player = inventory.getActive();
         if (player == null) return;
 
+        Level level = GameManager.getInstance().getCurrentLevel();
+
         player.applyGravity(deltaTime);
+
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.move(new Vector2D(-player.getSpeed() * deltaTime * 60, 0));
             player.setFacingRight(false);
@@ -56,6 +47,11 @@ public class PlayerController {
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
             player.performSecondaryAttack();
+        }
+
+        // zdvihnutie itemu
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E) && level != null) {
+            collisionManager.pickupNearbyItem(player, level);
         }
 
         // prepínanie postáv

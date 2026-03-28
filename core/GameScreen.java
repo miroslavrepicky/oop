@@ -1,19 +1,19 @@
 package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.Gdx;
 
 public class GameScreen implements Screen {
     private GameManager gameManager;
+    private CollisionManager collisionManager;
     private PlayerController playerController;
     private GameRenderer gameRenderer;
-    private CollisionManager collisionManager;
 
     public GameScreen() {
-        gameManager = GameManager.getInstance();
-        playerController = new PlayerController();
-        gameRenderer = new GameRenderer();
+        gameManager      = GameManager.getInstance();
         collisionManager = new CollisionManager();
+        playerController = new PlayerController(collisionManager); // zdieľaný CollisionManager
+        gameRenderer     = new GameRenderer();
+        gameRenderer.setCollisionManager(collisionManager);
     }
 
     @Override
@@ -29,17 +29,10 @@ public class GameScreen implements Screen {
         gameRenderer.resize(width, height);
     }
 
-    @Override
-    public void show() {}
-
-    @Override
-    public void hide() {}
-
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
+    @Override public void show()    {}
+    @Override public void hide()    {}
+    @Override public void pause()   {}
+    @Override public void resume()  {}
 
     @Override
     public void dispose() {

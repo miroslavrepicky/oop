@@ -9,6 +9,9 @@ import sk.stuba.fiit.world.Level;
 
 public class CollisionManager {
 
+    // Item v dosahu hráča – PlayerController ho zdvihne po stlačení E
+    private Item nearbyItem = null;
+
     public void update(Level level) {
         PlayerCharacter player = GameManager.getInstance()
             .getInventory().getActive();
@@ -30,29 +33,33 @@ public class CollisionManager {
     }
 
     private void checkPlayerVsItems(PlayerCharacter player, Level level) {
+        nearbyItem = null;
         for (Item item : level.getItems()) {
             if (player.getHitbox().overlaps(item.getHitbox())) {
-                item.onPickup(player);        // FriendlyDuck sa pridá do inventára;
-                // EggProjectileSpawner.onPickup() nič nerobí
-                level.getItems().remove(item);
+                nearbyItem = item; // uloží referenciu, ale NEZDVIHNE automaticky
                 break;
             }
         }
+    }
+
+    /**
+     * Volá PlayerController po stlačení E.
+     * Zdvihne nearbyItem ak existuje a je miesto v inventári.
+     */
+    public void pickupNearbyItem(PlayerCharacter player, Level level) {
+        if (nearbyItem == null) return;
+        nearbyItem.onPickup(player);
+        level.getItems().remove(nearbyItem);
+        nearbyItem = null;
     }
 
     private void checkPlayerVsDucks(PlayerCharacter player, Level level) {
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
             if (player.getHitbox().overlaps(duck.getHitbox())) {
-                duck.takeDamage(duck.getHp()); // zabi kačku
-
-                // DROP: FriendlyDuck alebo EggProjectileSpawner
-                // Oboje sa pridáva do LEVELU (nie priamo do inventára).
-                // Level.update() si potom EggProjectileSpawner skonvertuje na EggProjectile.
-                // FriendlyDuck ostane v items a hráč si ho zdvihne dotykom.
+                duck.takeDamage(duck.getHp());
                 Item result = duck.onKilled();
                 level.addItem(result);
-
                 level.getDucks().remove(duck);
                 break;
             }
@@ -70,4 +77,6 @@ public class CollisionManager {
             }
         }
     }
+
+    public Item getNearbyItem() { return nearbyItem; }
 }

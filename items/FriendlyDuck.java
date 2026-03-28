@@ -16,7 +16,7 @@ import sk.stuba.fiit.world.Level;
  */
 public class FriendlyDuck extends Item {
 
-    private int damage; // zalozna hodnota; TurdflyProjectile ma vlastny damage
+    private int damage; // záložná hodnota; TurdflyProjectile má vlastný damage
     private AnimationManager animationManager;
 
     public FriendlyDuck(int damage, Vector2D position) {
@@ -51,13 +51,16 @@ public class FriendlyDuck extends Item {
 
         // spotrebuj item
         character.getInventory().removeItem(this);
-        System.out.println("FriendlyDuck pouzita – turdfly vystreleny!");
+        System.out.println("FriendlyDuck použitá – turdfly vystrelený!");
     }
 
     @Override
     public void update(float deltaTime) {
         animationManager.update(deltaTime);
     }
+
+    @Override
+    public String getIconPath() { return "icons/duck.png"; }
 
     public int getDamage()  { return damage; }
     public AnimationManager getAnimationManager() { return animationManager; }

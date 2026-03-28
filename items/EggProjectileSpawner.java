@@ -29,6 +29,9 @@ public class EggProjectileSpawner extends Item {
      * Zablokuj pickup – vajce sa nedá zobrať, iba spawnuje výbuch.
      */
     @Override
+    public String getIconPath() { return null; }
+
+    @Override
     public void onPickup(PlayerCharacter character) {
         // nič
     }

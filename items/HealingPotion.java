@@ -15,4 +15,7 @@ public class HealingPotion extends Item {
     public void use(PlayerCharacter character) {
         character.takeDamage(-healAmount); // záporný damage = heal
     }
+
+    @Override
+    public String getIconPath() { return "icons/potion.png"; }
 }

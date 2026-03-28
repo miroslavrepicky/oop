@@ -22,6 +22,13 @@ public abstract class Item implements Pickable, Updatable {
 
     public abstract void use(PlayerCharacter character);
 
+    /**
+     * Vráti cestu k ikone itemu (napr. „icons/duck.png“).
+     * Keď item leží na zemi, GameRenderer ju vykreslí na jeho pozícii.
+     * Vráť null ak item nemá ikonu.
+     */
+    public abstract String getIconPath();
+
     @Override
     public void onPickup(PlayerCharacter character) {
         character.getInventory().addItem(this);
