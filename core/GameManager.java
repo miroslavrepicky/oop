@@ -1,10 +1,7 @@
 package sk.stuba.fiit.core;
 
 
-import sk.stuba.fiit.characters.Archer;
-import sk.stuba.fiit.characters.EnemyKnight;
-import sk.stuba.fiit.characters.Knight;
-import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -43,7 +40,7 @@ public class GameManager {
     public void initGame() {
         Knight knight = new Knight(new Vector2D(0, 0)); // pozícia sa nastaví z Tiled
         inventory.addCharacter(knight);
-        Archer archer = new Archer(new Vector2D(0, 0));
+        Wizzard archer = new Wizzard(new Vector2D(0, 0));
         inventory.addCharacter(archer);
         startLevel(1);
     }

@@ -9,7 +9,9 @@ import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.projectiles.Arrow;
+import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.projectiles.Projectile;
+import sk.stuba.fiit.projectiles.TurdflyProjectile;
 import sk.stuba.fiit.world.Level;
 
 public class GameRenderer {
@@ -46,7 +48,7 @@ public class GameRenderer {
             level.getMapManager().render(camera);
         }
 
-        // 2. ShapeRenderer – nepriatelia, kačky, projektily
+        // 2. ShapeRenderer – fallback pre objekty bez animácie (nepriatelia)
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
@@ -55,20 +57,14 @@ public class GameRenderer {
             shapeRenderer.rect(enemy.getPosition().getX(), enemy.getPosition().getY(), 32, 32);
         }
 
-        for (Duck duck : level.getDucks()) {
-            shapeRenderer.setColor(1, 1, 0, 1);
-            shapeRenderer.rect(duck.getPosition().getX(), duck.getPosition().getY(), 32, 32);
-        }
-
+        // fallback pre projektily bez animácie (Arrow)
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
             if (projectile instanceof Arrow) {
                 shapeRenderer.setColor(0.8f, 0.6f, 0.2f, 1);
-            } else {
-                shapeRenderer.setColor(0.5f, 0, 1, 1);
+                shapeRenderer.rect(projectile.getPosition().getX(),
+                    projectile.getPosition().getY(), 16, 8);
             }
-            shapeRenderer.rect(projectile.getPosition().getX(),
-                projectile.getPosition().getY(), 16, 8);
         }
 
         // fallback pre hráča ak nie je animácia
@@ -79,10 +75,11 @@ public class GameRenderer {
 
         shapeRenderer.end();
 
-        // 3. SpriteBatch – sprites a animácie
+        // 3. SpriteBatch – všetky animované objekty
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
+        // hráč
         if (player != null && player.getAnimationManager() != null) {
             player.updateAnimation(deltaTime);
             player.getAnimationManager().render(batch,
@@ -92,35 +89,57 @@ public class GameRenderer {
                 !player.isFacingRight());
         }
 
+        // kačky – animácia walk/idle, flip podľa smeru chôdze
+        for (Duck duck : level.getDucks()) {
+            if (!duck.isAlive()) continue;
+            if (duck.getAnimationManager() != null) {
+                duck.getAnimationManager().render(batch,
+                    duck.getPosition().getX(),
+                    duck.getPosition().getY(),
+                    32, 32,
+                    !duck.isFacingRight());
+            }
+        }
+
+        // projektily s animáciou: EggProjectile a TurdflyProjectile
+        for (Projectile projectile : level.getProjectiles()) {
+            if (!projectile.isActive()) continue;
+
+            if (projectile instanceof EggProjectile) {
+                EggProjectile egg = (EggProjectile) projectile;
+                if (egg.getAnimationManager() != null) {
+                    // počas výbuchu väčšia veľkosť (AoE vizuál)
+                    boolean blasting = egg.getEggState() == EggProjectile.EggState.BLASTING;
+                    float w = blasting ? 64f : 32f;
+                    float h = blasting ? 64f : 32f;
+                    float offsetX = blasting ? -16f : 0f; // vycentruj výbuch
+                    float offsetY = blasting ? -16f : 0f;
+                    egg.getAnimationManager().render(batch,
+                        egg.getPosition().getX() + offsetX,
+                        egg.getPosition().getY() + offsetY,
+                        w, h,
+                        false);
+                }
+
+            } else if (projectile instanceof TurdflyProjectile) {
+                TurdflyProjectile turdfly = (TurdflyProjectile) projectile;
+                if (turdfly.getAnimationManager() != null) {
+                    // flip podľa smeru letu
+                    boolean flyingLeft = turdfly.getPosition().getX() < 0 ||
+                        turdfly.getDirection().getX() < 0;
+                    turdfly.getAnimationManager().render(batch,
+                        turdfly.getPosition().getX(),
+                        turdfly.getPosition().getY(),
+                        46, 33,
+                        flyingLeft);
+                }
+            }
+        }
+
         batch.end();
 
         // 4. HUD
         hudRenderer.render();
-    }
-
-    private void renderCharacter(float x, float y, int type) {
-        // placeholder – nahradíš sprite-mi
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        switch (type) {
-            case 0: shapeRenderer.setColor(0, 1, 0, 1); break; // hráč – zelený
-            case 1: shapeRenderer.setColor(1, 0, 0, 1); break; // nepriateľ – červený
-            case 2: shapeRenderer.setColor(1, 1, 0, 1); break; // kačka – žltá
-        }
-        shapeRenderer.rect(x, y, 32, 32);
-        shapeRenderer.end();
-    }
-
-    private void renderProjectile(Projectile projectile) {
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        if (projectile instanceof Arrow) {
-            shapeRenderer.setColor(0.8f, 0.6f, 0.2f, 1); // hnedá
-        } else {
-            shapeRenderer.setColor(0.5f, 0, 1, 1); // fialová
-        }
-        shapeRenderer.rect(projectile.getPosition().getX(),
-            projectile.getPosition().getY(), 16, 8);
-        shapeRenderer.end();
     }
 
     public void resize(int width, int height) {

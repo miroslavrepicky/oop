@@ -2,7 +2,8 @@ package sk.stuba.fiit.characters;
 
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.FloatingGravity;
-import sk.stuba.fiit.items.EnemyDuck;
+import sk.stuba.fiit.core.NormalGravity;
+import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.FriendlyDuck;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.util.Vector2D;
@@ -10,13 +11,30 @@ import sk.stuba.fiit.util.Vector2D;
 import java.util.Random;
 
 public class Duck extends Character {
-    private static final int DUCK_HP = 20;
+    private static final int DUCK_HP     = 20;
     private static final int DUCK_DAMAGE = 10;
 
-    public Duck(Vector2D position) {
+    // patrol walking
+    private float walkTimer   = 0f;
+    private float idleTimer   = 0f;
+    private boolean walking   = false;
+    private float walkDir     = 1f;
+    private static final float WALK_DURATION = 2.0f;
+    private static final float IDLE_DURATION = 1.5f;
+    private static final float WALK_SPEED    = 40f;
 
+    private AnimationManager animationManager;
+
+    public Duck(Vector2D position) {
         super("Duck", DUCK_HP, 0, 1.0f, position);
         this.gravityStrategy = new FloatingGravity();
+        initAnimations();
+    }
+
+    private void initAnimations() {
+        animationManager = new AnimationManager("atlas/duck/duck.atlas");
+        animationManager.addAnimation("idle", "IDLE/IDLE", 0.4f);
+        animationManager.addAnimation("walk", "WALK/WALK", 0.15f);
     }
 
     @Override
@@ -26,7 +44,7 @@ public class Duck extends Character {
 
     @Override
     public AnimationManager getAnimationManager() {
-        return null;
+        return animationManager;
     }
 
     @Override
@@ -37,20 +55,47 @@ public class Duck extends Character {
 
     @Override
     public void update(float deltaTime) {
-        // jednoduchý pohyb po teréne
+        applyGravity(deltaTime);
+
+        if (walking) {
+            walkTimer -= deltaTime;
+            move(new Vector2D(walkDir * WALK_SPEED * deltaTime, 0));
+            animationManager.play("walk");
+            animationManager.update(deltaTime);
+            if (walkTimer <= 0f) {
+                walking   = false;
+                idleTimer = IDLE_DURATION;
+            }
+            setFacingRight(walkDir > 0);
+        } else {
+            idleTimer -= deltaTime;
+            animationManager.play("idle");
+            animationManager.update(deltaTime);
+            if (idleTimer <= 0f) {
+                walking   = true;
+                walkTimer = WALK_DURATION;
+                walkDir   = -walkDir; // zmena smeru každý cyklus
+            }
+        }
     }
 
     @Override
     public void onCollision(Object other) {
-        // kolízia s hráčom – onPickup
+        // kolízia s hráčom – rieši CollisionManager
     }
 
+    /**
+     * Zavolá sa keď CollisionManager zabije kačku.
+     * 50 % → FriendlyDuck (pickable item)
+     * 50 % → EggProjectileSpawner (marker, ktorý Level prekonvertuje na EggProjectile)
+     */
     public Item onKilled() {
         Random random = new Random();
         if (random.nextBoolean()) {
-            return new FriendlyDuck(DUCK_DAMAGE, position);
+            return new FriendlyDuck(DUCK_DAMAGE, new Vector2D(position.getX(), position.getY()));
         } else {
-            return new EnemyDuck(DUCK_DAMAGE, position);
+            // Vajce – special item marker; Level ho odstráni a nahradí EggProjectile
+            return new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
         }
     }
 }

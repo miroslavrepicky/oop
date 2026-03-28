@@ -1,10 +1,7 @@
 package sk.stuba.fiit.projectiles;
 
-import sk.stuba.fiit.core.Collidable;
-import sk.stuba.fiit.core.GravityStrategy;
-import sk.stuba.fiit.core.NoGravity;
+import sk.stuba.fiit.core.*;
 import sk.stuba.fiit.util.Vector2D;
-import sk.stuba.fiit.core.Updatable;
 import sk.stuba.fiit.characters.Character;
 
 import com.badlogic.gdx.math.Rectangle;
@@ -53,5 +50,6 @@ public abstract class Projectile implements Updatable, Collidable {
     public boolean isActive() { return active; }
     public Vector2D getPosition() { return position; }
     public Rectangle getHitbox() { return hitbox; }
+    public Vector2D getDirection() { return direction; }
 
 }

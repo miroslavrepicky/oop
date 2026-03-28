@@ -36,11 +36,15 @@ public class AIController {
 
         if (patrollingRight) {
             enemy.move(new Vector2D(speed, 0));
+            enemy.setVelocityX(speed);
+            enemy.setFacingRight(true);
             if (pos.getX() >= patrolEnd.getX() - tolerance) {
                 patrollingRight = false;
             }
         } else {
             enemy.move(new Vector2D(-speed, 0));
+            enemy.setVelocityX(-speed);
+            enemy.setFacingRight(false);
             if (pos.getX() <= patrolStart.getX() + tolerance) {
                 patrollingRight = true;
             }
@@ -59,15 +63,16 @@ public class AIController {
         float dx = playerPos.getX() > enemyPos.getX() ? speed : -speed;
 
         enemy.move(new Vector2D(dx, 0));
+        enemy.setVelocityX(dx);
+        enemy.setFacingRight(dx > 0);
 
         if (enemyPos.distanceTo(playerPos) <= ATTACK_RANGE) {
             state = AIState.ATTACK;
         }
         if (!enemy.detectPlayer(player)) {
-            // nastav nové patrol body okolo aktuálnej pozície
             float currentX = enemy.getPosition().getX();
             patrolStart = new Vector2D(currentX - 100, enemy.getPosition().getY());
-            patrolEnd = new Vector2D(currentX + 100, enemy.getPosition().getY());
+            patrolEnd   = new Vector2D(currentX + 100, enemy.getPosition().getY());
             state = AIState.PATROL;
         }
     }
@@ -76,14 +81,13 @@ public class AIController {
         Vector2D enemyPos = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
 
+        enemy.setVelocityX(0); // stojí počas útoku
+
         enemy.performAttack();
 
-        // späť do CHASE ak hráč unikol z dosahu útoku
         if (enemyPos.distanceTo(playerPos) > ATTACK_RANGE) {
             state = AIState.CHASE;
         }
-
-        // späť do PATROL ak hráč unikol z detekčného dosahu
         if (!enemy.detectPlayer(player)) {
             state = AIState.PATROL;
         }

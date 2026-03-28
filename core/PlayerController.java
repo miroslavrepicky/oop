@@ -37,16 +37,25 @@ public class PlayerController {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.move(new Vector2D(-player.getSpeed() * deltaTime * 60, 0));
             player.setFacingRight(false);
+            player.setVelocityX(-player.getSpeed());
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             player.move(new Vector2D(player.getSpeed() * deltaTime * 60, 0));
             player.setFacingRight(true);
+            player.setVelocityX(player.getSpeed());
+        }
+        if (!Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
+            !Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            player.setVelocityX(0f);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             player.jump(300f);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            player.performAttack();
+            player.performPrimaryAttack();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
+            player.performSecondaryAttack();
         }
 
         // prepínanie postáv

@@ -1,56 +1,52 @@
 package sk.stuba.fiit.characters;
 
+import sk.stuba.fiit.attacks.MeleeAttack;
+import sk.stuba.fiit.attacks.SpellAttack;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.NormalGravity;
-import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.util.Vector2D;
-import sk.stuba.fiit.world.Level;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 
 public class Wizzard extends PlayerCharacter {
     private int mana;
     private int maxMana;
     private static final int SPELL_MANA_COST = 20;
+    private AnimationManager animationManager;
 
     public Wizzard(Vector2D position) {
-        super("Wizzard", 70, 40, 2.5f, position);
+        super("Wizzard", 7000, 40, 2.5f, position);
         this.mana = 100;
         this.maxMana = 100;
         this.gravityStrategy = new NormalGravity();
+        initAnimations();
 
+        primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE — rýchle kúzlo
+        secondaryAttack = new MeleeAttack(1);   // V — silnejšie kúzlo
+    }
+
+    private void initAnimations() {
+        animationManager = new AnimationManager("atlas/wizzard/wizzard.atlas");
+        animationManager.addAnimation("idle",   "IDLE/IDLE",     0.1f);
+        animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
+        animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
+        animationManager.addAnimation("cast",   "CAST/CAST",     0.08f);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f);
+        animationManager.addAnimation("hurt",   "HURT/HURT",     0.08f);
+    }
+
+    // Wizzard override-ne mana metódy z PlayerCharacter
+    @Override
+    protected int getMana() { return mana; }
+
+    @Override
+    protected void spendMana(int amount) {
+        mana = Math.max(0, mana - amount);
     }
 
     @Override
-    public void performAttack() {
-        if (mana >= SPELL_MANA_COST) return;
-
-        Level level = GameManager.getInstance().getCurrentLevel();
-        if (level == null) return;
-
-        mana -= SPELL_MANA_COST;
-        float dirX = isFacingRight() ? 1 : -1;
-        Vector2D direction = new Vector2D(dirX, 0);
-        MagicSpell spell = new MagicSpell(attackPower, 6.0f,
-            new Vector2D(position.getX(), position.getY()),
-            direction, 50f);
-        level.addProjectile(spell);
-    }
-
-    @Override
-    public AnimationManager getAnimationManager() {
-        return null;
-    }
-
-    public MagicSpell castSpell() {
-        mana -= SPELL_MANA_COST;
-        Vector2D direction = new Vector2D(1, 0);
-        return new MagicSpell(attackPower, 4.0f, position, direction, 50.0f);
-    }
-
-    @Override
-    public void handleInput() {
-        // spracovanie vstupu hráča
-    }
+    public void handleInput() {}
 
     @Override
     public void update(float deltaTime) {
@@ -62,6 +58,8 @@ public class Wizzard extends PlayerCharacter {
         mana = Math.min(maxMana, mana + (int)(5 * deltaTime));
     }
 
-    public int getMana() { return mana; }
     public int getMaxMana() { return maxMana; }
+
+    @Override
+    public AnimationManager getAnimationManager() { return animationManager; }
 }

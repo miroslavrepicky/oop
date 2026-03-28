@@ -17,6 +17,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
     protected float velocityY = 0f;
     protected boolean isOnGround = false;
     protected boolean facingRight = true;
+    protected float velocityX = 0f;
 
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
         this.name = name;
@@ -81,4 +82,6 @@ public abstract class Character implements Updatable, Movable, Collidable {
     public boolean isOnGround() { return isOnGround; }
     public void setOnGround(boolean onGround) { this.isOnGround = onGround; }
     public abstract AnimationManager getAnimationManager();
+    public float getVelocityX() { return velocityX; }
+    public void setVelocityX(float velocityX) { this.velocityX = velocityX; }
 }

@@ -56,11 +56,21 @@ public class AnimationManager {
         TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, true);
 
         batch.draw(
-            frame.getTexture(),
+            frame,
             flipX ? x + width : x, y,
             flipX ? -width : width,
             height
         );
+    }
+
+    public float getAnimationDuration(String name) {
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+        if (anim == null) return 0f;
+        return anim.getAnimationDuration();
+    }
+
+    public boolean hasAnimation(String name) {
+        return animations.containsKey(name);
     }
 
     public void dispose() {
