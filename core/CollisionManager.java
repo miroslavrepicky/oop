@@ -9,7 +9,6 @@ import sk.stuba.fiit.world.Level;
 
 public class CollisionManager {
 
-    // Item v dosahu hráča – PlayerController ho zdvihne po stlačení E
     private Item nearbyItem = null;
 
     public void update(Level level) {
@@ -17,35 +16,22 @@ public class CollisionManager {
             .getInventory().getActive();
         if (player == null || level == null) return;
 
-        checkPlayerVsEnemies(player, level);
         checkPlayerVsItems(player, level);
         checkPlayerVsDucks(player, level);
         checkProjectilesVsEnemies(level);
-    }
-
-    private void checkPlayerVsEnemies(PlayerCharacter player, Level level) {
-        for (EnemyCharacter enemy : level.getEnemies()) {
-            if (!enemy.isAlive()) continue;
-            if (player.getHitbox().overlaps(enemy.getHitbox())) {
-                enemy.attack(player);
-            }
-        }
+        checkProjectilesVsPlayer(player, level);  // nepriateľské projektily
     }
 
     private void checkPlayerVsItems(PlayerCharacter player, Level level) {
         nearbyItem = null;
         for (Item item : level.getItems()) {
             if (player.getHitbox().overlaps(item.getHitbox())) {
-                nearbyItem = item; // uloží referenciu, ale NEZDVIHNE automaticky
+                nearbyItem = item;
                 break;
             }
         }
     }
 
-    /**
-     * Volá PlayerController po stlačení E.
-     * Zdvihne nearbyItem ak existuje a je miesto v inventári.
-     */
     public void pickupNearbyItem(PlayerCharacter player, Level level) {
         if (nearbyItem == null) return;
         nearbyItem.onPickup(player);
@@ -74,6 +60,19 @@ public class CollisionManager {
                 if (projectile.getHitbox().overlaps(enemy.getHitbox())) {
                     projectile.onCollision(enemy);
                 }
+            }
+        }
+    }
+
+    /**
+     * Nepriateľské projektily (šípy, kúzla) kolídujú s hráčom.
+     * Projektil sám zavolá target.takeDamage() cez onCollision().
+     */
+    private void checkProjectilesVsPlayer(PlayerCharacter player, Level level) {
+        for (Projectile projectile : level.getProjectiles()) {
+            if (!projectile.isActive()) continue;
+            if (projectile.getHitbox().overlaps(player.getHitbox())) {
+                projectile.onCollision(player);
             }
         }
     }

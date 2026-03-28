@@ -33,9 +33,7 @@ public class Level implements Updatable {
         this.isCompleted = false;
     }
 
-    public void addProjectile(Projectile projectile) {
-        projectiles.add(projectile);
-    }
+    public void addProjectile(Projectile projectile) { projectiles.add(projectile); }
 
     public void load(String mapPath) {
         mapManager = new MapManager(mapPath);
@@ -51,9 +49,9 @@ public class Level implements Updatable {
                     if (active != null) active.setPosition(new Vector2D(x, y));
                     break;
                 case "enemy_knight":
-                    EnemyKnight enemy = new EnemyKnight(new Vector2D(x, y));
-                    enemy.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
-                    spawnEnemy(enemy);
+                    EnemyKnight ek = new EnemyKnight(new Vector2D(x, y));
+                    ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
+                    spawnEnemy(ek);
                     break;
                 case "duck":
                     addDuck(new Duck(new Vector2D(x, y)));
@@ -65,19 +63,19 @@ public class Level implements Updatable {
                     addItem(new Armour(50, new Vector2D(x, y)));
                     break;
                 case "enemy_archer":
-                    EnemyArcher enemyArcher = new EnemyArcher(new Vector2D(x, y));
-                    enemyArcher.initAI(new Vector2D(x - 150, y), new Vector2D(x + 150, y));
-                    spawnEnemy(enemyArcher);
+                    EnemyArcher ea = new EnemyArcher(new Vector2D(x, y));
+                    ea.initAI(new Vector2D(x - 150, y), new Vector2D(x + 150, y));
+                    spawnEnemy(ea);
                     break;
                 case "enemy_wizzard":
-                    EnemyWizzard enemyWizzard = new EnemyWizzard(new Vector2D(x, y));
-                    enemyWizzard.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
-                    spawnEnemy(enemyWizzard);
+                    EnemyWizzard ew = new EnemyWizzard(new Vector2D(x, y));
+                    ew.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
+                    spawnEnemy(ew);
                     break;
                 case "dark_knight":
-                    DarkKnight darkKnight = new DarkKnight(new Vector2D(x, y));
-                    darkKnight.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y));
-                    spawnEnemy(darkKnight);
+                    DarkKnight dk = new DarkKnight(new Vector2D(x, y));
+                    dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y));
+                    spawnEnemy(dk);
                     break;
             }
         }
@@ -85,65 +83,37 @@ public class Level implements Updatable {
 
     @Override
     public void update(float deltaTime) {
-        // --- projektily ---
         projectiles.removeIf(p -> !p.isActive());
-        for (Projectile projectile : projectiles) {
-            projectile.update(deltaTime);
-        }
+        for (Projectile p : projectiles) p.update(deltaTime);
 
-        // --- nepriatelia ---
         enemies.removeIf(e -> !e.isAlive());
-        for (EnemyCharacter enemy : enemies) {
-            enemy.update(deltaTime);
-        }
+        for (EnemyCharacter e : enemies) e.update(deltaTime);
 
-        // --- items ---
-        // Spracuj EggProjectileSpawner markery:
-        //   keď CollisionManager pridá marker do inventára cez duck.onKilled(),
-        //   CollisionManager v skutočnosti volá addItem() tu.
-        // Tu prechádzame items a spawnujeme EggProjectile namiesto markera.
         Iterator<Item> itemIter = items.iterator();
         while (itemIter.hasNext()) {
             Item item = itemIter.next();
             if (item instanceof EggProjectileSpawner) {
-                EggProjectile egg = new EggProjectile(item.getPosition());
-                projectiles.add(egg);
+                projectiles.add(new EggProjectile(item.getPosition()));
                 itemIter.remove();
                 continue;
             }
             item.update(deltaTime);
         }
 
-        // --- kacky ---
         ducks.removeIf(d -> !d.isAlive());
-        for (Duck duck : ducks) {
-            duck.update(deltaTime);
-        }
+        for (Duck d : ducks) d.update(deltaTime);
 
         checkCompletion();
     }
 
-    // ---------------------------------------------------------------
-    // POZNAMKA k duck drop flow:
-    //
-    //  CollisionManager.checkPlayerVsDucks():
-    //    duck.takeDamage(duck.getHp());
-    //    Item result = duck.onKilled();          // FriendlyDuck alebo EggProjectileSpawner
-    //    level.addItem(result);                  // <- uloz do levelu, NIE do inventara
-    //    level.getDucks().remove(duck);
-    //
-    //  Level.update() potom:
-    //    ak result je EggProjectileSpawner -> spawn EggProjectile, odober item
-    //    ak result je FriendlyDuck         -> zostane v items; hráč si ho zoberie
-    //
-    //  Zmeňte CollisionManager.checkPlayerVsDucks() podľa toho:
-    //    // starý kód: player.getInventory().addItem(result);
-    //    // nový kód:  level.addItem(result);
-    // ---------------------------------------------------------------
-
     public boolean checkCompletion() {
         isCompleted = enemies.stream().allMatch(e -> !e.isAlive());
         return isCompleted;
+    }
+
+    /** Pomocná metóda – vracia aktívneho hráča pre Attack.execute() implementácie. */
+    public PlayerCharacter getActivePlayer() {
+        return GameManager.getInstance().getInventory().getActive();
     }
 
     public void spawnEnemy(EnemyCharacter enemy) { enemies.add(enemy); }

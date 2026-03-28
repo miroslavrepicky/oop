@@ -37,26 +37,20 @@ public abstract class PlayerCharacter extends Character {
 
         AnimationManager am = getAnimationManager();
         if (am != null) {
-            isAttacking = true;
-            currentAttack = attack;  // ← zapamätaj ktorý útok sa vykonal
+            isAttacking    = true;
+            currentAttack  = attack;
             attackAnimTimer = attack.getAnimationDuration(am);
         }
 
+        // execute teraz berie Character – PlayerCharacter je Character
         attack.execute(this, level);
     }
 
-    public void performPrimaryAttack() {
-        executeAttack(primaryAttack);
-    }
-
-    public void performSecondaryAttack() {
-        executeAttack(secondaryAttack);
-    }
+    public void performPrimaryAttack()   { executeAttack(primaryAttack); }
+    public void performSecondaryAttack() { executeAttack(secondaryAttack); }
 
     @Override
-    public void performAttack() {
-        performPrimaryAttack();
-    }
+    public void performAttack() { performPrimaryAttack(); }
 
     @Override
     public void updateAnimation(float deltaTime) {
@@ -74,7 +68,7 @@ public abstract class PlayerCharacter extends Character {
             anim = currentAttack != null ? currentAttack.getAnimationName() : "attack";
         } else if (!isOnGround()) {
             anim = hasAnimation("jump") ? "jump" : "idle";
-        } else if (Math.abs(velocityX) > 0.1f) {  // ← čistý model, žiadne klávesy
+        } else if (Math.abs(velocityX) > 0.1f) {
             anim = "walk";
         } else {
             anim = "idle";

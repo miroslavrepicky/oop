@@ -21,7 +21,6 @@ public class AIController {
     }
 
     public void update(float deltaTime, PlayerCharacter player) {
-
         switch (state) {
             case PATROL: handlePatrol(deltaTime, player); break;
             case CHASE:  handleChase(deltaTime, player);  break;
@@ -83,7 +82,8 @@ public class AIController {
 
         enemy.setVelocityX(0); // stojí počas útoku
 
-        enemy.performAttack();
+        // damage + cooldown sa riešia v EnemyCharacter.performAttack(player)
+        enemy.performAttack(player);
 
         if (enemyPos.distanceTo(playerPos) > ATTACK_RANGE) {
             state = AIState.CHASE;
