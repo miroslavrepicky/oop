@@ -15,8 +15,22 @@ public abstract class PlayerCharacter extends Character {
     protected float attackAnimTimer = 0f;
     protected Attack currentAttack;
 
+    /**
+     * Základný konštruktor – armor = 0, maxArmor = 0.
+     * Podtriedy môžu zavolať rozšírený konštruktor s maxArmor.
+     */
     public PlayerCharacter(String name, int hp, int attackPower, float speed, Vector2D position) {
-        super(name, hp, attackPower, speed, position);
+        this(name, hp, attackPower, speed, position, 0);
+    }
+
+    /**
+     * Rozšírený konštruktor – armor štartuje na 0, maxArmor je strop.
+     *
+     * @param maxArmor maximálna hodnota brnenia ktorú hráč môže nazbierať
+     */
+    public PlayerCharacter(String name, int hp, int attackPower, float speed,
+                           Vector2D position, int maxArmor) {
+        super(name, hp, attackPower, speed, position, 0, maxArmor);
     }
 
     // mana — defaultne nepotrebná, Wizzard override-ne
@@ -42,7 +56,6 @@ public abstract class PlayerCharacter extends Character {
             attackAnimTimer = attack.getAnimationDuration(am);
         }
 
-        // execute teraz berie Character – PlayerCharacter je Character
         attack.execute(this, level);
     }
 

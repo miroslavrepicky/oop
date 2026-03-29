@@ -10,20 +10,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 public class Wizzard extends PlayerCharacter {
+    private static final int MAX_ARMOR = 30; // čarodejník má nízku obranu
+
     private int mana;
     private int maxMana;
     private static final int SPELL_MANA_COST = 20;
     private AnimationManager animationManager;
 
     public Wizzard(Vector2D position) {
-        super("Wizzard", 7000, 40, 2.5f, position);
+        super("Wizzard", 7000, 40, 2.5f, position, MAX_ARMOR);
         this.mana = 100;
         this.maxMana = 100;
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
         primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE — rýchle kúzlo
-        secondaryAttack = new MeleeAttack(1);   // V — silnejšie kúzlo
+        secondaryAttack = new MeleeAttack(1);                // V — melee záloha
     }
 
     private void initAnimations() {

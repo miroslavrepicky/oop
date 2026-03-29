@@ -42,12 +42,13 @@ public class HUDRenderer {
         font.setColor(Color.WHITE);
         font.draw(batch, "Active: " + active.getName(), 10, 470);
 
-        // HP všetkých postáv v inventári
+        // HP + armor všetkých postáv v inventári
         int y = 450;
         for (int i = 0; i < inventory.getCharacters().size(); i++) {
             PlayerCharacter c = inventory.getCharacters().get(i);
-            String hpText = (i + 1) + ". " + c.getName() +
-                "  HP: " + c.getHp() + "/" + c.getMaxHp();
+            String hpText = (i + 1) + ". " + c.getName()
+                + "  HP: " + c.getHp() + "/" + c.getMaxHp()
+                + "  ARM: " + c.getArmor() + "/" + c.getMaxArmor();
             font.setColor(c == active ? Color.GREEN : Color.WHITE);
             font.draw(batch, hpText, 10, y);
             y -= 20;
@@ -55,8 +56,8 @@ public class HUDRenderer {
 
         // sloty inventára
         font.setColor(Color.YELLOW);
-        font.draw(batch, "Sloty: " + inventory.getUsedSlots() +
-            "/" + inventory.getTotalSlots(), 10, y - 10);
+        font.draw(batch, "Sloty: " + inventory.getUsedSlots()
+            + "/" + inventory.getTotalSlots(), 10, y - 10);
 
         // hint "Stlač E" ak je item v dosahu
         if (collisionManager != null) {

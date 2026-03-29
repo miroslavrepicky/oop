@@ -27,9 +27,24 @@ public abstract class EnemyCharacter extends Character {
     private   boolean damageDealt        = false;
     private   PlayerCharacter pendingTarget = null;
 
+    /**
+     * Základný konštruktor – armor = 0, maxArmor = 0.
+     */
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange) {
-        super(name, hp, attackPower, speed, position);
+        this(name, hp, attackPower, speed, position, patrolRange, detectionRange, 0, 0);
+    }
+
+    /**
+     * Rozšírený konštruktor s pevnou hodnotou brnenia.
+     *
+     * @param armor    počiatočné (a zároveň maximálne) brnenie nepriateľa
+     * @param maxArmor strop brnenia (zvyčajne rovnaký ako armor)
+     */
+    public EnemyCharacter(String name, int hp, int attackPower, float speed,
+                          Vector2D position, float patrolRange, float detectionRange,
+                          int armor, int maxArmor) {
+        super(name, hp, attackPower, speed, position, armor, maxArmor);
         this.patrolRange    = patrolRange;
         this.detectionRange = detectionRange;
         this.inventory      = new Inventory();

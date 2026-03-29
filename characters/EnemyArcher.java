@@ -6,11 +6,13 @@ import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyArcher extends EnemyCharacter {
+    private static final int ARMOR = 5; // łucznik má len malú obranu
+
     private int arrowCount;
     private AnimationManager animationManager;
 
     public EnemyArcher(Vector2D position) {
-        super("EnemyArcher", 70, 15, 2.0f, position, 150f, 300f);
+        super("EnemyArcher", 70, 15, 2.0f, position, 150f, 300f, ARMOR, ARMOR);
         this.arrowCount      = 20;
         this.gravityStrategy = new NormalGravity();
         this.attack          = new ArrowAttack(false);
@@ -31,7 +33,6 @@ public class EnemyArcher extends EnemyCharacter {
         if (arrowCount > 0) arrowCount--;
         // samotný projektil spawnuje ArrowAttack.execute()
     }
-
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }

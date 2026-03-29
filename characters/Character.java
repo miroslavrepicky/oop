@@ -19,7 +19,17 @@ public abstract class Character implements Updatable, Movable, Collidable {
     protected boolean facingRight = true;
     protected float velocityX = 0f;
 
+    /** Aktuálna hodnota brnenia. Znižuje prijaté poškodenie. */
+    protected int armor;
+    /** Maximálna hodnota brnenia (strop pre armor). */
+    protected int maxArmor;
+
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
+        this(name, hp, attackPower, speed, position, 0, 0);
+    }
+
+    public Character(String name, int hp, int attackPower, float speed,
+                     Vector2D position, int armor, int maxArmor) {
         this.name = name;
         this.hp = hp;
         this.maxHp = hp;
@@ -27,6 +37,8 @@ public abstract class Character implements Updatable, Movable, Collidable {
         this.speed = speed;
         this.position = position;
         this.hitbox = new Rectangle(position.getX(), position.getY(), 32, 32);
+        this.armor = Math.min(armor, maxArmor);
+        this.maxArmor = maxArmor;
     }
 
     public void updateHitbox() {
@@ -38,6 +50,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
             gravityStrategy.apply(this, deltaTime);
         }
     }
+
     public boolean isFacingRight() { return facingRight; }
     public void setFacingRight(boolean facingRight) { this.facingRight = facingRight; }
 
@@ -54,8 +67,25 @@ public abstract class Character implements Updatable, Movable, Collidable {
         this.isOnGround = false;
     }
 
+    /**
+     * Aplikuje poškodenie s odpočítaním brnenia.
+     * Záporný dmg = liečenie (heal), brnenie sa vtedy neaplikuje.
+     */
     public void takeDamage(int dmg) {
-        this.hp = Math.max(0, this.hp - dmg);
+        if (dmg > 0) {
+            int reduced = Math.max(0, dmg - armor);
+            this.hp = Math.max(0, this.hp - reduced);
+        } else {
+            // heal – záporná hodnota
+            this.hp = Math.min(maxHp, this.hp - dmg);
+        }
+    }
+
+    /**
+     * Zvýši aktuálny armor o {@code amount}, maximálne do maxArmor.
+     */
+    public void addArmor(int amount) {
+        armor = Math.min(maxArmor, armor + amount);
     }
 
     public boolean isAlive() {
@@ -68,7 +98,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
         // override v podtriedach
     }
 
-    // gettery
+    // gettery / settery
     public String getName() { return name; }
     public int getHp() { return hp; }
     public int getMaxHp() { return maxHp; }
@@ -84,4 +114,6 @@ public abstract class Character implements Updatable, Movable, Collidable {
     public abstract AnimationManager getAnimationManager();
     public float getVelocityX() { return velocityX; }
     public void setVelocityX(float velocityX) { this.velocityX = velocityX; }
+    public int getArmor() { return armor; }
+    public int getMaxArmor() { return maxArmor; }
 }

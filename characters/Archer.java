@@ -9,16 +9,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 public class Archer extends PlayerCharacter {
+    private static final int MAX_ARMOR = 50; // stredná obrana
+
     private int arrowCount;
     private AnimationManager animationManager;
 
     public Archer(Vector2D position) {
-        super("Archer", 80, 20, 3.5f, position);
+        super("Archer", 80, 20, 3.5f, position, MAX_ARMOR);
         this.arrowCount = 30;
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
-        primaryAttack   = new ArrowAttack(true);  // SPACE — normálna šípka
+        primaryAttack = new ArrowAttack(true); // SPACE — normálna šípka
     }
 
     private void initAnimations() {

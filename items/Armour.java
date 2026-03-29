@@ -11,9 +11,13 @@ public class Armour extends Item {
         this.defenseBonus = defenseBonus;
     }
 
+    /**
+     * Použitie brnenia – zvýši aktuálny armor hráča o defenseBonus,
+     * maximálne do jeho maxArmor.
+     */
     @Override
     public void use(PlayerCharacter character) {
-        // zníži prijaté poškodenie – implementuj keď budeš mať obranný systém
+        character.addArmor(defenseBonus);
     }
 
     @Override

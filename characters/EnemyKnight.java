@@ -6,12 +6,12 @@ import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyKnight extends EnemyCharacter {
-    private boolean shield;
+    private static final int ARMOR = 15;
+
     private AnimationManager animationManager;
 
     public EnemyKnight(Vector2D position) {
-        super("EnemyKnight", 120, 25, 1.5f, position, 100f, 200f);
-        this.shield          = true;
+        super("EnemyKnight", 120, 25, 1.5f, position, 100f, 200f, ARMOR, ARMOR);
         this.gravityStrategy = new NormalGravity();
         this.attack          = new MeleeAttack(1);
         initAnimations();
@@ -33,6 +33,4 @@ public class EnemyKnight extends EnemyCharacter {
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }
-
-    public boolean hasShield() { return shield; }
 }

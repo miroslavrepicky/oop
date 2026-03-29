@@ -6,17 +6,18 @@ import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.util.Vector2D;
 
 public class DarkKnight extends EnemyCharacter {
+    private static final int ARMOR = 30; // silný boss – vysoké brnenie
+
     private int phase;
     private float specialCooldown;
     private static final int MAX_PHASES = 3;
     private static final float COOLDOWN_MAX = 5.0f;
 
     public DarkKnight(Vector2D position) {
-        super("DarkKnight", 500, 50, 2.0f, position, 200f, 400f);
+        super("DarkKnight", 500, 50, 2.0f, position, 200f, 400f, ARMOR, ARMOR);
         this.phase = 1;
         this.specialCooldown = 0f;
         this.gravityStrategy = new NormalGravity();
-
     }
 
     @Override

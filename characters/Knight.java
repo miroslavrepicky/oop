@@ -9,12 +9,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 public class Knight extends PlayerCharacter {
-    private boolean shield;
+    private static final int MAX_ARMOR = 80;
+
     private AnimationManager animationManager;
 
     public Knight(Vector2D position) {
-        super("Knight", 150, 30, 2.0f, position);
-        this.shield = true;
+        super("Knight", 150, 30, 2.0f, position, MAX_ARMOR);
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
@@ -30,7 +30,6 @@ public class Knight extends PlayerCharacter {
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
     }
 
-
     @Override
     public void handleInput() {}
 
@@ -38,8 +37,6 @@ public class Knight extends PlayerCharacter {
     public void update(float deltaTime) {
         handleInput();
     }
-
-    public boolean hasShield() { return shield; }
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }
