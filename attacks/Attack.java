@@ -6,18 +6,18 @@ import sk.stuba.fiit.world.Level;
 
 public interface Attack {
     /**
-     * Vykoná útok. Útočníkom môže byť PlayerCharacter aj EnemyCharacter –
-     * obe sú podtriedy Character. Implementácia si sama určí cieľ podľa
-     * typu útočníka (hráč → nepriatelia, nepriateľ → hráč).
+     * Vykona utok. utocnikom moze byt PlayerCharacter aj EnemyCharacter –
+     * obe su podtriedy Character. Implementacia si sama urci ciel podla
+     * typu utocnika (hrac → nepriatelia, nepriatel → hrac).
      */
     void execute(Character attacker, Level level);
 
-    /** Názov animácie ktorú má útočník prehrať (napr. "attack", "cast"). */
+    /** Nazov animacie ktoru ma utocnik prehrat (napr. "attack", "cast"). */
     String getAnimationName();
 
-    /** Dĺžka animácie v sekundách – určuje kedy skončí attackAnimTimer. */
+    /** Dĺzka animacie v sekundach – urcuje kedy skonci attackAnimTimer. */
     float getAnimationDuration(AnimationManager am);
 
-    /** Mana cost – 0 pre ne-spell útoky. */
+    /** Mana cost – 0 pre ne-spell utoky. */
     default int getManaCost() { return 0; }
 }

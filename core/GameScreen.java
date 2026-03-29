@@ -11,7 +11,7 @@ public class GameScreen implements Screen {
     public GameScreen() {
         gameManager      = GameManager.getInstance();
         collisionManager = new CollisionManager();
-        playerController = new PlayerController(collisionManager); // zdieľaný CollisionManager
+        playerController = new PlayerController(collisionManager); // zdielany CollisionManager
         gameRenderer     = new GameRenderer();
         gameRenderer.setCollisionManager(collisionManager);
     }

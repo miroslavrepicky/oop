@@ -19,9 +19,9 @@ public abstract class Character implements Updatable, Movable, Collidable {
     protected boolean facingRight = true;
     protected float velocityX = 0f;
 
-    /** Aktuálna hodnota brnenia. Znižuje prijaté poškodenie. */
+    /** Aktualna hodnota brnenia. Znizuje prijate poskodenie. */
     protected int armor;
-    /** Maximálna hodnota brnenia (strop pre armor). */
+    /** Maximalna hodnota brnenia (strop pre armor). */
     protected int maxArmor;
 
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
@@ -68,21 +68,22 @@ public abstract class Character implements Updatable, Movable, Collidable {
     }
 
     /**
-     * Aplikuje poškodenie s odpočítaním brnenia.
-     * Záporný dmg = liečenie (heal), brnenie sa vtedy neaplikuje.
+     * Aplikuje poskodenie s odpocitanim brnenia.
+     * Zaporny dmg = liecenie (heal), brnenie sa vtedy neaplikuje.
      */
     public void takeDamage(int dmg) {
         if (dmg > 0) {
-            int reduced = Math.max(0, dmg - armor);
+            int armorAbsorb = Math.min(armor, dmg);
+            armor = Math.max(0, armor - armorAbsorb);
+            int reduced = Math.max(0, dmg - armorAbsorb);
             this.hp = Math.max(0, this.hp - reduced);
         } else {
-            // heal – záporná hodnota
             this.hp = Math.min(maxHp, this.hp - dmg);
         }
     }
 
     /**
-     * Zvýši aktuálny armor o {@code amount}, maximálne do maxArmor.
+     * Zvysi aktualny armor o {@code amount}, maximalne do maxArmor.
      */
     public void addArmor(int amount) {
         armor = Math.min(maxArmor, armor + amount);

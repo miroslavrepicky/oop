@@ -17,9 +17,8 @@ public class CollisionManager {
         if (player == null || level == null) return;
 
         checkPlayerVsItems(player, level);
-        checkPlayerVsDucks(player, level);
         checkProjectilesVsEnemies(level);
-        checkProjectilesVsPlayer(player, level);  // nepriateľské projektily
+        checkProjectilesVsPlayer(player, level);  // nepriatelske projektily
     }
 
     private void checkPlayerVsItems(PlayerCharacter player, Level level) {
@@ -39,28 +38,26 @@ public class CollisionManager {
         nearbyItem = null;
     }
 
-    private void checkPlayerVsDucks(PlayerCharacter player, Level level) {
-        for (Duck duck : level.getDucks()) {
-            if (!duck.isAlive()) continue;
-            if (player.getHitbox().overlaps(duck.getHitbox())) {
-                duck.takeDamage(duck.getHp());
-                Item result = duck.onKilled();
-                level.addItem(result);
-                level.getDucks().remove(duck);
-                break;
-            }
-        }
-    }
 
     private void checkProjectilesVsEnemies(Level level) {
         PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
-            if (projectile.getShooter() instanceof EnemyCharacter) continue; // nepriateľský → preskočiť
+            if (projectile.getShooter() instanceof EnemyCharacter) continue; // nepriatelsky → preskocit
             for (EnemyCharacter enemy : level.getEnemies()) {
                 if (!enemy.isAlive()) continue;
                 if (projectile.getHitbox().overlaps(enemy.getHitbox())) {
                     projectile.onCollision(enemy);
+                }
+            }
+            // kacky tiez dostavaju damage od hracovych projektilov
+            for (Duck duck : level.getDucks()) {
+                if (!duck.isAlive()) continue;
+                if (projectile.getHitbox().overlaps(duck.getHitbox())) {
+                    duck.takeDamage(duck.getHp()); // jeden zasah = zabitie
+                    Item result = duck.onKilled();
+                    level.addItem(result);
+                    break;
                 }
             }
         }
@@ -69,7 +66,7 @@ public class CollisionManager {
     private void checkProjectilesVsPlayer(PlayerCharacter player, Level level) {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
-            if (projectile.getShooter() instanceof PlayerCharacter) continue; // hráčsky → preskočiť
+            if (projectile.getShooter() instanceof PlayerCharacter) continue; // hracsky → preskocit
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
                 projectile.onCollision(player);
             }

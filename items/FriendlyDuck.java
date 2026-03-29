@@ -8,15 +8,15 @@ import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Pickable item získaný zabitím kačky (50 % šanca).
+ * Pickable item ziskany zabitim kacky (50 % sanca).
  *
- * Keď hráč použije tento item (napr. klávesa E), vystrelí TurdflyProjectile
- * v smere ktorým hráč práve stojí.
- * Item sa po použití spotrebuje (odoberie sa z inventára).
+ * Ked hrac pouzije tento item (napr. klavesa E), vystreli TurdflyProjectile
+ * v smere ktorym hrac prave stoji.
+ * Item sa po pouziti spotrebuje (odoberie sa z inventara).
  */
 public class FriendlyDuck extends Item {
 
-    private int damage; // záložná hodnota; TurdflyProjectile má vlastný damage
+    private int damage; // zalozna hodnota; TurdflyProjectile ma vlastny damage
     private AnimationManager animationManager;
 
     public FriendlyDuck(int damage, Vector2D position) {
@@ -32,7 +32,7 @@ public class FriendlyDuck extends Item {
     }
 
     /**
-     * Použitie: vystrelí TurdflyProjectile a odoberie item z inventára.
+     * Pouzitie: vystreli TurdflyProjectile a odoberie item z inventara.
      */
     @Override
     public void use(PlayerCharacter character) {
@@ -51,7 +51,7 @@ public class FriendlyDuck extends Item {
 
         // spotrebuj item
         character.getInventory().removeItem(this);
-        System.out.println("FriendlyDuck použitá – turdfly vystrelený!");
+        System.out.println("FriendlyDuck pouzita – turdfly vystreleny!");
     }
 
     @Override

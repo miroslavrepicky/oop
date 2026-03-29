@@ -39,7 +39,7 @@ public class Duck extends Character {
 
     @Override
     public void performAttack() {
-        // Duck neútočí
+        // Duck neutoci
     }
 
     @Override
@@ -74,27 +74,27 @@ public class Duck extends Character {
             if (idleTimer <= 0f) {
                 walking   = true;
                 walkTimer = WALK_DURATION;
-                walkDir   = -walkDir; // zmena smeru každý cyklus
+                walkDir   = -walkDir; // zmena smeru kazdy cyklus
             }
         }
     }
 
     @Override
     public void onCollision(Object other) {
-        // kolízia s hráčom – rieši CollisionManager
+        // kolizia s hracom – riesi CollisionManager
     }
 
     /**
-     * Zavolá sa keď CollisionManager zabije kačku.
+     * Zavola sa ked CollisionManager zabije kacku.
      * 50 % → FriendlyDuck (pickable item)
-     * 50 % → EggProjectileSpawner (marker, ktorý Level prekonvertuje na EggProjectile)
+     * 50 % → EggProjectileSpawner (marker, ktory Level prekonvertuje na EggProjectile)
      */
     public Item onKilled() {
         Random random = new Random();
         if (random.nextBoolean()) {
             return new FriendlyDuck(DUCK_DAMAGE, new Vector2D(position.getX(), position.getY()));
         } else {
-            // Vajce – special item marker; Level ho odstráni a nahradí EggProjectile
+            // Vajce – special item marker; Level ho odstrani a nahradi EggProjectile
             return new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
         }
     }

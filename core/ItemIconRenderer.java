@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Stará sa o vykresľovanie ikon itemov na zemi.
- * Textúry cachuje – každá cesta sa načíta iba raz.
+ * Stara sa o vykreslovanie ikon itemov na zemi.
+ * Textury cachuje – kazda cesta sa nacita iba raz.
  */
 public class ItemIconRenderer {
     private static final float ICON_SIZE = 32f;

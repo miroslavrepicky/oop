@@ -80,9 +80,9 @@ public class AIController {
         Vector2D enemyPos = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
 
-        enemy.setVelocityX(0); // stojí počas útoku
+        enemy.setVelocityX(0); // stoji pocas utoku
 
-        // damage + cooldown sa riešia v EnemyCharacter.performAttack(player)
+        // damage + cooldown sa riesia v EnemyCharacter.performAttack(player)
         enemy.performAttack(player);
 
         if (enemyPos.distanceTo(playerPos) > ATTACK_RANGE) {

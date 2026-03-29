@@ -13,7 +13,8 @@ public class HealingPotion extends Item {
 
     @Override
     public void use(PlayerCharacter character) {
-        character.takeDamage(-healAmount); // záporný damage = heal
+        character.takeDamage(-healAmount);
+        character.getInventory().removeItem(this);
     }
 
     @Override

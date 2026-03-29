@@ -4,35 +4,35 @@ import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Marker item vytvorený keď kačka padne a vylosuje sa vajce (50 %).
+ * Marker item vytvoreny ked kacka padne a vylosuje sa vajce (50 %).
  *
- * Tento item sa NEDÁ zobrať do inventára (onPickup nič nerobí).
- * Level.update() ho zachytí cez instanceof check, vytvorí EggProjectile
- * na jeho pozícii a tento item okamžite odstráni zo scény.
+ * Tento item sa NEDa zobrat do inventara (onPickup nic nerobi).
+ * Level.update() ho zachyti cez instanceof check, vytvori EggProjectile
+ * na jeho pozicii a tento item okamzite odstrani zo sceny.
  *
- * Prečo marker a nie priamy spawn?
- *   Duck.onKilled() vracia Item – aby sme nemuseli meniť signatúru a CollisionManager.
- *   Level si potom sám rozhodne čo s markerom spraviť.
+ * Preco marker a nie priamy spawn?
+ *   Duck.onKilled() vracia Item – aby sme nemuseli menit signaturu a CollisionManager.
+ *   Level si potom sam rozhodne co s markerom spravit.
  */
 public class EggProjectileSpawner extends Item {
 
     public EggProjectileSpawner(Vector2D position) {
-        super(0, position); // 0 slotov – neberie sa do inventára
+        super(0, position); // 0 slotov – neberie sa do inventara
     }
 
     @Override
     public void use(PlayerCharacter character) {
-        // nič – nikdy sa nepoužíva priamo
+        // nic – nikdy sa nepouziva priamo
     }
 
     /**
-     * Zablokuj pickup – vajce sa nedá zobrať, iba spawnuje výbuch.
+     * Zablokuj pickup – vajce sa neda zobrat, iba spawnuje vybuch.
      */
     @Override
     public String getIconPath() { return null; }
 
     @Override
     public void onPickup(PlayerCharacter character) {
-        // nič
+        // nic
     }
 }

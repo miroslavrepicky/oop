@@ -28,7 +28,7 @@ public class EnemyKnight extends EnemyCharacter {
 
     @Override
     public void performAttack() {
-        // logika rieši MeleeAttack.execute() + EnemyCharacter.performAttack(player)
+        // logika riesi MeleeAttack.execute() + EnemyCharacter.performAttack(player)
     }
 
     @Override

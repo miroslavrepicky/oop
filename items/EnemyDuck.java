@@ -13,7 +13,7 @@ public class EnemyDuck extends Item {
 
     @Override
     public void use(PlayerCharacter character) {
-        character.takeDamage(damage); // útočí na hráča
+        character.takeDamage(damage); // utoci na hraca
     }
 
     @Override

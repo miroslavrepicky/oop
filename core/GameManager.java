@@ -38,7 +38,7 @@ public class GameManager {
     }
 
     public void initGame() {
-        Knight knight = new Knight(new Vector2D(0, 0)); // pozícia sa nastaví z Tiled
+        Knight knight = new Knight(new Vector2D(0, 0)); // pozicia sa nastavi z Tiled
         inventory.addCharacter(knight);
         Wizzard archer = new Wizzard(new Vector2D(0, 0));
         inventory.addCharacter(archer);
@@ -76,7 +76,7 @@ public class GameManager {
             }
         }
 
-        // čakaj pred reštartom
+        // cakaj pred restartom
         if (gameState == GameState.GAME_OVER) {
             gameOverTimer -= deltaTime;
             if (gameOverTimer <= 0) {

@@ -6,12 +6,12 @@ import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Vajce ktoré sa spawne priamo na zemi po zabití kačky.
- * Odpočítava (BOMB animácia) a potom vybuchne (BLAST animácia).
+ * Vajce ktore sa spawne priamo na zemi po zabiti kacky.
+ * Odpocitava (BOMB animacia) a potom vybuchne (BLAST animacia).
  *
- * Životný cyklus:
- *   TICKING  → BOMB animácia (BOMB_DURATION sekúnd)
- *   BLASTING → BLAST animácia, potom active = false
+ * zivotny cyklus:
+ *   TICKING  → BOMB animacia (BOMB_DURATION sekund)
+ *   BLASTING → BLAST animacia, potom active = false
  */
 public class EggProjectile extends Projectile {
 
@@ -33,7 +33,7 @@ public class EggProjectile extends Projectile {
         initAnimations();
     }
 
-    private void initAnimations() {
+    protected void initAnimations() {
         animationManager = new AnimationManager("atlas/egg/egg.atlas");
         animationManager.addAnimation("bomb",  "BOMB/BOMB",   0.25f);
         animationManager.addAnimation("blast", "BLAST/BLAST", 0.08f);
@@ -43,14 +43,14 @@ public class EggProjectile extends Projectile {
     @Override
     public void update(float deltaTime) {
         stateTimer -= deltaTime;
-        animationManager.update(deltaTime);
+        if (animationManager != null) animationManager.update(deltaTime);  // ← pridaj null check
 
         switch (eggState) {
             case TICKING:
                 if (stateTimer <= 0f) {
                     eggState   = EggState.BLASTING;
                     stateTimer = BLAST_DURATION;
-                    animationManager.play("blast");
+                    if (animationManager != null) animationManager.play("blast");  // ← tu tiez
                     dealAoeDamage();
                 }
                 break;
@@ -75,13 +75,13 @@ public class EggProjectile extends Projectile {
             float falloff = 1f - (float)(dist / AOE_RADIUS);
             int dmg = Math.max(1, (int)(BLAST_DAMAGE * falloff));
             player.takeDamage(dmg);
-            System.out.println("Vajce vybuchlo! Hráč dostal " + dmg + " poškodenia.");
+            System.out.println("Vajce vybuchlo! Hrac dostal " + dmg + " poskodenia.");
         }
     }
 
     @Override
     public void onCollision(Object other) {
-        // vajce nereaguje na kolízie – iba AoE pri výbuchu
+        // vajce nereaguje na kolizie – iba AoE pri vybuchu
     }
 
     public EggState         getEggState()         { return eggState; }

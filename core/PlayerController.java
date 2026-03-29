@@ -53,8 +53,18 @@ public class PlayerController {
         if (Gdx.input.isKeyJustPressed(Input.Keys.E) && level != null) {
             collisionManager.pickupNearbyItem(player, level);
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            inventory.useSelected(player);
+        }
 
-        // prepínanie postáv
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            inventory.selectPrevious();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            inventory.selectNext();
+        }
+
+        // prepinanie postav
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) inventory.switchCharacter(1);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) inventory.switchCharacter(2);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) inventory.switchCharacter(3);

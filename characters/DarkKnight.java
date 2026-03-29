@@ -6,7 +6,7 @@ import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.util.Vector2D;
 
 public class DarkKnight extends EnemyCharacter {
-    private static final int ARMOR = 30; // silný boss – vysoké brnenie
+    private static final int ARMOR = 30; // silny boss – vysoke brnenie
 
     private int phase;
     private float specialCooldown;
@@ -38,7 +38,7 @@ public class DarkKnight extends EnemyCharacter {
     }
 
     private void meleeAttack() {
-        // silný melee útok
+        // silny melee utok
     }
 
     public MagicSpell castSpell() {
@@ -56,7 +56,7 @@ public class DarkKnight extends EnemyCharacter {
     @Override
     public void update(float deltaTime) {
         super.update(deltaTime); // AI logika z EnemyCharacter
-        // prepnutie fázy podľa HP
+        // prepnutie fazy podla HP
         if (phase == 1 && hp < maxHp * 0.66f) switchPhase();
         if (phase == 2 && hp < maxHp * 0.33f) switchPhase();
 

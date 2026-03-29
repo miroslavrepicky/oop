@@ -4,8 +4,8 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Projektil vystrelený keď hráč použije FriendlyDuck z inventára.
- * Používa animáciu TURDFLY/TURDFLY.
+ * Projektil vystreleny ked hrac pouzije FriendlyDuck z inventara.
+ * Pouziva animaciu TURDFLY/TURDFLY.
  */
 public class TurdflyProjectile extends Projectile {
 

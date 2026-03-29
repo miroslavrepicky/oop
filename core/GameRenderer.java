@@ -49,11 +49,11 @@ public class GameRenderer {
             level.getMapManager().render(camera);
         }
 
-        // 2. ShapeRenderer – fallback pre objekty BEZ animácie
+        // 2. ShapeRenderer – fallback pre objekty BEZ animacie
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // nepriatelia bez animácie (obranný fallback)
+        // nepriatelia bez animacie (obranny fallback)
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (enemy.getAnimationManager() != null) continue;
             shapeRenderer.setColor(1, 0, 0, 1);
@@ -61,7 +61,7 @@ public class GameRenderer {
         }
 
 
-        // fallback pre hráča ak nie je animácia
+        // fallback pre hraca ak nie je animacia
         if (player != null && player.getAnimationManager() == null) {
             shapeRenderer.setColor(0, 1, 0, 1);
             shapeRenderer.rect(player.getPosition().getX(), player.getPosition().getY(), 32, 32);
@@ -69,11 +69,11 @@ public class GameRenderer {
 
         shapeRenderer.end();
 
-        // 3. SpriteBatch – všetky animované objekty
+        // 3. SpriteBatch – vsetky animovane objekty
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // hráč
+        // hrac
         if (player != null && player.getAnimationManager() != null) {
             player.updateAnimation(deltaTime);
             player.getAnimationManager().render(batch,
@@ -83,7 +83,7 @@ public class GameRenderer {
                 !player.isFacingRight());
         }
 
-        // nepriatelia – animácia
+        // nepriatelia – animacia
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (enemy.getAnimationManager() == null) continue;
             enemy.updateAnimation(deltaTime);
@@ -94,7 +94,7 @@ public class GameRenderer {
                 !enemy.isFacingRight());
         }
 
-        // kačky – animácia walk/idle, flip podľa smeru chôdze
+        // kacky – animacia walk/idle, flip podla smeru chodze
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
             if (duck.getAnimationManager() != null) {
@@ -109,7 +109,7 @@ public class GameRenderer {
         // ikony itemov na zemi
         itemIconRenderer.render(batch, level.getItems());
 
-        // projektily s animáciou: EggProjectile a TurdflyProjectile
+        // projektily s animaciou: EggProjectile a TurdflyProjectile
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
@@ -121,7 +121,7 @@ public class GameRenderer {
                         spell.getPosition().getX(),
                         spell.getPosition().getY(),
                         64, 36, flipX);
-                    spell.getAnimationManager().update(deltaTime); // ak nevoláš inak
+                    spell.getAnimationManager().update(deltaTime); // ak nevolas inak
                 }
             } else if (projectile instanceof Arrow) {
                 Arrow arrow = (Arrow) projectile;
@@ -135,11 +135,11 @@ public class GameRenderer {
             } else if (projectile instanceof EggProjectile) {
                 EggProjectile egg = (EggProjectile) projectile;
                 if (egg.getAnimationManager() != null) {
-                    // počas výbuchu väčšia veľkosť (AoE vizuál)
+                    // pocas vybuchu vacsia velkost (AoE vizual)
                     boolean blasting = egg.getEggState() == EggProjectile.EggState.BLASTING;
                     float w = blasting ? 64f : 32f;
                     float h = blasting ? 64f : 32f;
-                    float offsetX = blasting ? -16f : 0f; // vycentruj výbuch
+                    float offsetX = blasting ? -16f : 0f; // vycentruj vybuch
                     float offsetY = blasting ? -16f : 0f;
                     egg.getAnimationManager().render(batch,
                         egg.getPosition().getX() + offsetX,
@@ -151,7 +151,7 @@ public class GameRenderer {
             } else if (projectile instanceof TurdflyProjectile) {
                 TurdflyProjectile turdfly = (TurdflyProjectile) projectile;
                 if (turdfly.getAnimationManager() != null) {
-                    // flip podľa smeru letu
+                    // flip podla smeru letu
                     boolean flyingLeft = turdfly.getPosition().getX() < 0 ||
                         turdfly.getDirection().getX() < 0;
                     turdfly.getAnimationManager().render(batch,

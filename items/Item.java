@@ -23,9 +23,9 @@ public abstract class Item implements Pickable, Updatable {
     public abstract void use(PlayerCharacter character);
 
     /**
-     * Vráti cestu k ikone itemu (napr. „icons/duck.png“).
-     * Keď item leží na zemi, GameRenderer ju vykreslí na jeho pozícii.
-     * Vráť null ak item nemá ikonu.
+     * Vrati cestu k ikone itemu (napr. „icons/duck.png“).
+     * Ked item lezi na zemi, GameRenderer ju vykresli na jeho pozicii.
+     * Vrat null ak item nema ikonu.
      */
     public abstract String getIconPath();
 
@@ -36,7 +36,7 @@ public abstract class Item implements Pickable, Updatable {
 
     @Override
     public void update(float deltaTime) {
-        // predmety sa nehýbu, override ak treba
+        // predmety sa nehybu, override ak treba
     }
 
     public int getSlotsRequired() { return slotCost; }

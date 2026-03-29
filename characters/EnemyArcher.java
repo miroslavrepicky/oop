@@ -6,7 +6,7 @@ import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyArcher extends EnemyCharacter {
-    private static final int ARMOR = 5; // łucznik má len malú obranu
+    private static final int ARMOR = 5; // łucznik ma len malu obranu
 
     private int arrowCount;
     private AnimationManager animationManager;
@@ -31,7 +31,7 @@ public class EnemyArcher extends EnemyCharacter {
     @Override
     public void performAttack() {
         if (arrowCount > 0) arrowCount--;
-        // samotný projektil spawnuje ArrowAttack.execute()
+        // samotny projektil spawnuje ArrowAttack.execute()
     }
 
     @Override

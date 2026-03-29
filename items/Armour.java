@@ -12,12 +12,13 @@ public class Armour extends Item {
     }
 
     /**
-     * Použitie brnenia – zvýši aktuálny armor hráča o defenseBonus,
-     * maximálne do jeho maxArmor.
+     * Pouzitie brnenia – zvysi aktualny armor hraca o defenseBonus,
+     * maximalne do jeho maxArmor.
      */
     @Override
     public void use(PlayerCharacter character) {
         character.addArmor(defenseBonus);
+        character.getInventory().removeItem(this);
     }
 
     @Override

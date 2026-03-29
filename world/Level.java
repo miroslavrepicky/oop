@@ -111,7 +111,7 @@ public class Level implements Updatable {
         return isCompleted;
     }
 
-    /** Pomocná metóda – vracia aktívneho hráča pre Attack.execute() implementácie. */
+    /** Pomocna metoda – vracia aktivneho hraca pre Attack.execute() implementacie. */
     public PlayerCharacter getActivePlayer() {
         return GameManager.getInstance().getInventory().getActive();
     }

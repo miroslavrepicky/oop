@@ -34,7 +34,7 @@ public class ArrowAttack implements Attack {
             piercing
         );
 
-        // nepriateľské šípy budú kolídovať s hráčom – to rieši CollisionManager
+        // nepriatelske sipy budu kolidovat s hracom – to riesi CollisionManager
         arrow.setShooter(attacker);
         level.addProjectile(arrow);
     }

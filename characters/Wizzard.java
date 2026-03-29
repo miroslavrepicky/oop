@@ -10,7 +10,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 public class Wizzard extends PlayerCharacter {
-    private static final int MAX_ARMOR = 30; // čarodejník má nízku obranu
+    private static final int MAX_ARMOR = 30; // carodejnik ma nizku obranu
 
     private int mana;
     private int maxMana;
@@ -24,8 +24,8 @@ public class Wizzard extends PlayerCharacter {
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
-        primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE — rýchle kúzlo
-        secondaryAttack = new MeleeAttack(1);                // V — melee záloha
+        primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE — rychle kuzlo
+        secondaryAttack = new MeleeAttack(1);                // V — melee zaloha
     }
 
     private void initAnimations() {
@@ -38,7 +38,7 @@ public class Wizzard extends PlayerCharacter {
         animationManager.addAnimation("hurt",   "HURT/HURT",     0.08f);
     }
 
-    // Wizzard override-ne mana metódy z PlayerCharacter
+    // Wizzard override-ne mana metody z PlayerCharacter
     @Override
     protected int getMana() { return mana; }
 

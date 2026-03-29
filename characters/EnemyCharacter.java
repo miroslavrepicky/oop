@@ -14,13 +14,13 @@ public abstract class EnemyCharacter extends Character {
     protected Inventory inventory;
     private AIController aiController;
 
-    // útok – nastavujú podtriedy v konštruktore (ako PlayerCharacter)
+    // utok – nastavuju podtriedy v konstruktore (ako PlayerCharacter)
     protected Attack attack;
 
     private float attackCooldown             = 0f;
     private static final float ATTACK_COOLDOWN_MAX = 1.5f;
 
-    // stav útočnej animácie
+    // stav utocnej animacie
     protected boolean isAttacking        = false;
     private   float   attackAnimTimer    = 0f;
     private   float   attackAnimDuration = 0f;
@@ -28,7 +28,7 @@ public abstract class EnemyCharacter extends Character {
     private   PlayerCharacter pendingTarget = null;
 
     /**
-     * Základný konštruktor – armor = 0, maxArmor = 0.
+     * Zakladny konstruktor – armor = 0, maxArmor = 0.
      */
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange) {
@@ -36,10 +36,10 @@ public abstract class EnemyCharacter extends Character {
     }
 
     /**
-     * Rozšírený konštruktor s pevnou hodnotou brnenia.
+     * Rozsireny konstruktor s pevnou hodnotou brnenia.
      *
-     * @param armor    počiatočné (a zároveň maximálne) brnenie nepriateľa
-     * @param maxArmor strop brnenia (zvyčajne rovnaký ako armor)
+     * @param armor    pociatocne (a zaroven maximalne) brnenie nepriatela
+     * @param maxArmor strop brnenia (zvycajne rovnaky ako armor)
      */
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange,
@@ -65,8 +65,8 @@ public abstract class EnemyCharacter extends Character {
     }
 
     /**
-     * Volaná z AIController keď je hráč v ATTACK_RANGE.
-     * Spustí útočnú animáciu; damage príde na KONCI animácie (posledný frame).
+     * Volana z AIController ked je hrac v ATTACK_RANGE.
+     * Spusti utocnu animaciu; damage pride na KONCI animacie (posledny frame).
      */
     public void performAttack(PlayerCharacter player) {
         if (attackCooldown > 0 || isAttacking || attack == null) return;
@@ -80,10 +80,10 @@ public abstract class EnemyCharacter extends Character {
         attackAnimDuration = attack.getAnimationDuration(am);
         attackAnimTimer    = attackAnimDuration;
 
-        // spusti animáciu
+        // spusti animaciu
         if (am != null) am.play(attack.getAnimationName());
 
-        // spusti vlastnú logiku podtriedy (napr. DarkKnight prepínanie fáz)
+        // spusti vlastnu logiku podtriedy (napr. DarkKnight prepinanie faz)
         performAttack();
     }
 
@@ -120,7 +120,7 @@ public abstract class EnemyCharacter extends Character {
         if (isAttacking) {
             attackAnimTimer -= deltaTime;
 
-            // damage na konci animácie (posledný frame)
+            // damage na konci animacie (posledny frame)
             if (!damageDealt && attackAnimTimer <= 0f) {
                 Level level = GameManager.getInstance().getCurrentLevel();
                 if (level != null && attack != null) {
