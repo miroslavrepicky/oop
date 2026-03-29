@@ -8,10 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
-import sk.stuba.fiit.projectiles.Arrow;
-import sk.stuba.fiit.projectiles.EggProjectile;
-import sk.stuba.fiit.projectiles.Projectile;
-import sk.stuba.fiit.projectiles.TurdflyProjectile;
+import sk.stuba.fiit.projectiles.*;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.world.Level;
 
@@ -63,15 +60,6 @@ public class GameRenderer {
             shapeRenderer.rect(enemy.getPosition().getX(), enemy.getPosition().getY(), 32, 32);
         }
 
-        // fallback pre projektily bez animácie (Arrow)
-        for (Projectile projectile : level.getProjectiles()) {
-            if (!projectile.isActive()) continue;
-            if (projectile instanceof Arrow) {
-                shapeRenderer.setColor(0.8f, 0.6f, 0.2f, 1);
-                shapeRenderer.rect(projectile.getPosition().getX(),
-                    projectile.getPosition().getY(), 16, 8);
-            }
-        }
 
         // fallback pre hráča ak nie je animácia
         if (player != null && player.getAnimationManager() == null) {
@@ -125,7 +113,26 @@ public class GameRenderer {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
-            if (projectile instanceof EggProjectile) {
+            if (projectile instanceof MagicSpell) {
+                MagicSpell spell = (MagicSpell) projectile;
+                if (spell.getAnimationManager() != null) {
+                    boolean flipX = spell.getDirection().getX() < 0;
+                    spell.getAnimationManager().render(batch,
+                        spell.getPosition().getX(),
+                        spell.getPosition().getY(),
+                        64, 36, flipX);
+                    spell.getAnimationManager().update(deltaTime); // ak nevoláš inak
+                }
+            } else if (projectile instanceof Arrow) {
+                Arrow arrow = (Arrow) projectile;
+                if (arrow.getAnimationManager() != null) {
+                    boolean flipX = arrow.getDirection().getX() < 0;
+                    arrow.getAnimationManager().render(batch,
+                        arrow.getPosition().getX(),
+                        arrow.getPosition().getY(),
+                        32, 16, flipX);
+                }
+            } else if (projectile instanceof EggProjectile) {
                 EggProjectile egg = (EggProjectile) projectile;
                 if (egg.getAnimationManager() != null) {
                     // počas výbuchu väčšia veľkosť (AoE vizuál)

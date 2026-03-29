@@ -40,7 +40,7 @@ public class GameManager {
     public void initGame() {
         Knight knight = new Knight(new Vector2D(0, 0)); // pozícia sa nastaví z Tiled
         inventory.addCharacter(knight);
-        Wizzard archer = new Wizzard(new Vector2D(0, 0));
+        Archer archer = new Archer(new Vector2D(0, 0));
         inventory.addCharacter(archer);
         startLevel(1);
     }

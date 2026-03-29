@@ -53,8 +53,10 @@ public class CollisionManager {
     }
 
     private void checkProjectilesVsEnemies(Level level) {
+        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
+            if (projectile.getShooter() instanceof EnemyCharacter) continue; // nepriateľský → preskočiť
             for (EnemyCharacter enemy : level.getEnemies()) {
                 if (!enemy.isAlive()) continue;
                 if (projectile.getHitbox().overlaps(enemy.getHitbox())) {
@@ -64,13 +66,10 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Nepriateľské projektily (šípy, kúzla) kolídujú s hráčom.
-     * Projektil sám zavolá target.takeDamage() cez onCollision().
-     */
     private void checkProjectilesVsPlayer(PlayerCharacter player, Level level) {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
+            if (projectile.getShooter() instanceof PlayerCharacter) continue; // hráčsky → preskočiť
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
                 projectile.onCollision(player);
             }

@@ -14,6 +14,7 @@ public abstract class Projectile implements Updatable, Collidable {
     protected boolean active;
     protected Rectangle hitbox;
     protected GravityStrategy gravityStrategy;
+    protected Character shooter = null;
 
     public Projectile(int damage, float speed, Vector2D position, Vector2D direction) {
         this.damage = damage;
@@ -51,5 +52,7 @@ public abstract class Projectile implements Updatable, Collidable {
     public Vector2D getPosition() { return position; }
     public Rectangle getHitbox() { return hitbox; }
     public Vector2D getDirection() { return direction; }
+    public Character getShooter() { return shooter; }
+    public void setShooter(Character shooter) { this.shooter = shooter; }
 
 }

@@ -35,6 +35,7 @@ public class ArrowAttack implements Attack {
         );
 
         // nepriateľské šípy budú kolídovať s hráčom – to rieši CollisionManager
+        arrow.setShooter(attacker);
         level.addProjectile(arrow);
     }
 

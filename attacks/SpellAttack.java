@@ -35,7 +35,7 @@ public class SpellAttack implements Attack {
             direction,
             aoeRadius
         );
-
+        spell.setShooter(attacker);
         level.addProjectile(spell);
     }
 
