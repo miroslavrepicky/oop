@@ -72,6 +72,29 @@ public abstract class EnemyCharacter extends Character {
         performAttack();
     }
 
+    protected String getAttackAnimationName() {
+        return "attack";
+    }
+
+    @Override
+    public void updateAnimation(float deltaTime) {
+        AnimationManager am = getAnimationManager();
+        if (am == null) return;
+
+        if (!isAlive()) {
+            am.play("death");
+        } else if (isAttacking()) {
+            am.play(getAttackAnimationName());
+        } else if (!isOnGround()) {
+            am.play(am.hasAnimation("jump") ? "jump" : "idle");
+        } else if (Math.abs(getVelocityX()) > 0.1f) {
+            am.play("walk");
+        } else {
+            am.play("idle");
+        }
+        am.update(deltaTime);
+    }
+
     @Override
     public void onCollision(Object other) {}
 

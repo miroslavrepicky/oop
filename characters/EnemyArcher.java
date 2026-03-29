@@ -32,21 +32,6 @@ public class EnemyArcher extends EnemyCharacter {
         // samotný projektil spawnuje ArrowAttack.execute()
     }
 
-    @Override
-    public void updateAnimation(float deltaTime) {
-        if (!isAlive()) {
-            animationManager.play("death");
-        } else if (isAttacking()) {
-            animationManager.play("attack");
-        } else if (!isOnGround()) {
-            animationManager.play("jump");
-        } else if (Math.abs(getVelocityX()) > 0.1f) {
-            animationManager.play("walk");
-        } else {
-            animationManager.play("idle");
-        }
-        animationManager.update(deltaTime);
-    }
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }

@@ -30,19 +30,8 @@ public class EnemyWizzard extends EnemyCharacter {
     }
 
     @Override
-    public void updateAnimation(float deltaTime) {
-        if (!isAlive()) {
-            animationManager.play("death");
-        } else if (isAttacking()) {
-            animationManager.play("cast");
-        } else if (!isOnGround()) {
-            animationManager.play("jump");
-        } else if (Math.abs(getVelocityX()) > 0.1f) {
-            animationManager.play("walk");
-        } else {
-            animationManager.play("idle");
-        }
-        animationManager.update(deltaTime);
+    protected String getAttackAnimationName() {
+        return "cast";
     }
 
     @Override
