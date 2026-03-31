@@ -10,8 +10,8 @@ import sk.stuba.fiit.util.Vector2D;
  * Odpocitava (BOMB animacia) a potom vybuchne (BLAST animacia).
  *
  * zivotny cyklus:
- *   TICKING  → BOMB animacia (BOMB_DURATION sekund)
- *   BLASTING → BLAST animacia, potom active = false
+ *   TICKING  -> BOMB animacia (BOMB_DURATION sekund)
+ *   BLASTING -> BLAST animacia, potom active = false
  */
 public class EggProjectile extends Projectile {
 

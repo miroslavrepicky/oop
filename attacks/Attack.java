@@ -8,7 +8,7 @@ public interface Attack {
     /**
      * Vykona utok. utocnikom moze byt PlayerCharacter aj EnemyCharacter –
      * obe su podtriedy Character. Implementacia si sama urci ciel podla
-     * typu utocnika (hrac → nepriatelia, nepriatel → hrac).
+     * typu utocnika (hrac -> nepriatelia, nepriatel -> hrac).
      */
     void execute(Character attacker, Level level);
 

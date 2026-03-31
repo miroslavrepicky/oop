@@ -86,8 +86,8 @@ public class Duck extends Character {
 
     /**
      * Zavola sa ked CollisionManager zabije kacku.
-     * 50 % → FriendlyDuck (pickable item)
-     * 50 % → EggProjectileSpawner (marker, ktory Level prekonvertuje na EggProjectile)
+     * 50 % -> FriendlyDuck (pickable item)
+     * 50 % -> EggProjectileSpawner (marker, ktory Level prekonvertuje na EggProjectile)
      */
     public Item onKilled() {
         Random random = new Random();
