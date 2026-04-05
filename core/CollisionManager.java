@@ -1,11 +1,15 @@
 package sk.stuba.fiit.core;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
+
+import java.util.List;
 
 public class CollisionManager {
 
@@ -19,6 +23,7 @@ public class CollisionManager {
         checkPlayerVsItems(player, level);
         checkProjectilesVsEnemies(level);
         checkProjectilesVsPlayer(player, level);  // nepriatelske projektily
+        checkProjectilesVsWalls(level);
     }
 
     private void checkPlayerVsItems(PlayerCharacter player, Level level) {
@@ -69,6 +74,22 @@ public class CollisionManager {
             if (projectile.getShooter() instanceof PlayerCharacter) continue; // hracsky -> preskocit
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
                 projectile.onCollision(player);
+            }
+        }
+    }
+
+    private void checkProjectilesVsWalls(Level level) {
+        if (level.getMapManager() == null) return;
+        List<Rectangle> walls = level.getMapManager().getHitboxes();
+
+        for (Projectile projectile : level.getProjectiles()) {
+            if (!projectile.isActive()) continue;
+            if (projectile instanceof EggProjectile) continue;
+            for (Rectangle wall : walls) {
+                if (projectile.getHitbox().overlaps(wall)) {
+                    projectile.setActive(false);
+                    break;
+                }
             }
         }
     }

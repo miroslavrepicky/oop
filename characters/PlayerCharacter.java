@@ -14,6 +14,7 @@ public abstract class PlayerCharacter extends Character {
     protected boolean isAttacking = false;
     protected float attackAnimTimer = 0f;
     protected Attack currentAttack;
+    protected boolean projectileSpawned = false;
 
     /**
      * Zakladny konstruktor – armor = 0, maxArmor = 0.
@@ -39,6 +40,7 @@ public abstract class PlayerCharacter extends Character {
 
     protected void executeAttack(Attack attack) {
         if (attack == null) return;
+        if (isAttacking) return;
 
         if (attack instanceof SpellAttack) {
             SpellAttack spell = (SpellAttack) attack;
@@ -54,9 +56,10 @@ public abstract class PlayerCharacter extends Character {
             isAttacking    = true;
             currentAttack  = attack;
             attackAnimTimer = attack.getAnimationDuration(am);
+            projectileSpawned = false;
         }
 
-        attack.execute(this, level);
+        //attack.execute(this, level);
     }
 
     public void performPrimaryAttack()   { executeAttack(primaryAttack); }
@@ -68,6 +71,15 @@ public abstract class PlayerCharacter extends Character {
     @Override
     public void updateAnimation(float deltaTime) {
         if (getAnimationManager() == null) return;
+
+        if (!projectileSpawned && currentAttack != null) {
+            float frameDuration = currentAttack.getFrameDuration(getAnimationManager());
+            if (attackAnimTimer <= frameDuration * 3) {
+                Level level = GameManager.getInstance().getCurrentLevel();
+                if (level != null) currentAttack.execute(this, level);
+                projectileSpawned = true;
+            }
+        }
 
         if (isAttacking) {
             attackAnimTimer -= deltaTime;
@@ -86,7 +98,7 @@ public abstract class PlayerCharacter extends Character {
         } else {
             anim = "idle";
         }
-
+        //this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
         getAnimationManager().play(anim);
         getAnimationManager().update(deltaTime);
     }

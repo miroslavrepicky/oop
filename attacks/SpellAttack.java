@@ -24,7 +24,7 @@ public class SpellAttack implements Attack {
 
         Vector2D spawnPos = new Vector2D(
             attacker.getPosition().getX() + (dirX * 24f) + 1,
-            attacker.getPosition().getY() + 16f
+            attacker.getPosition().getY() + 32f
         );
         Vector2D direction = new Vector2D(dirX, 0);
 

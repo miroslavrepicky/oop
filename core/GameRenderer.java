@@ -1,10 +1,12 @@
 package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
@@ -19,6 +21,7 @@ public class GameRenderer {
     private HUDRenderer hudRenderer;
     private ItemIconRenderer itemIconRenderer;
     private CollisionManager collisionManager;
+    private boolean debugHitboxes = false;
 
     public GameRenderer() {
         camera = new OrthographicCamera();
@@ -164,9 +167,57 @@ public class GameRenderer {
         }
 
         batch.end();
+        if (debugHitboxes) {
+            renderHitboxes(level, player);
+        }
+
 
         // 4. HUD
         hudRenderer.render();
+    }
+
+    private void renderHitboxes(Level level, PlayerCharacter player) {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        // hráč
+        if (player != null) {
+            shapeRenderer.setColor(Color.GREEN);
+            Rectangle hb = player.getHitbox();
+            shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
+        }
+
+        // nepriatelia
+        shapeRenderer.setColor(Color.RED);
+        for (EnemyCharacter enemy : level.getEnemies()) {
+            Rectangle hb = enemy.getHitbox();
+            shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
+        }
+
+        // itemy
+        shapeRenderer.setColor(Color.YELLOW);
+        for (Item item : level.getItems()) {
+            Rectangle hb = item.getHitbox();
+            shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
+        }
+
+        // projektily
+        shapeRenderer.setColor(Color.CYAN);
+        for (Projectile projectile : level.getProjectiles()) {
+            if (!projectile.isActive()) continue;
+            Rectangle hb = projectile.getHitbox();
+            shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
+        }
+
+        // kačky
+        shapeRenderer.setColor(Color.ORANGE);
+        for (Duck duck : level.getDucks()) {
+            if (!duck.isAlive()) continue;
+            Rectangle hb = duck.getHitbox();
+            shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
+        }
+
+        shapeRenderer.end();
     }
 
     public void resize(int width, int height) {
@@ -176,6 +227,10 @@ public class GameRenderer {
     public void setCollisionManager(CollisionManager cm) {
         this.collisionManager = cm;
         this.hudRenderer = new HUDRenderer(batch, cm);
+    }
+
+    public void toggleDebugHitboxes() {
+        debugHitboxes = !debugHitboxes;
     }
 
     public void dispose() {

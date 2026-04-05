@@ -36,7 +36,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
         this.attackPower = attackPower;
         this.speed = speed;
         this.position = position;
-        this.hitbox = new Rectangle(position.getX(), position.getY(), 32, 32);
+        this.hitbox = new Rectangle(position.getX(), position.getY(), 64, 64);
         this.armor = Math.min(armor, maxArmor);
         this.maxArmor = maxArmor;
     }
@@ -107,6 +107,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
     public float getSpeed() { return speed; }
     public Vector2D getPosition() { return position; }
     public void setPosition(Vector2D position) { this.position = position; }
+    public void setHitboxSize(Vector2D size) { this.hitbox.setSize(size.getX(), size.getY()); }
     public Rectangle getHitbox() { return hitbox; }
     public float getVelocityY() { return velocityY; }
     public void setVelocityY(float velocityY) { this.velocityY = velocityY; }

@@ -1,5 +1,7 @@
 package sk.stuba.fiit.core;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 
 public class GameScreen implements Screen {
@@ -18,6 +20,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float deltaTime) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
+            gameRenderer.toggleDebugHitboxes();
+        }
         playerController.update(deltaTime);
         gameManager.update(deltaTime);
         collisionManager.update(gameManager.getCurrentLevel());

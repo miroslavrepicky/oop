@@ -22,7 +22,7 @@ public class ArrowAttack implements Attack {
 
         Vector2D spawnPos = new Vector2D(
             attacker.getPosition().getX() + dirX * 20f,
-            attacker.getPosition().getY() + 10f
+            attacker.getPosition().getY() + 20f
         );
         Vector2D direction = new Vector2D(dirX, 0);
 

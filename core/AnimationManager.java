@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import sk.stuba.fiit.util.Vector2D;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,9 @@ public class AnimationManager {
         if (anim == null) return;
 
         TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, true);
+        //Vector2D vv = getAnimationSize(currentAnimation);
+        //height = vv.getY();
+        //width = vv.getX();
 
         batch.draw(
             frame,
@@ -63,10 +67,24 @@ public class AnimationManager {
         );
     }
 
+    public Vector2D getAnimationSize(String name){
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+
+
+        //return new Vector2D(anim.getKeyFrame(stateTime).originalWidth, anim.getKeyFrame(0).originalHeight);
+        return new Vector2D(anim.getKeyFrame(stateTime).packedWidth, anim.getKeyFrame(0).packedHeight);
+    }
+
     public float getAnimationDuration(String name) {
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
         if (anim == null) return 0f;
         return anim.getAnimationDuration();
+    }
+
+    public int getFrameCount(String name) {
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+        if (anim == null) return 1;
+        return anim.getKeyFrames().length;
     }
 
     public boolean hasAnimation(String name) {

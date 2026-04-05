@@ -20,4 +20,11 @@ public interface Attack {
 
     /** Mana cost – 0 pre ne-spell utoky. */
     default int getManaCost() { return 0; }
+
+    default float getFrameDuration(AnimationManager am) {
+        return am != null && am.hasAnimation(getAnimationName())
+            ? am.getAnimationDuration(getAnimationName())
+            / am.getFrameCount(getAnimationName())
+            : 0.08f;
+    }
 }

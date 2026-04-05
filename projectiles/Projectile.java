@@ -42,6 +42,10 @@ public abstract class Projectile implements Updatable, Collidable {
         }
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     @Override
     public void update(float deltaTime) {
         move();

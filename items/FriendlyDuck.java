@@ -47,11 +47,12 @@ public class FriendlyDuck extends Item {
         );
 
         TurdflyProjectile turdfly = new TurdflyProjectile(spawnPos, direction);
+        turdfly.setShooter(character);
         level.addProjectile(turdfly);
 
         // spotrebuj item
         character.getInventory().removeItem(this);
-        System.out.println("FriendlyDuck pouzita – turdfly vystreleny!");
+        System.out.println("FriendlyDuck pouzita -> turdfly vystreleny!");
     }
 
     @Override
