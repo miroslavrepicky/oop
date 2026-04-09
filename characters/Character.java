@@ -18,6 +18,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
     protected boolean isOnGround = false;
     protected boolean facingRight = true;
     protected float velocityX = 0f;
+    private float deathTimer = -1f;
 
     /** Aktualna hodnota brnenia. Znizuje prijate poskodenie. */
     protected int armor;
@@ -49,6 +50,26 @@ public abstract class Character implements Updatable, Movable, Collidable {
         if (gravityStrategy != null) {
             gravityStrategy.apply(this, deltaTime);
         }
+    }
+
+    public void startDeathAnimation() {
+        if (deathTimer >= 0f) return; // už beží
+        AnimationManager am = getAnimationManager();
+        float duration = (am != null && am.hasAnimation("death"))
+            ? am.getAnimationDuration("death")
+            : 1.0f; // fallback ak nemá animáciu
+        deathTimer = duration;
+        if (am != null) am.play("death");
+    }
+
+    public void updateDeathTimer(float deltaTime) {
+        if (deathTimer > 0f) {
+            deathTimer = Math.max(0f, deathTimer - deltaTime);
+        }
+    }
+
+    public boolean isDeathAnimationDone() {
+        return !isAlive() && deathTimer == 0f;
     }
 
     public boolean isFacingRight() { return facingRight; }

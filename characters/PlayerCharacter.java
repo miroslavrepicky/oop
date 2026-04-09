@@ -72,6 +72,13 @@ public abstract class PlayerCharacter extends Character {
     public void updateAnimation(float deltaTime) {
         if (getAnimationManager() == null) return;
 
+        if (!isAlive()) {
+            startDeathAnimation();
+            updateDeathTimer(deltaTime);
+            getAnimationManager().update(deltaTime);
+            return;
+        }
+
         if (!projectileSpawned && currentAttack != null) {
             float frameDuration = currentAttack.getFrameDuration(getAnimationManager());
             if (attackAnimTimer <= frameDuration * 3) {
@@ -87,9 +94,7 @@ public abstract class PlayerCharacter extends Character {
         }
 
         String anim;
-        if (!isAlive()) {
-            anim = "death";
-        } else if (isAttacking) {
+        if (isAttacking) {
             anim = currentAttack != null ? currentAttack.getAnimationName() : "attack";
         } else if (!isOnGround()) {
             anim = hasAnimation("jump") ? "jump" : "idle";
@@ -98,6 +103,7 @@ public abstract class PlayerCharacter extends Character {
         } else {
             anim = "idle";
         }
+        //TODO set hitbox size to animation size
         //this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
         getAnimationManager().play(anim);
         getAnimationManager().update(deltaTime);

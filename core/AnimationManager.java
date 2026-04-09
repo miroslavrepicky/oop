@@ -37,6 +37,20 @@ public class AnimationManager {
         frameDurations.put(name, frameDuration);
     }
 
+    public void addAnimation(String name, String regionName, float frameDuration, Animation.PlayMode playMode) {
+        Array<TextureAtlas.AtlasRegion> regions = atlas.findRegions(regionName);
+        if (regions.size == 0) {
+            System.out.println("Region nenajdeny: " + regionName);
+            return;
+        }
+        Animation<TextureAtlas.AtlasRegion> animation =
+            new Animation<>(frameDuration, regions, playMode);
+        animations.put(name, animation);
+        frameDurations.put(name, frameDuration);
+    }
+
+
+
     public void play(String name) {
         if (!name.equals(currentAnimation)) {
             currentAnimation = name;
@@ -55,9 +69,10 @@ public class AnimationManager {
         if (anim == null) return;
 
         TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, true);
-        //Vector2D vv = getAnimationSize(currentAnimation);
-        //height = vv.getY();
-        //width = vv.getX();
+        // TODO size of animation
+//        Vector2D vv = getAnimationSize(currentAnimation);
+//        height = vv.getY();
+//        width = vv.getX();
 
         batch.draw(
             frame,
@@ -70,7 +85,7 @@ public class AnimationManager {
     public Vector2D getAnimationSize(String name){
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
 
-
+        //TODO real animation size
         //return new Vector2D(anim.getKeyFrame(stateTime).originalWidth, anim.getKeyFrame(0).originalHeight);
         return new Vector2D(anim.getKeyFrame(stateTime).packedWidth, anim.getKeyFrame(0).packedHeight);
     }

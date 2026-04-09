@@ -1,5 +1,6 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.graphics.g2d.Animation;
 import sk.stuba.fiit.attacks.MeleeAttack;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
@@ -26,7 +27,7 @@ public class Knight extends PlayerCharacter {
         animationManager.addAnimation("idle",   "IDLE/IDLE",     0.1f);
         animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
         animationManager.addAnimation("jump",   "JUMP/JUMP",     0.1f);
-        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f, Animation.PlayMode.NORMAL);
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
     }
 

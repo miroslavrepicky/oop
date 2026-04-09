@@ -1,5 +1,6 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.graphics.g2d.Animation;
 import sk.stuba.fiit.attacks.MeleeAttack;
 import sk.stuba.fiit.attacks.SpellAttack;
 import sk.stuba.fiit.core.AnimationManager;
@@ -34,7 +35,7 @@ public class Wizzard extends PlayerCharacter {
         animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
         animationManager.addAnimation("cast",   "CAST/CAST",     0.08f);
-        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f, Animation.PlayMode.NORMAL);
         animationManager.addAnimation("hurt",   "HURT/HURT",     0.08f);
     }
 

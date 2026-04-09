@@ -54,7 +54,6 @@ public class GameManager {
     }
 
     public void onLevelComplete() {
-        startLevel(currentLevel.getLevelNumber() + 1);
         int nextLevel = currentLevel.getLevelNumber() + 1;
         if (nextLevel > MAX_LEVELS) {
             gameState = GameState.WIN;

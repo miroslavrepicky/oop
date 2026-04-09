@@ -86,7 +86,7 @@ public class Level implements Updatable {
         projectiles.removeIf(p -> !p.isActive());
         for (Projectile p : projectiles) p.update(deltaTime);
 
-        enemies.removeIf(e -> !e.isAlive());
+        enemies.removeIf(e -> !e.isAlive() && e.isDeathAnimationDone());
         for (EnemyCharacter e : enemies) e.update(deltaTime);
 
         Iterator<Item> itemIter = items.iterator();
