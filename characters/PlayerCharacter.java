@@ -76,6 +76,17 @@ public abstract class PlayerCharacter extends Character {
             startDeathAnimation();
             updateDeathTimer(deltaTime);
             getAnimationManager().update(deltaTime);
+
+            if (isDeathAnimationDone()) {
+                Inventory inv = GameManager.getInstance().getInventory();
+                // Prepni len ak som stále aktívna postava (zabraňuje viacnásobnému volaniu)
+                if (inv.getActive() == this) {
+                    boolean switched = inv.switchToNextAlive();
+                    if (!switched) {
+                        GameManager.getInstance().onPartyDefeated();
+                    }
+                }
+            }
             return;
         }
 

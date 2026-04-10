@@ -81,6 +81,19 @@ public class Inventory {
         }
     }
 
+    public boolean switchToNextAlive() {
+        Vector2D currentPosition = activeCharacter.getPosition();
+        for (PlayerCharacter c : characters) {
+            if (c != activeCharacter && c.isAlive()) {
+                activeCharacter = c;
+                activeCharacter.setPosition(currentPosition);
+                activeCharacter.updateHitbox();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isPartyDefeated() {
         return characters.stream().noneMatch(Character::isAlive);
     }

@@ -13,6 +13,7 @@ public class HealingPotion extends Item {
 
     @Override
     public void use(PlayerCharacter character) {
+        if (character.getHp() >= character.getMaxHp()) return;
         character.takeDamage(-healAmount);
         character.getInventory().removeItem(this);
     }
