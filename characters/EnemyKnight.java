@@ -24,7 +24,7 @@ public class EnemyKnight extends EnemyCharacter {
         animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
         animationManager.addAnimation("jump",   "JUMP/JUMP",     0.1f);
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
-        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f, Animation.PlayMode.NORMAL);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.3f, Animation.PlayMode.NORMAL);
     }
 
     @Override

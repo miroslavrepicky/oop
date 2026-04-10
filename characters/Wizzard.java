@@ -35,7 +35,7 @@ public class Wizzard extends PlayerCharacter {
         animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
         animationManager.addAnimation("cast",   "CAST/CAST",     0.08f);
-        animationManager.addAnimation("death",  "DEATH/DEATH",   0.1f, Animation.PlayMode.NORMAL);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.3f, Animation.PlayMode.NORMAL);
         animationManager.addAnimation("hurt",   "HURT/HURT",     0.08f);
     }
 

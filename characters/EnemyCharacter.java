@@ -118,8 +118,6 @@ public abstract class EnemyCharacter extends Character {
         if (!isAlive()) {
             startDeathAnimation();
             updateDeathTimer(deltaTime);
-            AnimationManager am = getAnimationManager();
-            if (am != null) am.update(deltaTime);
             return;
         }
         attackCooldown -= deltaTime;
