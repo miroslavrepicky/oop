@@ -25,8 +25,8 @@ public class Wizzard extends PlayerCharacter {
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
-        primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE — rychle kuzlo
-        secondaryAttack = new MeleeAttack(1);                // V — melee zaloha
+        primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE - rychle kuzlo
+        secondaryAttack = new MeleeAttack(1);                // V - melee zaloha
     }
 
     private void initAnimations() {

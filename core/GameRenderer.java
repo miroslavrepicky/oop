@@ -180,7 +180,7 @@ public class GameRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        // hráč
+        // hrac
         if (player != null) {
             shapeRenderer.setColor(Color.GREEN);
             Rectangle hb = player.getHitbox();
@@ -209,7 +209,7 @@ public class GameRenderer {
             shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
         }
 
-        // kačky
+        // kacky
         shapeRenderer.setColor(Color.ORANGE);
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;

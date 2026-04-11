@@ -21,7 +21,7 @@ public class Archer extends PlayerCharacter {
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
-        primaryAttack = new ArrowAttack(true); // SPACE — normalna sipka
+        primaryAttack = new ArrowAttack(true); // SPACE - normalna sipka
     }
 
     private void initAnimations() {

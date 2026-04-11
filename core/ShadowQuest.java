@@ -5,8 +5,7 @@ public class ShadowQuest extends Game {
 
     @Override
     public void create() {
-        GameManager.getInstance().initGame();
-        setScreen(new GameScreen());
+        setScreen(new MainMenuScreen(this));
     }
 
     @Override

@@ -34,7 +34,7 @@ public abstract class PlayerCharacter extends Character {
         super(name, hp, attackPower, speed, position, 0, maxArmor);
     }
 
-    // mana — defaultne nepotrebna, Wizzard override-ne
+    // mana - defaultne nepotrebna, Wizzard override-ne
     protected int getMana() { return Integer.MAX_VALUE; }
     protected void spendMana(int amount) {}
 
@@ -79,12 +79,8 @@ public abstract class PlayerCharacter extends Character {
 
             if (isDeathAnimationDone()) {
                 Inventory inv = GameManager.getInstance().getInventory();
-                // Prepni len ak som stále aktívna postava (zabraňuje viacnásobnému volaniu)
                 if (inv.getActive() == this) {
-                    boolean switched = inv.switchToNextAlive();
-                    if (!switched) {
-                        GameManager.getInstance().onPartyDefeated();
-                    }
+                    inv.switchToNextAlive(); // len prepni, GameManager rieši party defeated
                 }
             }
             return;

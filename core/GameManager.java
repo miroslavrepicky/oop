@@ -40,17 +40,6 @@ public class GameManager {
     public void initGame() {
         Knight knight = new Knight(new Vector2D(0, 0)); // pozicia sa nastavi z Tiled
         inventory.addCharacter(knight);
-        Wizzard archer = new Wizzard(new Vector2D(0, 0));
-        inventory.addCharacter(archer);
-        startLevel(1);
-    }
-
-    public void onPartyDefeated() {
-        gameState = GameState.GAME_OVER;
-        gameOverTimer = GAME_OVER_DELAY;
-        for (PlayerCharacter c : inventory.getCharacters()) {
-            c.revive();
-        }
     }
 
     public void onLevelComplete() {
@@ -58,7 +47,24 @@ public class GameManager {
         if (nextLevel > MAX_LEVELS) {
             gameState = GameState.WIN;
         } else {
-            startLevel(nextLevel);
+            gameState = GameState.LEVEL_COMPLETE;
+        }
+    }
+
+    public void onPartyDefeated() {
+        gameState = GameState.GAME_OVER_DELAY; // novy prechodny stav
+        gameOverTimer = GAME_OVER_DELAY;
+    }
+
+    public void resetGame() {
+        inventory = new Inventory();
+        currentLevel = null;
+        gameState = GameState.MENU;
+    }
+
+    public void reviveParty() {
+        for (PlayerCharacter c : inventory.getCharacters()) {
+            c.revive();
         }
     }
 
@@ -74,12 +80,12 @@ public class GameManager {
                 onLevelComplete();
             }
         }
-
-        // cakaj pred restartom
-        if (gameState == GameState.GAME_OVER) {
+        if (gameState == GameState.GAME_OVER_DELAY) {
+            assert currentLevel != null;
+            currentLevel.update(deltaTime);
             gameOverTimer -= deltaTime;
             if (gameOverTimer <= 0) {
-                restartLevel();
+                gameState = GameState.GAME_OVER;
             }
         }
     }

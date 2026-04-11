@@ -53,11 +53,11 @@ public abstract class Character implements Updatable, Movable, Collidable {
     }
 
     public void startDeathAnimation() {
-        if (deathTimer >= 0f) return; // už beží
+        if (deathTimer >= 0f) return; // uz bezi
         AnimationManager am = getAnimationManager();
         float duration = (am != null && am.hasAnimation("death"))
             ? am.getAnimationDuration("death")
-            : 1.0f; // fallback ak nemá animáciu
+            : 1.0f; // fallback ak nema animaciu
         deathTimer = duration;
         if (am != null) am.play("death");
     }

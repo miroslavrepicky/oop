@@ -27,7 +27,7 @@ public class Knight extends PlayerCharacter {
         animationManager.addAnimation("idle",   "IDLE/IDLE",     0.1f);
         animationManager.addAnimation("walk",   "WALK/WALK",     0.1f);
         animationManager.addAnimation("jump",   "JUMP/JUMP",     0.1f);
-        animationManager.addAnimation("death",  "DEATH/DEATH",   0.3f, Animation.PlayMode.NORMAL);
+        animationManager.addAnimation("death",  "DEATH/DEATH",   0.2f, Animation.PlayMode.NORMAL);
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
     }
 

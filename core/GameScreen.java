@@ -9,8 +9,10 @@ public class GameScreen implements Screen {
     private CollisionManager collisionManager;
     private PlayerController playerController;
     private GameRenderer gameRenderer;
+    private final ShadowQuest game;
 
-    public GameScreen() {
+    public GameScreen(ShadowQuest game) {
+        this.game        = game;
         gameManager      = GameManager.getInstance();
         collisionManager = new CollisionManager();
         playerController = new PlayerController(collisionManager); // zdielany CollisionManager
@@ -23,7 +25,24 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
             gameRenderer.toggleDebugHitboxes();
         }
-        playerController.update(deltaTime);
+        GameState state = gameManager.getGameState();
+
+        if (state == GameState.GAME_OVER) {
+            game.setScreen(new GameOverScreen(game, gameManager.getCurrentLevel().getLevelNumber()));
+            return;
+        }
+        if (state == GameState.LEVEL_COMPLETE) {
+            int nextLevel = gameManager.getCurrentLevel().getLevelNumber() + 1;
+            game.setScreen(new InventoryScreen(game, nextLevel));
+            return;
+        }
+        if (state == GameState.WIN) {
+            game.setScreen(new WinScreen(game));
+            return;
+        }
+        if (state == GameState.PLAYING) {
+            playerController.update(deltaTime);
+        }
         gameManager.update(deltaTime);
         collisionManager.update(gameManager.getCurrentLevel());
         gameRenderer.render(deltaTime);

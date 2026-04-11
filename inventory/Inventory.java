@@ -1,6 +1,7 @@
 package sk.stuba.fiit.inventory;
 
 import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.characters.Knight;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.util.Vector2D;
@@ -15,6 +16,7 @@ public class Inventory {
     private List<PlayerCharacter> characters;
     private List<Item> items;
     private int selectedSlot = 0; // aktualne vybrany slot
+    private PlayerCharacter baseCharacter;
 
     public Inventory(int totalSlots) {
         this.totalSlots = totalSlots;
@@ -28,12 +30,32 @@ public class Inventory {
     }
 
     public boolean addCharacter(PlayerCharacter character) {
+        if (character instanceof Knight) {
+            baseCharacter = character;
+            characters.add(character);
+            if (activeCharacter == null) activeCharacter = character;
+            return true; // bez slot cost
+        }
         int cost = 3;
         if (usedSlots + cost > totalSlots) return false;
         characters.add(character);
         if (activeCharacter == null) activeCharacter = character;
         usedSlots += cost;
         return true;
+    }
+
+    public boolean removeCharacter(PlayerCharacter character) {
+        if (character == baseCharacter) return false; // Knight sa neda odstranit
+        if (!characters.remove(character)) return false;
+        usedSlots -= 3;
+        if (activeCharacter == character) {
+            activeCharacter = characters.isEmpty() ? null : characters.get(0);
+        }
+        return true;
+    }
+
+    public boolean isBaseCharacter(PlayerCharacter c) {
+        return c == baseCharacter;
     }
 
     public boolean addItem(Item item) {
