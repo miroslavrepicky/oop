@@ -10,7 +10,7 @@ public class AIController {
     private Vector2D patrolStart;
     private Vector2D patrolEnd;
     private boolean patrollingRight;
-    private static final float ATTACK_RANGE = 50f;
+    private static final float ATTACK_RANGE = 500f;
 
     public AIController(EnemyCharacter enemy, Vector2D patrolStart, Vector2D patrolEnd) {
         this.enemy = enemy;
