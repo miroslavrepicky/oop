@@ -53,7 +53,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
     }
 
     public void startDeathAnimation() {
-        if (deathTimer >= 0f) return; // uz bezi
+        if (deathTimer != -1f) return; // uz bezi
         AnimationManager am = getAnimationManager();
         float duration = (am != null && am.hasAnimation("death"))
             ? am.getAnimationDuration("death")
@@ -86,6 +86,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
         this.hp = this.maxHp;
         this.velocityY = 0f;
         this.isOnGround = false;
+        this.deathTimer = -1f;
     }
 
     /**

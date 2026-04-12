@@ -50,7 +50,7 @@ public class Level implements Updatable {
                     break;
                 case "enemy_knight":
                     EnemyKnight ek = new EnemyKnight(new Vector2D(x, y));
-                    ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
+                    ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 80f, 80f);
                     spawnEnemy(ek);
                     break;
                 case "duck":
@@ -64,17 +64,17 @@ public class Level implements Updatable {
                     break;
                 case "enemy_archer":
                     EnemyArcher ea = new EnemyArcher(new Vector2D(x, y));
-                    ea.initAI(new Vector2D(x - 150, y), new Vector2D(x + 150, y));
+                    ea.initAI(new Vector2D(x - 150, y), new Vector2D(x + 150, y), 300f, 250f);
                     spawnEnemy(ea);
                     break;
                 case "enemy_wizzard":
                     EnemyWizzard ew = new EnemyWizzard(new Vector2D(x, y));
-                    ew.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y));
+                    ew.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 350f, 280f);
                     spawnEnemy(ew);
                     break;
                 case "dark_knight":
                     DarkKnight dk = new DarkKnight(new Vector2D(x, y));
-                    dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y));
+                    dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y), 200f, 150f);
                     spawnEnemy(dk);
                     break;
             }

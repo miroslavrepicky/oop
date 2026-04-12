@@ -68,7 +68,8 @@ public class AnimationManager {
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(currentAnimation);
         if (anim == null) return;
 
-        TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, true);
+        boolean looping = anim.getPlayMode() != Animation.PlayMode.NORMAL;
+        TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, looping);
         // TODO size of animation
 //        Vector2D vv = getAnimationSize(currentAnimation);
 //        height = vv.getY();

@@ -54,8 +54,10 @@ public abstract class EnemyCharacter extends Character {
         return position.distanceTo(player.getPosition()) <= detectionRange;
     }
 
-    public void initAI(Vector2D patrolStart, Vector2D patrolEnd) {
-        this.aiController = new AIController(this, patrolStart, patrolEnd);
+    public void initAI(Vector2D patrolStart, Vector2D patrolEnd,
+                       float attackRange, float preferredRange) {
+        this.aiController = new AIController(
+            this, patrolStart, patrolEnd, attackRange, preferredRange);
     }
 
     @Override
