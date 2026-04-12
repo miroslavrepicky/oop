@@ -13,6 +13,7 @@ public class Arrow extends Projectile {
         this.animationManager = new AnimationManager("atlas/arrow/arrow.atlas");
         animationManager.addAnimation("fly", "ARROW/ARROW", 0.05f);
         animationManager.play("fly");
+        setHitboxSize( animationManager.getAnimationSize("fly"));
     }
 
     @Override

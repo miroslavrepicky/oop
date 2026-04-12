@@ -97,18 +97,20 @@ public abstract class EnemyCharacter extends Character {
     public void updateAnimation(float deltaTime) {
         AnimationManager am = getAnimationManager();
         if (am == null) return;
-
+        String anim;
         if (!isAlive()) {
-            am.play("death");
+            anim = "death";
         } else if (isAttacking()) {
-            am.play(getAttackAnimationName());
+            anim = getAttackAnimationName();
         } else if (!isOnGround()) {
-            am.play(am.hasAnimation("jump") ? "jump" : "idle");
+            anim = am.hasAnimation("jump") ? "jump" : "idle";
         } else if (Math.abs(getVelocityX()) > 0.1f) {
-            am.play("walk");
+            anim = "walk";
         } else {
-            am.play("idle");
+            anim = "idle";
         }
+        this.setHitboxSize(am.getAnimationSize(anim));
+        am.play(anim);
         am.update(deltaTime);
     }
 

@@ -12,6 +12,7 @@ import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.projectiles.*;
 import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 public class GameRenderer {
@@ -56,15 +57,12 @@ public class GameRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // nepriatelia bez animacie (obranny fallback)
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (enemy.getAnimationManager() != null) continue;
             shapeRenderer.setColor(1, 0, 0, 1);
             shapeRenderer.rect(enemy.getPosition().getX(), enemy.getPosition().getY(), 32, 32);
         }
 
-
-        // fallback pre hraca ak nie je animacia
         if (player != null && player.getAnimationManager() == null) {
             shapeRenderer.setColor(0, 1, 0, 1);
             shapeRenderer.rect(player.getPosition().getX(), player.getPosition().getY(), 32, 32);
@@ -76,132 +74,161 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // hrac
+        // hrac – skutočná veľkosť každého framu, centrovaná na hitbox
         if (player != null && player.getAnimationManager() != null) {
             player.updateAnimation(deltaTime);
-            player.getAnimationManager().render(batch,
+            player.getAnimationManager().renderActualSize(batch,
                 player.getPosition().getX(),
                 player.getPosition().getY(),
-                96, 84,
+                player.getHitbox().width,
                 !player.isFacingRight());
         }
 
-        // nepriatelia – animacia
+        // nepriatelia – skutočná veľkosť každého framu, centrovaná na hitbox
         for (EnemyCharacter enemy : level.getEnemies()) {
-            if (enemy.getAnimationManager() == null) continue;
+            AnimationManager am = enemy.getAnimationManager();
+            if (am == null) continue;
             enemy.updateAnimation(deltaTime);
-            enemy.getAnimationManager().render(batch,
+            am.renderActualSize(batch,
                 enemy.getPosition().getX(),
                 enemy.getPosition().getY(),
-                96, 84,
+                enemy.getHitbox().width,
                 !enemy.isFacingRight());
         }
 
-        // kacky – animacia walk/idle, flip podla smeru chodze
+        // kacky – skutočná veľkosť, centrovaná na hitbox
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
-            if (duck.getAnimationManager() != null) {
-                duck.getAnimationManager().render(batch,
-                    duck.getPosition().getX(),
-                    duck.getPosition().getY(),
-                    32, 32,
-                    !duck.isFacingRight());
-            }
+            AnimationManager am = duck.getAnimationManager();
+            if (am == null) continue;
+            am.renderActualSize(batch,
+                duck.getPosition().getX(),
+                duck.getPosition().getY(),
+                duck.getHitbox().width,
+                !duck.isFacingRight());
         }
 
         // ikony itemov na zemi
         itemIconRenderer.render(batch, level.getItems());
 
-        // projektily s animaciou: EggProjectile a TurdflyProjectile
+        // projektily – pevná veľkosť cez render() (tu rozťahovanie nevadí)
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
             if (projectile instanceof MagicSpell) {
                 MagicSpell spell = (MagicSpell) projectile;
-                if (spell.getAnimationManager() != null) {
+                AnimationManager am = spell.getAnimationManager();
+                if (am != null) {
                     boolean flipX = spell.getDirection().getX() < 0;
-                    spell.getAnimationManager().render(batch,
+                    am.render(batch,
                         spell.getPosition().getX(),
                         spell.getPosition().getY(),
                         64, 36, flipX);
-                    spell.getAnimationManager().update(deltaTime); // ak nevolas inak
+                    am.update(deltaTime);
                 }
+
             } else if (projectile instanceof Arrow) {
                 Arrow arrow = (Arrow) projectile;
-                if (arrow.getAnimationManager() != null) {
+                AnimationManager am = arrow.getAnimationManager();
+                if (am != null) {
                     boolean flipX = arrow.getDirection().getX() < 0;
-                    arrow.getAnimationManager().render(batch,
+                    am.render(batch,
                         arrow.getPosition().getX(),
                         arrow.getPosition().getY(),
                         32, 16, flipX);
                 }
+
             } else if (projectile instanceof EggProjectile) {
                 EggProjectile egg = (EggProjectile) projectile;
-                if (egg.getAnimationManager() != null) {
-                    // pocas vybuchu vacsia velkost (AoE vizual)
+                AnimationManager am = egg.getAnimationManager();
+                if (am != null) {
                     boolean blasting = egg.getEggState() == EggProjectile.EggState.BLASTING;
                     float w = blasting ? 64f : 32f;
                     float h = blasting ? 64f : 32f;
-                    float offsetX = blasting ? -16f : 0f; // vycentruj vybuch
+                    float offsetX = blasting ? -16f : 0f;
                     float offsetY = blasting ? -16f : 0f;
-                    egg.getAnimationManager().render(batch,
+                    am.render(batch,
                         egg.getPosition().getX() + offsetX,
                         egg.getPosition().getY() + offsetY,
-                        w, h,
-                        false);
+                        w, h, false);
                 }
 
             } else if (projectile instanceof TurdflyProjectile) {
                 TurdflyProjectile turdfly = (TurdflyProjectile) projectile;
-                if (turdfly.getAnimationManager() != null) {
-                    // flip podla smeru letu
-                    boolean flyingLeft = turdfly.getPosition().getX() < 0 ||
-                        turdfly.getDirection().getX() < 0;
-                    turdfly.getAnimationManager().render(batch,
+                AnimationManager am = turdfly.getAnimationManager();
+                if (am != null) {
+                    boolean flyingLeft = turdfly.getDirection().getX() < 0;
+                    am.render(batch,
                         turdfly.getPosition().getX(),
                         turdfly.getPosition().getY(),
-                        46, 33,
-                        flyingLeft);
+                        46, 33, flyingLeft);
                 }
             }
         }
 
         batch.end();
+
+        if (player != null) {
+            renderPlayerIndicator(player);
+        }
+
         if (debugHitboxes) {
             renderHitboxes(level, player);
         }
 
-
         // 4. HUD
         hudRenderer.render();
+    }
+
+    /**
+     * Kresli maly obrateny trojuholnik nad hlavou aktivneho hraca.
+     * Trojuholnik je vykresleny vo world suradniciach (camera.combined),
+     * takze sa pohybuje spolu s postavou.
+     */
+    private void renderPlayerIndicator(PlayerCharacter player) {
+        // Vyska trojuholnika nad hitboxom
+        float hitboxTop = player.getPosition().getY() + player.getHitbox().height;
+        float margin    = 6f;   // medzera medzi hlavou a trojuholnikom
+        float triH      = 10f;  // vyska trojuholnika
+        float triW      = 12f;  // sirka zakladne
+        float cx        = player.getPosition().getX() + player.getHitbox().width / 2f;
+        float top       = hitboxTop + margin + triH;  // zakladna (hore)
+        float tip       = hitboxTop + margin;         // spicka (dole)
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.CYAN);
+        // LibGDX triangle: v1 (lavý roh zakladne), v2 (pravy roh zakladne), v3 (spicka)
+        shapeRenderer.triangle(
+            cx - triW / 2f, top,   // lavy roh zakladne
+            cx + triW / 2f, top,   // pravy roh zakladne
+            cx,             tip    // spicka dole
+        );
+        shapeRenderer.end();
     }
 
     private void renderHitboxes(Level level, PlayerCharacter player) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        // hrac
         if (player != null) {
             shapeRenderer.setColor(Color.GREEN);
             Rectangle hb = player.getHitbox();
             shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
         }
 
-        // nepriatelia
         shapeRenderer.setColor(Color.RED);
         for (EnemyCharacter enemy : level.getEnemies()) {
             Rectangle hb = enemy.getHitbox();
             shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
         }
 
-        // itemy
         shapeRenderer.setColor(Color.YELLOW);
         for (Item item : level.getItems()) {
             Rectangle hb = item.getHitbox();
             shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
         }
 
-        // projektily
         shapeRenderer.setColor(Color.CYAN);
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
@@ -209,7 +236,6 @@ public class GameRenderer {
             shapeRenderer.rect(hb.x, hb.y, hb.width, hb.height);
         }
 
-        // kacky
         shapeRenderer.setColor(Color.ORANGE);
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;

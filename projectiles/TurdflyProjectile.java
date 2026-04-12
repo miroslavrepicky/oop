@@ -23,6 +23,7 @@ public class TurdflyProjectile extends Projectile {
         animationManager = new AnimationManager("atlas/turdfly/turdfly.atlas");
         animationManager.addAnimation("fly", "TURDFLY/TURDFLY", 0.1f);
         animationManager.play("fly");
+        setHitboxSize( animationManager.getAnimationSize("fly"));
     }
 
     @Override

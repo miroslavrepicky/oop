@@ -13,6 +13,7 @@ public class MagicSpell extends Projectile {
         this.animationManager = new AnimationManager("atlas/firespell/firespell.atlas");
         animationManager.addAnimation("fly", "FIRESPELL/FIRESPELL", 0.08f);
         animationManager.play("fly");
+        hitbox.setSize(64, 36);
     }
 
     @Override

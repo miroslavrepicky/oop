@@ -58,5 +58,6 @@ public abstract class Projectile implements Updatable, Collidable {
     public Vector2D getDirection() { return direction; }
     public Character getShooter() { return shooter; }
     public void setShooter(Character shooter) { this.shooter = shooter; }
+    public void setHitboxSize(Vector2D size) { this.hitbox.setSize(size.getX(), size.getY()); }
 
 }

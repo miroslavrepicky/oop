@@ -112,6 +112,7 @@ public abstract class PlayerCharacter extends Character {
         }
         //TODO set hitbox size to animation size
         //this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
+        this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
         getAnimationManager().play(anim);
         getAnimationManager().update(deltaTime);
     }

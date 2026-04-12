@@ -15,7 +15,6 @@ public class Wizzard extends PlayerCharacter {
 
     private int mana;
     private int maxMana;
-    private static final int SPELL_MANA_COST = 20;
     private AnimationManager animationManager;
 
     public Wizzard(Vector2D position) {

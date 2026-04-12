@@ -96,20 +96,28 @@ public class Inventory {
 
     public void switchCharacter(int key) {
         if (key >= 1 && key <= characters.size()) {
-            Vector2D currentPosition = activeCharacter.getPosition();
-            activeCharacter = characters.get(key - 1);
-            activeCharacter.setPosition(currentPosition);
-            activeCharacter.updateHitbox();
+            PlayerCharacter next = characters.get(key - 1);
+            if (next == activeCharacter) return;
+
+            // Prenesie poziciu a smer pohladu na novu postavu
+            next.setPosition(activeCharacter.getPosition());
+            next.setFacingRight(activeCharacter.isFacingRight());
+            next.updateHitbox();
+
+            activeCharacter = next;
         }
     }
 
     public boolean switchToNextAlive() {
-        Vector2D currentPosition = activeCharacter.getPosition();
+        Vector2D currentPosition  = activeCharacter.getPosition();
+        boolean  currentFacing    = activeCharacter.isFacingRight();
+
         for (PlayerCharacter c : characters) {
             if (c != activeCharacter && c.isAlive()) {
+                c.setPosition(currentPosition);
+                c.setFacingRight(currentFacing);
+                c.updateHitbox();
                 activeCharacter = c;
-                activeCharacter.setPosition(currentPosition);
-                activeCharacter.updateHitbox();
                 return true;
             }
         }

@@ -61,6 +61,7 @@ public class Duck extends Character {
             walkTimer -= deltaTime;
             move(new Vector2D(walkDir * WALK_SPEED * deltaTime, 0));
             animationManager.play("walk");
+            this.setHitboxSize(animationManager.getAnimationSize("walk"));
             animationManager.update(deltaTime);
             if (walkTimer <= 0f) {
                 walking   = false;
@@ -70,6 +71,7 @@ public class Duck extends Character {
         } else {
             idleTimer -= deltaTime;
             animationManager.play("idle");
+            this.setHitboxSize(animationManager.getAnimationSize("idle"));
             animationManager.update(deltaTime);
             if (idleTimer <= 0f) {
                 walking   = true;

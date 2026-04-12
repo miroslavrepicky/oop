@@ -83,13 +83,77 @@ public class AnimationManager {
         );
     }
 
-    public Vector2D getAnimationSize(String name){
-        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+    /**
+     * Kresli aktualny frame v SKUTOCNEJ velkosti tohto konkretneho framu
+     * (packedWidth / packedHeight), ukotveny na spodny stred hitboxu.
+     *
+     * Kazdy frame ma svoju prirodzenu velkost -> animacia sa neroztahuje
+     * do pevného obdlznika. Vlniaci sa plast, pohyb hore-dole atd. vyzeraju
+     * spravne, pretoze sprite jednoducho "vycnieva" mimo hitbox podla potreby.
+     *
+     * @param x       lavý okraj hitboxu / pozicie postavy vo svete
+     * @param y       spodny okraj hitboxu / pozicie postavy vo svete
+     * @param hitboxW sírka hitboxu — pouzita na horizontalne centrovanie spritu
+     * @param flipX   ci otocit sprite horizontalne (postava ide dolava)
+     */
+    public void renderActualSize(SpriteBatch batch, float x, float y,
+                                 float hitboxW, boolean flipX) {
+        if (currentAnimation == null) return;
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(currentAnimation);
+        if (anim == null) return;
 
-        //TODO real animation size
-        //return new Vector2D(anim.getKeyFrame(stateTime).originalWidth, anim.getKeyFrame(0).originalHeight);
-        return new Vector2D(anim.getKeyFrame(stateTime).packedWidth, anim.getKeyFrame(0).packedHeight);
+        boolean looping = anim.getPlayMode() != Animation.PlayMode.NORMAL;
+        TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, looping);
+
+        float frameW = frame.packedWidth;
+        float frameH = frame.packedHeight;
+
+        float drawX;
+        if (!flipX) {
+            // Postava ide doprava: ukotvenie na spodny pravy roh hitboxu,
+            // sprite vycnieva dolava
+            drawX = x + hitboxW - frameW;
+        } else {
+            // Postava ide dolava: ukotvenie na spodny lavy roh hitboxu,
+            // sprite vycnieva doprava
+            drawX = x;
+        }
+
+        batch.draw(
+            frame,
+            flipX ? drawX + frameW : drawX, y,
+            flipX ? -frameW : frameW,
+            frameH
+        );
     }
+
+    /**
+     * Vracia maximalnu velkost (sirka x vyska) zo VSETKYCH framov danej animacie.
+     * Pouziva packedWidth/packedHeight – realne rozmery sprite-u v atla
+     *
+     * Dovod: niektore animacie maju framy roznych rozmerov (napr. vlniaci sa
+     * plast Knighta). Pouzitim maxima dostaneme stabilny bounding box pre
+     * celu animaciu bez "skakania".
+     */
+    public Vector2D getAnimationSize(String name) {
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+        if (anim == null) return new Vector2D(64, 64);
+
+        float maxW = 0, maxH = 0;
+        for (TextureAtlas.AtlasRegion region : anim.getKeyFrames()) {
+            if (region.packedWidth  > maxW) maxW = region.packedWidth;
+            if (region.packedHeight > maxH) maxH = region.packedHeight;
+        }
+        return new Vector2D(maxW, maxH);
+    }
+
+//    public Vector2D getAnimationSize(String name){
+//        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+//
+//        //TODO real animation size
+//        //return new Vector2D(anim.getKeyFrame(stateTime).originalWidth, anim.getKeyFrame(0).originalHeight);
+//        return new Vector2D(anim.getKeyFrame(stateTime).packedWidth, anim.getKeyFrame(0).packedHeight);
+//    }
 
     public float getAnimationDuration(String name) {
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
@@ -101,6 +165,11 @@ public class AnimationManager {
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
         if (anim == null) return 1;
         return anim.getKeyFrames().length;
+    }
+
+    /** Vracia nazov aktualne prehravane animacie (potrebne pre GameRenderer). */
+    public String getCurrentAnimation() {
+        return currentAnimation;
     }
 
     public boolean hasAnimation(String name) {
