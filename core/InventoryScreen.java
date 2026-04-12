@@ -58,8 +58,8 @@ public class InventoryScreen implements Screen {
     private static class ItemOffer {
         final String label;
         final int    slotCost;
-        final java.util.function.Supplier<Item> factory; // vyrába novú inštanciu
-        int count; // koľkokrát ho hráč "objednal" (len pre info, nie limit)
+        final java.util.function.Supplier<Item> factory; // vyraba novú inštanciu
+        int count; // koľkokrat ho hrač "objednal" (len pre info, nie limit)
 
         ItemOffer(String label, int slotCost, java.util.function.Supplier<Item> factory) {
             this.label    = label;
@@ -376,7 +376,7 @@ public class InventoryScreen implements Screen {
         for (int i = 0; i < addItemBtns.size(); i++) {
             if (addItemBtns.get(i).contains(mx, my)) {
                 ItemOffer offer = offers.get(i);
-                Item newItem = offer.factory.get(); // nová inštancia zakaždým
+                Item newItem = offer.factory.get(); // nova inštancia zakaždým
                 if (inv.addItem(newItem)) {
                     feedback = offer.label + " pridany.";
                 } else {

@@ -1,5 +1,6 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.attacks.Attack;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
@@ -26,6 +27,7 @@ public abstract class EnemyCharacter extends Character {
     private   float   attackAnimDuration = 0f;
     private   boolean damageDealt        = false;
     private   PlayerCharacter pendingTarget = null;
+    private boolean lastMoveBlocked = false;
 
     /**
      * Zakladny konstruktor – armor = 0, maxArmor = 0.
@@ -62,7 +64,49 @@ public abstract class EnemyCharacter extends Character {
 
     @Override
     public void move(Vector2D direction) {
-        position = position.add(direction);
+        Level level = GameManager.getInstance().getCurrentLevel();
+
+        if (level == null || level.getMapManager() == null) {
+            position.setX(position.getX() + direction.getX());
+            position.setY(position.getY() + direction.getY());
+            updateHitbox();
+            return;
+        }
+
+        if (direction.getX() == 0f && direction.getY() == 0f) {
+            lastMoveBlocked = false;
+            return;
+        }
+
+        float newX = position.getX() + direction.getX();
+        float newY = position.getY() + direction.getY();
+        lastMoveBlocked = false;
+
+        // Test horizontálneho pohybu
+        if (direction.getX() != 0f) {
+            Rectangle testBox = new Rectangle(
+                newX,
+                position.getY(),
+                hitbox.width,
+                hitbox.height
+            );
+            for (Rectangle wall : level.getMapManager().getHitboxes()) {
+                if (testBox.overlaps(wall)) {
+                    float overlapX = Math.min(testBox.x + testBox.width, wall.x + wall.width)
+                        - Math.max(testBox.x, wall.x);
+                    float overlapY = Math.min(testBox.y + testBox.height, wall.y + wall.height)
+                        - Math.max(testBox.y, wall.y);
+                    if (overlapX < overlapY) {
+                        // bočná stena – zablokuj horizontálny pohyb
+                        newX = position.getX();
+                        lastMoveBlocked = true;
+                        break;
+                    }
+                }
+            }
+        }
+        position.setX(newX);
+        position.setY(newY);
         updateHitbox();
     }
 
@@ -156,4 +200,5 @@ public abstract class EnemyCharacter extends Character {
     }
 
     public boolean isAttacking() { return isAttacking; }
+    public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
 }

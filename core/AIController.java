@@ -79,12 +79,16 @@ public class AIController {
             enemy.move(new Vector2D(speed, 0));
             enemy.setVelocityX(speed);
             enemy.setFacingRight(true);
-            if (pos.getX() >= patrolEnd.getX() - tolerance) patrollingRight = false;
+            if (enemy.wasLastMoveBlocked() || pos.getX() >= patrolEnd.getX() - tolerance) {
+                patrollingRight = false;
+            }
         } else {
             enemy.move(new Vector2D(-speed, 0));
             enemy.setVelocityX(-speed);
             enemy.setFacingRight(false);
-            if (pos.getX() <= patrolStart.getX() + tolerance) patrollingRight = true;
+            if (enemy.wasLastMoveBlocked() || pos.getX() <= patrolStart.getX() + tolerance) {
+                patrollingRight = true;
+            }
         }
 
         if (enemy.detectPlayer(player)) state = AIState.CHASE;
@@ -109,6 +113,15 @@ public class AIController {
         enemy.move(new Vector2D(dx, 0));
         enemy.setVelocityX(dx);
         enemy.setFacingRight(dx > 0);
+
+        if (enemy.wasLastMoveBlocked()) {
+            enemy.setVelocityX(0);
+            // ak je hráč v attackRange, rovnou útočiť
+            if (dist <= attackRange) {
+                state = AIState.ATTACK;
+            }
+            return;
+        }
 
         if (!enemy.detectPlayer(player)) {
             // Hrac sa stratil z dosahu detekcie – obnovime hliadku v okoli.

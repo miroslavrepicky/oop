@@ -2,6 +2,7 @@ package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.inventory.Inventory;
@@ -24,20 +25,50 @@ public class PlayerController {
         Level level = GameManager.getInstance().getCurrentLevel();
 
         player.applyGravity(deltaTime);
-
+        float moveX = 0f;
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            player.move(new Vector2D(-player.getSpeed() * deltaTime * 60, 0));
+            moveX = -player.getSpeed() * deltaTime * 60;
             player.setFacingRight(false);
             player.setVelocityX(-player.getSpeed());
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            player.move(new Vector2D(player.getSpeed() * deltaTime * 60, 0));
+            moveX = player.getSpeed() * deltaTime * 60;
             player.setFacingRight(true);
             player.setVelocityX(player.getSpeed());
         }
         if (!Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
             !Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             player.setVelocityX(0f);
+        }
+
+        // Horizontálna kolízia so stenami
+        if (moveX != 0f && level != null && level.getMapManager() != null) {
+            float newX = player.getPosition().getX() + moveX;
+            Rectangle testBox = new Rectangle(
+                newX,
+                player.getPosition().getY(),
+                player.getHitbox().width,
+                player.getHitbox().height
+            );
+            boolean blockedX = false;
+            for (Rectangle wall : level.getMapManager().getHitboxes()) {
+                if (testBox.overlaps(wall)) {
+                    // skontroluj či je to skutočne horizontálna bariéra
+                    float overlapX = Math.min(testBox.x + testBox.width, wall.x + wall.width)
+                        - Math.max(testBox.x, wall.x);
+                    float overlapY = Math.min(testBox.y + testBox.height, wall.y + wall.height)
+                        - Math.max(testBox.y, wall.y);
+                    if (overlapX < overlapY) { // X je menší prienik -> bočná stena
+                        blockedX = true;
+                        break;
+                    }
+                }
+            }
+            if (!blockedX) {
+                player.move(new Vector2D(moveX, 0));
+            }
+        } else if (moveX != 0f) {
+            player.move(new Vector2D(moveX, 0));
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             player.jump(300f);

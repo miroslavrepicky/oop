@@ -42,6 +42,7 @@ public class CollisionManager {
         checkPlayerProjectilesVsDucks(player, level);
         checkEnemyProjectilesVsPlayer(player, level);
         checkProjectilesVsWalls(level);
+        checkPlayerVsEnemyPush(player, level);
     }
 
     // -------------------------------------------------------------------------
@@ -57,7 +58,7 @@ public class CollisionManager {
         for (Item item : level.getItems()) {
             if (player.getHitbox().overlaps(item.getHitbox())) {
                 nearbyItem = item;
-                return; // stačí prvý nájdený
+                return; // stačí prvý najdený
             }
         }
     }
@@ -156,6 +157,33 @@ public class CollisionManager {
                     projectile.setActive(false);
                     break;
                 }
+            }
+        }
+    }
+
+    private void checkPlayerVsEnemyPush(PlayerCharacter player, Level level) {
+        Rectangle playerBox = player.getHitbox();
+
+        for (EnemyCharacter enemy : level.getEnemies()) {
+            if (!enemy.isAlive()) continue;
+            Rectangle enemyBox = enemy.getHitbox();
+
+            if (!playerBox.overlaps(enemyBox)) continue;
+
+            float overlapX = Math.min(playerBox.x + playerBox.width, enemyBox.x + enemyBox.width)
+                - Math.max(playerBox.x, enemyBox.x);
+            float overlapY = Math.min(playerBox.y + playerBox.height, enemyBox.y + enemyBox.height)
+                - Math.max(playerBox.y, enemyBox.y);
+
+            if (overlapX <= overlapY) {
+                if (playerBox.x < enemyBox.x) {
+                    // hrac je vlavo - odsuvaj len hraca dolava
+                    player.getPosition().setX(player.getPosition().getX() - overlapX);
+                } else {
+                    // hrác je vpravo - odsuvaj len hraca doprava
+                    player.getPosition().setX(player.getPosition().getX() + overlapX);
+                }
+                player.updateHitbox();
             }
         }
     }

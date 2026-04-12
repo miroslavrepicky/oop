@@ -74,7 +74,7 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // hrac – skutočná veľkosť každého framu, centrovaná na hitbox
+        // hrac – skutočna veľkosť každého framu, centrovana na hitbox
         if (player != null && player.getAnimationManager() != null) {
             player.updateAnimation(deltaTime);
             player.getAnimationManager().renderActualSize(batch,
@@ -84,7 +84,7 @@ public class GameRenderer {
                 !player.isFacingRight());
         }
 
-        // nepriatelia – skutočná veľkosť každého framu, centrovaná na hitbox
+        // nepriatelia – skutočna veľkosť každého framu, centrovana na hitbox
         for (EnemyCharacter enemy : level.getEnemies()) {
             AnimationManager am = enemy.getAnimationManager();
             if (am == null) continue;
@@ -96,7 +96,7 @@ public class GameRenderer {
                 !enemy.isFacingRight());
         }
 
-        // kacky – skutočná veľkosť, centrovaná na hitbox
+        // kacky – skutočna veľkosť, centrovana na hitbox
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
             AnimationManager am = duck.getAnimationManager();
@@ -111,7 +111,7 @@ public class GameRenderer {
         // ikony itemov na zemi
         itemIconRenderer.render(batch, level.getItems());
 
-        // projektily – pevná veľkosť cez render() (tu rozťahovanie nevadí)
+        // projektily – pevna veľkosť cez render() (tu rozťahovanie nevadí)
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
