@@ -20,7 +20,8 @@ public class Archer extends PlayerCharacter {
         this.arrowCount = 30;
         this.gravityStrategy = new NormalGravity();
         initAnimations();
-
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
         primaryAttack = new ArrowAttack(true); // SPACE - normalna sipka
     }
 

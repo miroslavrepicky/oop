@@ -153,7 +153,7 @@ public abstract class EnemyCharacter extends Character {
         } else {
             anim = "idle";
         }
-        this.setHitboxSize(am.getAnimationSize(anim));
+        //this.setHitboxSize(am.getAnimationSize(anim));
         am.play(anim);
         am.update(deltaTime);
     }

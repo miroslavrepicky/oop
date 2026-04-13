@@ -23,7 +23,8 @@ public class Wizzard extends PlayerCharacter {
         this.maxMana = 100;
         this.gravityStrategy = new NormalGravity();
         initAnimations();
-
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
         primaryAttack   = new SpellAttack(6.0f, 50f, 20);   // SPACE - rychle kuzlo
         secondaryAttack = new MeleeAttack(1);                // V - melee zaloha
     }

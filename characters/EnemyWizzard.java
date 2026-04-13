@@ -16,6 +16,8 @@ public class EnemyWizzard extends EnemyCharacter {
         this.gravityStrategy = new NormalGravity();
         this.attack          = new SpellAttack(4.0f, 50.0f, 0); // mana cost 0 – enemy nema manu
         initAnimations();
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
     }
 
     private void initAnimations() {

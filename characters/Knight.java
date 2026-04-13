@@ -18,7 +18,8 @@ public class Knight extends PlayerCharacter {
         super("Knight", 150, 30, 2.0f, position, MAX_ARMOR);
         this.gravityStrategy = new NormalGravity();
         initAnimations();
-
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
         primaryAttack = new MeleeAttack(1);
     }
 

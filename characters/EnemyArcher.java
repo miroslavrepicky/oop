@@ -18,6 +18,8 @@ public class EnemyArcher extends EnemyCharacter {
         this.gravityStrategy = new NormalGravity();
         this.attack          = new ArrowAttack(false);
         initAnimations();
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
     }
 
     private void initAnimations() {

@@ -49,7 +49,12 @@ public class AnimationManager {
         frameDurations.put(name, frameDuration);
     }
 
-
+    public Vector2D getFirstFrameSize(String name) {
+        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
+        if (anim == null) return new Vector2D(64, 64);
+        TextureAtlas.AtlasRegion frame = anim.getKeyFrames()[0];
+        return new Vector2D(frame.packedWidth, frame.packedHeight);
+    }
 
     public void play(String name) {
         if (!name.equals(currentAnimation)) {

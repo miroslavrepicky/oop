@@ -16,6 +16,8 @@ public class EnemyKnight extends EnemyCharacter {
         this.gravityStrategy = new NormalGravity();
         this.attack          = new MeleeAttack(1);
         initAnimations();
+        Vector2D idleSize = animationManager.getFirstFrameSize("idle");
+        this.hitbox.setSize(idleSize.getX(), idleSize.getY());
     }
 
     private void initAnimations() {
