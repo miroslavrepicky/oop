@@ -23,6 +23,11 @@ public class GameRenderer {
     private ItemIconRenderer itemIconRenderer;
     private CollisionManager collisionManager;
     private boolean debugHitboxes = false;
+    private static final float BAR_WIDTH = 40f;
+    private static final float BAR_H_HP = 5f;
+    private static final float BAR_H_ARM = 3f;
+    private static final float BAR_GAP = 8f;   // medzera nad hitboxom
+    private static final float BAR_SPACING = 2f;  // medzera medzi HP a armor barom
 
     public GameRenderer() {
         camera = new OrthographicCamera();
@@ -176,6 +181,8 @@ public class GameRenderer {
 
         batch.end();
 
+        renderEnemyBars(level);
+
         if (player != null) {
             renderPlayerIndicator(player);
         }
@@ -186,6 +193,53 @@ public class GameRenderer {
 
         // 4. HUD
         hudRenderer.render();
+    }
+
+    private void renderEnemyBars(Level level) {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        for (EnemyCharacter enemy : level.getEnemies()) {
+            if (!enemy.isAlive()) continue;
+
+            float ex = enemy.getPosition().getX();
+            float ey = enemy.getPosition().getY();
+            float ew = enemy.getHitbox().width;
+            float top = ey + enemy.getHitbox().height + BAR_GAP;
+
+            float barX = ex + (ew - BAR_WIDTH) / 2f;  // centrovany nad hitboxom
+
+            // === HP bar ===
+            float hpRatio = (float) enemy.getHp() / enemy.getMaxHp();
+
+            // pozadie
+            shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.85f);
+            shapeRenderer.rect(barX, top, BAR_WIDTH, BAR_H_HP);
+
+            // výplň – farba podľa HP
+            if (hpRatio > 0.5f) {
+                shapeRenderer.setColor(0.25f, 0.75f, 0.15f, 1f); // zelená
+            } else if (hpRatio > 0.25f) {
+                shapeRenderer.setColor(0.95f, 0.65f, 0.05f, 1f); // oranžová
+            } else {
+                shapeRenderer.setColor(0.9f, 0.15f, 0.1f, 1f);   // červená
+            }
+            shapeRenderer.rect(barX, top, BAR_WIDTH * hpRatio, BAR_H_HP);
+
+            // === Armor bar (len ak ma armor) ===
+            if (enemy.getMaxArmor() > 0) {
+                float armRatio = (float) enemy.getArmor() / enemy.getMaxArmor();
+                float armY = top + BAR_H_HP + BAR_SPACING;
+
+                shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.85f);
+                shapeRenderer.rect(barX, armY, BAR_WIDTH, BAR_H_ARM);
+
+                shapeRenderer.setColor(0.2f, 0.55f, 0.9f, 1f);   // modra
+                shapeRenderer.rect(barX, armY, BAR_WIDTH * armRatio, BAR_H_ARM);
+            }
+        }
+
+        shapeRenderer.end();
     }
 
     /**
