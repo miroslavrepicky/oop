@@ -88,6 +88,12 @@ public class AnimationManager {
         );
     }
 
+
+    public void renderActualSize(SpriteBatch batch, float x, float y,
+                                 float hitboxW, boolean flipX) {
+        renderActualSize(batch, x, y, hitboxW, flipX, false);
+    }
+
     /**
      * Kresli aktualny frame v SKUTOCNEJ velkosti tohto konkretneho framu
      * (packedWidth / packedHeight), ukotveny na spodny stred hitboxu.
@@ -100,9 +106,10 @@ public class AnimationManager {
      * @param y       spodny okraj hitboxu / pozicie postavy vo svete
      * @param hitboxW sírka hitboxu — pouzita na horizontalne centrovanie spritu
      * @param flipX   ci otocit sprite horizontalne (postava ide dolava)
+     * @param anchorOpposite otocenie strany kotvenia animacie
      */
     public void renderActualSize(SpriteBatch batch, float x, float y,
-                                 float hitboxW, boolean flipX) {
+                                 float hitboxW, boolean flipX, boolean anchorOpposite) {
         if (currentAnimation == null) return;
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(currentAnimation);
         if (anim == null) return;
@@ -115,13 +122,13 @@ public class AnimationManager {
 
         float drawX;
         if (!flipX) {
-            // Postava ide doprava: ukotvenie na spodny pravy roh hitboxu,
-            // sprite vycnieva dolava
-            drawX = x + hitboxW - frameW;
+            drawX = anchorOpposite
+                ? x
+                : x + hitboxW - frameW;
         } else {
-            // Postava ide dolava: ukotvenie na spodny lavy roh hitboxu,
-            // sprite vycnieva doprava
-            drawX = x;
+            drawX = anchorOpposite
+                ? x + hitboxW - frameW
+                : x;
         }
 
         batch.draw(

@@ -75,13 +75,19 @@ public class GameRenderer {
         batch.begin();
 
         // hrac – skutočna veľkosť každého framu, centrovana na hitbox
-        if (player != null && player.getAnimationManager() != null) {
-            player.updateAnimation(deltaTime);
-            player.getAnimationManager().renderActualSize(batch,
-                player.getPosition().getX(),
-                player.getPosition().getY(),
-                player.getHitbox().width,
-                !player.isFacingRight());
+        if (player != null) {
+            AnimationManager pam = player.getAnimationManager();
+            if (pam != null) {
+                player.updateAnimation(deltaTime);
+                String currentAnim = pam.getCurrentAnimation();
+                boolean isAttackAnim = "attack".equals(currentAnim);
+                pam.renderActualSize(batch,
+                    player.getPosition().getX(),
+                    player.getPosition().getY(),
+                    player.getHitbox().width,
+                    !player.isFacingRight(),
+                    isAttackAnim);
+            }
         }
 
         // nepriatelia – skutočna veľkosť každého framu, centrovana na hitbox
@@ -89,11 +95,13 @@ public class GameRenderer {
             AnimationManager am = enemy.getAnimationManager();
             if (am == null) continue;
             enemy.updateAnimation(deltaTime);
+            String currentAnim = am.getCurrentAnimation();
+            boolean isAttackAnim = "attack".equals(currentAnim);
             am.renderActualSize(batch,
                 enemy.getPosition().getX(),
                 enemy.getPosition().getY(),
                 enemy.getHitbox().width,
-                !enemy.isFacingRight());
+                !enemy.isFacingRight(), isAttackAnim);
         }
 
         // kacky – skutočna veľkosť, centrovana na hitbox

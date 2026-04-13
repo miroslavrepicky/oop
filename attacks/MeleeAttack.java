@@ -17,7 +17,7 @@ public class MeleeAttack implements Attack {
 
     @Override
     public void execute(Character attacker, Level level) {
-        float reach = rangeTiles * 64f; // kazda dlazdica = 64 px
+        float reach = rangeTiles * 52f; // kazda dlazdica = 64 px
 
         if (attacker instanceof PlayerCharacter) {
             // hrac trafi nepriatelov v dosahu
@@ -31,6 +31,7 @@ public class MeleeAttack implements Attack {
                 float dist = (ex - ax) * dirX; // kladne = pred hracom
                 if (dist >= 0 && dist <= reach) {
                     enemy.takeDamage(attacker.getAttackPower());
+                    return;
                 }
             }
             for (Duck duck : level.getDucks()) {
@@ -41,6 +42,7 @@ public class MeleeAttack implements Attack {
                     duck.takeDamage(duck.getHp()); // jeden zasah = zabitie
                     Item result = duck.onKilled();
                     level.addItem(result);
+                    return;
                 }
             }
 
