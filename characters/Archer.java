@@ -6,10 +6,10 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
-//TODO use arrow count
 
 public class Archer extends PlayerCharacter {
     private static final int MAX_ARMOR = 50; // stredna obrana
+    private static final int MAX_ARROWS    = 30;
 
     private int arrowCount;
     private AnimationManager animationManager;
@@ -34,6 +34,13 @@ public class Archer extends PlayerCharacter {
     }
 
     @Override
+    public void performPrimaryAttack() {
+        if (arrowCount <= 0) return;
+        arrowCount--;
+        super.performPrimaryAttack();
+    }
+
+    @Override
     public void handleInput() {}
 
     @Override
@@ -44,6 +51,7 @@ public class Archer extends PlayerCharacter {
     public int getArrowCount() {
         return arrowCount;
     }
+    public int getMaxArrows()   { return MAX_ARROWS; }
 
     @Override
     public AnimationManager getAnimationManager() {

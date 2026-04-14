@@ -42,18 +42,23 @@ public class EggProjectile extends Projectile {
         animationManager.play("bomb");
     }
 
+    /**
+     * Riadi casovac a prechody stavov.
+     * Damage pri vybuchu je zodpovednost CollisionManageru –
+     * tu iba menime stav a animaciu.
+     */
     @Override
     public void update(float deltaTime) {
         stateTimer -= deltaTime;
-        if (animationManager != null) animationManager.update(deltaTime);  // ← pridaj null check
+        if (animationManager != null) animationManager.update(deltaTime);
 
         switch (eggState) {
             case TICKING:
                 if (stateTimer <= 0f) {
                     eggState   = EggState.BLASTING;
                     stateTimer = BLAST_DURATION;
-                    if (animationManager != null) animationManager.play("blast");  // ← tu tiez
-                    dealAoeDamage();
+                    if (animationManager != null) animationManager.play("blast");
+                    // damage aplikuje CollisionManager ked zbadá prechod do BLASTING
                 }
                 break;
 
@@ -65,28 +70,32 @@ public class EggProjectile extends Projectile {
         }
     }
 
-    private void dealAoeDamage() {
-        if (damageDealt) return;
-        damageDealt = true;
-
-        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
-        if (player == null) return;
-
-        double dist = position.distanceTo(player.getPosition());
-        if (dist <= AOE_RADIUS) {
-            float falloff = 1f - (float)(dist / AOE_RADIUS);
-            int dmg = Math.max(1, (int)(BLAST_DAMAGE * falloff));
-            player.takeDamage(dmg);
-            System.out.println("Vajce vybuchlo! Hrac dostal " + dmg + " poskodenia.");
-        }
-    }
-
+    /** EggProjectile je stacionarny – kolizie so stenami ho nezaujimaju. */
     @Override
-    public void onCollision(Object other) {
-        // vajce nereaguje na kolizie – iba AoE pri vybuchu
-    }
+    public void onCollision(Object other) {}
+
+    // -------------------------------------------------------------------------
+    //  API pre CollisionManager
+    // -------------------------------------------------------------------------
+
+    /** @return true ak CollisionManager uz aplikoval AOE damage pri tomto vybuchu. */
+    public boolean isDamageDealt() { return damageDealt; }
+
+    /** Oznaci ze damage bol uz aplikovany – zabrani opakovaniu v kazdom frame. */
+    public void markDamageDealt() { damageDealt = true; }
+
+    // -------------------------------------------------------------------------
+    //  Gettery
+    // -------------------------------------------------------------------------
 
     public EggState         getEggState()         { return eggState; }
     public AnimationManager getAnimationManager() { return animationManager; }
     public float            getAoeRadius()        { return AOE_RADIUS; }
+
+    /**
+     * Exponuje damage pre CollisionManager (zdedeny field z Projectile).
+     * Pouziva sa v checkEggExplosions() na vypocet falloff damage.
+     */
+    @Override
+    public int getDamage() { return damage; }
 }
