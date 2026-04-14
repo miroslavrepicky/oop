@@ -5,6 +5,8 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.util.Vector2D;
 
+//TODO consider AreaOfExplosion AOE, currently getter not used
+
 /**
  * Vajce ktore sa spawne priamo na zemi po zabiti kacky.
  * Odpocitava (BOMB animacia) a potom vybuchne (BLAST animacia).

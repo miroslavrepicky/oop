@@ -29,7 +29,7 @@ public class CollisionManager {
     private Item nearbyItem = null;
 
     // -------------------------------------------------------------------------
-    //  Hlavny vstupny bod - vola sa každý frame z GameScreen
+    //  Hlavny vstupny bod - vola sa kazdy frame z GameScreen
     // -------------------------------------------------------------------------
 
     public void update(Level level) {

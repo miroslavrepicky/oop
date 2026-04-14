@@ -6,8 +6,6 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 
 public class Knight extends PlayerCharacter {
     private static final int MAX_ARMOR = 80;

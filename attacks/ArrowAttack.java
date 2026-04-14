@@ -1,8 +1,6 @@
 package sk.stuba.fiit.attacks;
 
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.characters.EnemyCharacter;
-import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.projectiles.Arrow;
 import sk.stuba.fiit.util.Vector2D;

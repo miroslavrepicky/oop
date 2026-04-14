@@ -12,7 +12,6 @@ import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.projectiles.*;
 import sk.stuba.fiit.items.Item;
-import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 public class GameRenderer {

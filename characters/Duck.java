@@ -2,7 +2,6 @@ package sk.stuba.fiit.characters;
 
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.FloatingGravity;
-import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.FriendlyDuck;
 import sk.stuba.fiit.items.Item;

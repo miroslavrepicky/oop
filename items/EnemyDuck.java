@@ -3,6 +3,8 @@ package sk.stuba.fiit.items;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.util.Vector2D;
 
+//TODO remove, enemy duck spawns in level update when catches instance egg projectile spawner
+
 public class EnemyDuck extends Item {
     private int damage;
 

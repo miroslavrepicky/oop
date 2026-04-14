@@ -6,8 +6,7 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+//TODO use arrow count
 
 public class Archer extends PlayerCharacter {
     private static final int MAX_ARMOR = 50; // stredna obrana
@@ -42,8 +41,12 @@ public class Archer extends PlayerCharacter {
         handleInput();
     }
 
-    public int getArrowCount() { return arrowCount; }
+    public int getArrowCount() {
+        return arrowCount;
+    }
 
     @Override
-    public AnimationManager getAnimationManager() { return animationManager; }
+    public AnimationManager getAnimationManager() {
+        return animationManager;
+    }
 }

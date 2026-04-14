@@ -90,10 +90,6 @@ public class GameManager {
         }
     }
 
-    private void restartLevel() {
-        startLevel(currentLevel.getLevelNumber());
-    }
-
     public Inventory getInventory() { return inventory; }
     public Level getCurrentLevel() { return currentLevel; }
     public GameState getGameState() { return gameState; }

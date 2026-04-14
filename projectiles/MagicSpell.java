@@ -2,6 +2,7 @@ package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.util.Vector2D;
+//TODO consider AreaOfExplosion AOE, currently getter not used
 
 public class MagicSpell extends Projectile {
     private float aoeRadius;

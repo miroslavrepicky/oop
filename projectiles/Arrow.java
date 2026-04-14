@@ -3,6 +3,8 @@ package sk.stuba.fiit.projectiles;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.util.Vector2D;
 
+//TODO consider not using piercing, currently not used anywhere
+
 public class Arrow extends Projectile {
     private boolean piercing;
     private AnimationManager animationManager;

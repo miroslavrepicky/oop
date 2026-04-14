@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import sk.stuba.fiit.util.Vector2D;
 
@@ -158,14 +157,6 @@ public class AnimationManager {
         }
         return new Vector2D(maxW, maxH);
     }
-
-//    public Vector2D getAnimationSize(String name){
-//        Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
-//
-//        //TODO real animation size
-//        //return new Vector2D(anim.getKeyFrame(stateTime).originalWidth, anim.getKeyFrame(0).originalHeight);
-//        return new Vector2D(anim.getKeyFrame(stateTime).packedWidth, anim.getKeyFrame(0).packedHeight);
-//    }
 
     public float getAnimationDuration(String name) {
         Animation<TextureAtlas.AtlasRegion> anim = animations.get(name);
