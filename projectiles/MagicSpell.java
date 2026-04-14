@@ -2,10 +2,9 @@ package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.util.Vector2D;
-//TODO consider AreaOfExplosion AOE, currently getter not used
 
 /**
- * Magicky projektil s plosnym poškodenim (AOE).
+ * Magicky projektil s plosnym poskodenim (AOE).
  *
  * Implementuje {@link AoeProjectile} – CollisionManager
  * automaticky spracuje AOE dopad bez instanceof checkov na tuto triedu.

@@ -78,7 +78,7 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // hrac – skutočna veľkosť každého framu, centrovana na hitbox
+        // hrac – skutocna velkost kazdeho framu, centrovana na hitbox
         if (player != null) {
             AnimationManager pam = player.getAnimationManager();
             if (pam != null) {
@@ -94,7 +94,7 @@ public class GameRenderer {
             }
         }
 
-        // nepriatelia – skutočna veľkosť každého framu, centrovana na hitbox
+        // nepriatelia – skutocna velkost kazdeho framu, centrovana na hitbox
         for (EnemyCharacter enemy : level.getEnemies()) {
             AnimationManager am = enemy.getAnimationManager();
             if (am == null) continue;
@@ -108,7 +108,7 @@ public class GameRenderer {
                 !enemy.isFacingRight(), isAttackAnim);
         }
 
-        // kacky – skutočna veľkosť, centrovana na hitbox
+        // kacky – skutocna velkost, centrovana na hitbox
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
             AnimationManager am = duck.getAnimationManager();
@@ -123,7 +123,7 @@ public class GameRenderer {
         // ikony itemov na zemi
         itemIconRenderer.render(batch, level.getItems());
 
-        // projektily – pevna veľkosť cez render() (tu rozťahovanie nevadí)
+        // projektily – pevna velkost cez render() (tu roztahovanie nevadi)
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
@@ -215,13 +215,13 @@ public class GameRenderer {
             shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.85f);
             shapeRenderer.rect(barX, top, BAR_WIDTH, BAR_H_HP);
 
-            // výplň – farba podľa HP
+            // vypln – farba podla HP
             if (hpRatio > 0.5f) {
-                shapeRenderer.setColor(0.25f, 0.75f, 0.15f, 1f); // zelená
+                shapeRenderer.setColor(0.25f, 0.75f, 0.15f, 1f); // zelena
             } else if (hpRatio > 0.25f) {
-                shapeRenderer.setColor(0.95f, 0.65f, 0.05f, 1f); // oranžová
+                shapeRenderer.setColor(0.95f, 0.65f, 0.05f, 1f); // oranzova
             } else {
-                shapeRenderer.setColor(0.9f, 0.15f, 0.1f, 1f);   // červená
+                shapeRenderer.setColor(0.9f, 0.15f, 0.1f, 1f);   // cervena
             }
             shapeRenderer.rect(barX, top, BAR_WIDTH * hpRatio, BAR_H_HP);
 
@@ -259,7 +259,7 @@ public class GameRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.CYAN);
-        // LibGDX triangle: v1 (lavý roh zakladne), v2 (pravy roh zakladne), v3 (spicka)
+        // LibGDX triangle: v1 (lavy roh zakladne), v2 (pravy roh zakladne), v3 (spicka)
         shapeRenderer.triangle(
             cx - triW / 2f, top,   // lavy roh zakladne
             cx + triW / 2f, top,   // pravy roh zakladne

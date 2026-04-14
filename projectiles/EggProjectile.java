@@ -5,7 +5,6 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.util.Vector2D;
 
-//TODO consider AreaOfExplosion AOE, currently getter not used
 
 /**
  * Vajce ktore sa spawne priamo na zemi po zabiti kacky.
@@ -58,7 +57,7 @@ public class EggProjectile extends Projectile {
                     eggState   = EggState.BLASTING;
                     stateTimer = BLAST_DURATION;
                     if (animationManager != null) animationManager.play("blast");
-                    // damage aplikuje CollisionManager ked zbadá prechod do BLASTING
+                    // damage aplikuje CollisionManager ked zbada prechod do BLASTING
                 }
                 break;
 

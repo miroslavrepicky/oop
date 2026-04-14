@@ -5,11 +5,9 @@ import sk.stuba.fiit.util.Vector2D;
 
 /**
  * Marker item vytvoreny ked kacka padne a vylosuje sa vajce (50 %).
- *
  * Tento item sa NEDa zobrat do inventara (onPickup nic nerobi).
  * Level.update() ho zachyti cez instanceof check, vytvori EggProjectile
  * na jeho pozicii a tento item okamzite odstrani zo sceny.
- *
  * Preco marker a nie priamy spawn?
  *   Duck.onKilled() vracia Item – aby sme nemuseli menit signaturu a CollisionManager.
  *   Level si potom sam rozhodne co s markerom spravit.

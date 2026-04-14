@@ -80,7 +80,7 @@ public abstract class PlayerCharacter extends Character {
             if (isDeathAnimationDone()) {
                 Inventory inv = GameManager.getInstance().getInventory();
                 if (inv.getActive() == this) {
-                    inv.switchToNextAlive(); // len prepni, GameManager rieši party defeated
+                    inv.switchToNextAlive(); // len prepni, GameManager riesi party defeated
                 }
             }
             return;
@@ -110,9 +110,6 @@ public abstract class PlayerCharacter extends Character {
         } else {
             anim = "idle";
         }
-        //TODO set hitbox size to animation size
-        //this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
-        //this.setHitboxSize(getAnimationManager().getAnimationSize(anim));
         getAnimationManager().play(anim);
         getAnimationManager().update(deltaTime);
     }

@@ -74,11 +74,6 @@ public class AnimationManager {
 
         boolean looping = anim.getPlayMode() != Animation.PlayMode.NORMAL;
         TextureAtlas.AtlasRegion frame = anim.getKeyFrame(stateTime, looping);
-        // TODO size of animation
-//        Vector2D vv = getAnimationSize(currentAnimation);
-//        height = vv.getY();
-//        width = vv.getX();
-
         batch.draw(
             frame,
             flipX ? x + width : x, y,
@@ -98,12 +93,12 @@ public class AnimationManager {
      * (packedWidth / packedHeight), ukotveny na spodny stred hitboxu.
      *
      * Kazdy frame ma svoju prirodzenu velkost -> animacia sa neroztahuje
-     * do pevného obdlznika. Vlniaci sa plast, pohyb hore-dole atd. vyzeraju
+     * do pevneho obdlznika. Vlniaci sa plast, pohyb hore-dole atd. vyzeraju
      * spravne, pretoze sprite jednoducho "vycnieva" mimo hitbox podla potreby.
      *
-     * @param x       lavý okraj hitboxu / pozicie postavy vo svete
+     * @param x       lavy okraj hitboxu / pozicie postavy vo svete
      * @param y       spodny okraj hitboxu / pozicie postavy vo svete
-     * @param hitboxW sírka hitboxu — pouzita na horizontalne centrovanie spritu
+     * @param hitboxW sirka hitboxu — pouzita na horizontalne centrovanie spritu
      * @param flipX   ci otocit sprite horizontalne (postava ide dolava)
      * @param anchorOpposite otocenie strany kotvenia animacie
      */

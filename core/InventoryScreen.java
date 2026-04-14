@@ -58,8 +58,8 @@ public class InventoryScreen implements Screen {
     private static class ItemOffer {
         final String label;
         final int    slotCost;
-        final java.util.function.Supplier<Item> factory; // vyraba novú inštanciu
-        int count; // koľkokrat ho hrač "objednal" (len pre info, nie limit)
+        final java.util.function.Supplier<Item> factory; // vyraba novu instanciu
+        int count; // kolkokrat ho hrac "objednal" (len pre info, nie limit)
 
         ItemOffer(String label, int slotCost, java.util.function.Supplier<Item> factory) {
             this.label    = label;
@@ -293,7 +293,7 @@ public class InventoryScreen implements Screen {
         y = 230f;
         List<Item> items = inv.getItems();
 
-// zoskup podľa triedy
+// zoskup podla triedy
         java.util.LinkedHashMap<Class<?>, List<Item>> grouped = new java.util.LinkedHashMap<>();
         for (Item item : items) {
             grouped.computeIfAbsent(item.getClass(), k -> new ArrayList<>()).add(item);
@@ -309,7 +309,7 @@ public class InventoryScreen implements Screen {
             font.draw(batch,
                 sample.getClass().getSimpleName()
                     + "  (" + sample.getSlotsRequired() + " slot)"
-                    + "   x" + count,   // počet tu
+                    + "   x" + count,   // pocet tu
                 MID + PAD, y);
 
             if (btnIndex < remItemBtns.size()) {
@@ -376,7 +376,7 @@ public class InventoryScreen implements Screen {
         for (int i = 0; i < addItemBtns.size(); i++) {
             if (addItemBtns.get(i).contains(mx, my)) {
                 ItemOffer offer = offers.get(i);
-                Item newItem = offer.factory.get(); // nova inštancia zakaždým
+                Item newItem = offer.factory.get(); // nova instancia zakazdym
                 if (inv.addItem(newItem)) {
                     feedback = offer.label + " pridany.";
                 } else {

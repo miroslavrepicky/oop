@@ -24,13 +24,13 @@ public class NormalGravity implements GravityStrategy {
             for (Rectangle platform : level.getMapManager().getHitboxes()) {
                 if (!charBox.overlaps(platform)) continue;
 
-                // Vypocítaj hlbku prieniku na oboch osiach
+                // Vypocitaj hlbku prieniku na oboch osiach
                 float overlapY = Math.min(charBox.y + charBox.height, platform.y + platform.height)
                     - Math.max(charBox.y, platform.y);
                 float overlapX = Math.min(charBox.x + charBox.width, platform.x + platform.width)
                     - Math.max(charBox.x, platform.x);
 
-                // Reaguj len na vertikalnu koliziu (Y-prienik je mensí ako X-prienik)
+                // Reaguj len na vertikalnu koliziu (Y-prienik je mensi ako X-prienik)
                 if (overlapY <= overlapX) {
                     if (character.getVelocityY() < 0) {
                         // pad nadol – pristatie na vrchu platformy

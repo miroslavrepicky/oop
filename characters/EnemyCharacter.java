@@ -82,7 +82,7 @@ public abstract class EnemyCharacter extends Character {
         float newY = position.getY() + direction.getY();
         lastMoveBlocked = false;
 
-        // Test horizontálneho pohybu
+        // Test horizontalneho pohybu
         if (direction.getX() != 0f) {
             Rectangle testBox = new Rectangle(
                 newX,
@@ -97,7 +97,7 @@ public abstract class EnemyCharacter extends Character {
                     float overlapY = Math.min(testBox.y + testBox.height, wall.y + wall.height)
                         - Math.max(testBox.y, wall.y);
                     if (overlapX < overlapY) {
-                        // bočná stena – zablokuj horizontálny pohyb
+                        // bocna stena – zablokuj horizontalny pohyb
                         newX = position.getX();
                         lastMoveBlocked = true;
                         break;

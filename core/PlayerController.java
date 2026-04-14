@@ -41,7 +41,7 @@ public class PlayerController {
             player.setVelocityX(0f);
         }
 
-        // Horizontálna kolízia so stenami
+        // Horizontalna kolizia so stenami
         if (moveX != 0f && level != null && level.getMapManager() != null) {
             float newX = player.getPosition().getX() + moveX;
             Rectangle testBox = new Rectangle(
@@ -53,12 +53,12 @@ public class PlayerController {
             boolean blockedX = false;
             for (Rectangle wall : level.getMapManager().getHitboxes()) {
                 if (testBox.overlaps(wall)) {
-                    // skontroluj či je to skutočne horizontálna bariéra
+                    // skontroluj ci je to skutocne horizontalna bariera
                     float overlapX = Math.min(testBox.x + testBox.width, wall.x + wall.width)
                         - Math.max(testBox.x, wall.x);
                     float overlapY = Math.min(testBox.y + testBox.height, wall.y + wall.height)
                         - Math.max(testBox.y, wall.y);
-                    if (overlapX < overlapY) { // X je menší prienik -> bočná stena
+                    if (overlapX < overlapY) { // X je mensi prienik -> bocna stena
                         blockedX = true;
                         break;
                     }

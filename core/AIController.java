@@ -116,7 +116,7 @@ public class AIController {
 
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
-            // ak je hráč v attackRange, rovnou útočiť
+            // ak je hrac v attackRange, rovnou utocit
             if (dist <= attackRange) {
                 state = AIState.ATTACK;
             }

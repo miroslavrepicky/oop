@@ -15,7 +15,7 @@ public interface Attack {
     /** Nazov animacie ktoru ma utocnik prehrat (napr. "attack", "cast"). */
     String getAnimationName();
 
-    /** Dĺzka animacie v sekundach – urcuje kedy skonci attackAnimTimer. */
+    /** Dlzka animacie v sekundach – urcuje kedy skonci attackAnimTimer. */
     float getAnimationDuration(AnimationManager am);
 
     /** Mana cost – 0 pre ne-spell utoky. */

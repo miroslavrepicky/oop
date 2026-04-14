@@ -60,12 +60,12 @@ public class CollisionManager {
         for (Item item : level.getItems()) {
             if (player.getHitbox().overlaps(item.getHitbox())) {
                 nearbyItem = item;
-                return; // stačí prvý najdený
+                return; // staci prvy najdeny
             }
         }
     }
 
-    /** Vola sa z {@link PlayerController} pri stlacení E. */
+    /** Vola sa z {@link PlayerController} pri stlaceni E. */
     public void pickupNearbyItem(PlayerCharacter player, Level level) {
         if (nearbyItem == null) return;
         nearbyItem.onPickup(player);
@@ -113,18 +113,50 @@ public class CollisionManager {
     }
 
     /**
-     * Rozhodne ci ide o AOE alebo single-hit dopad a aplikuje poškodenie.
-     * AOE projektily poškodza vsetko v polomere od miesta dopadu –
-     * vratan dopad do steny (kuzlo vybuchne pri stene).
+     * Rozhodne ci ide o AOE alebo single-hit dopad a aplikuje poskodenie.
+     *
+     * OPRAVA: AOE projektil pri priamom zasahu nepriatela:
+     *   1) priamy zasah dostane plny damage (bez falloff)
+     *   2) ostatni v radiuse dostanu AOE damage s falloff (okrem priameho cela)
+     *
+     * Pri zasahu steny dostanu nepriatelia len AOE falloff damage.
      */
     private void triggerImpact(Projectile projectile, Object hitTarget, Level level) {
         if (projectile instanceof AoeProjectile) {
             AoeProjectile aoe = (AoeProjectile) projectile;
-            applyAoe(projectile.getPosition().getX(),
-                projectile.getPosition().getY(),
-                aoe.getAoeRadius(),
-                aoe.getDamage(),
-                level);
+
+            if (hitTarget instanceof EnemyCharacter) {
+                // PRIAMY ZASAH nepriatela: plny damage + AOE na ostatnych
+                EnemyCharacter directHit = (EnemyCharacter) hitTarget;
+                directHit.takeDamage(aoe.getDamage());
+                applyAoeExcluding(
+                    projectile.getPosition().getX(),
+                    projectile.getPosition().getY(),
+                    aoe.getAoeRadius(),
+                    aoe.getDamage(),
+                    level,
+                    directHit  // tento nepriatel uz dostal plny damage
+                );
+            } else if (hitTarget instanceof Duck) {
+                // Kacky sa zabiaju jednym zasahom vzdy
+                killDuck((Duck) hitTarget, projectile, level);
+                applyAoe(
+                    projectile.getPosition().getX(),
+                    projectile.getPosition().getY(),
+                    aoe.getAoeRadius(),
+                    aoe.getDamage(),
+                    level
+                );
+            } else {
+                // Stena: len AOE falloff pre vsetkych v radiuse
+                applyAoe(
+                    projectile.getPosition().getX(),
+                    projectile.getPosition().getY(),
+                    aoe.getAoeRadius(),
+                    aoe.getDamage(),
+                    level
+                );
+            }
         } else {
             applySingleHit(projectile, hitTarget, level);
         }
@@ -133,29 +165,46 @@ public class CollisionManager {
 
     /**
      * Plosne poskodenie – zasiahne vsetkych nepriatelov a kacky v polomere
-     * s poklesom poškodenia podla vzdialenosti (falloff).
-     *
-     * @param cx     X-suradnica stredu vybuchu
-     * @param cy     Y-suradnica stredu vybuchu
-     * @param radius polomer vybuchu v pixeloch
-     * @param damage maximalny damage (v strede vybuchu)
+     * s poklesom poskodenia podla vzdialenosti (falloff).
+     * Pouziva stred hitboxu namiesto pozicie (lavy dolny roh) pre presnejsiu detekciu.
      */
     private void applyAoe(float cx, float cy, float radius, int damage, Level level) {
+        applyAoeExcluding(cx, cy, radius, damage, level, null);
+    }
+
+    /**
+     * AOE damage pre vsetkych nepriatelov v radiuse, okrem excludedEnemy
+     * (ktory uz dostal priamy damage).
+     * Meria vzdialenost od stredu hitboxu nepriatela, nie od jeho pozicie.
+     */
+    private void applyAoeExcluding(float cx, float cy, float radius, int damage,
+                                   Level level, EnemyCharacter excludedEnemy) {
         Vector2D centre = new Vector2D(cx, cy);
 
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive()) continue;
-            double dist = centre.distanceTo(enemy.getPosition());
+            if (enemy == excludedEnemy) continue;
+
+            // Meriame od stredu hitboxu nepriatela (nie lavy dolny roh)
+            float enemyCenterX = enemy.getPosition().getX() + enemy.getHitbox().width / 2f;
+            float enemyCenterY = enemy.getPosition().getY() + enemy.getHitbox().height / 2f;
+            Vector2D enemyCenter = new Vector2D(enemyCenterX, enemyCenterY);
+
+            double dist = centre.distanceTo(enemyCenter);
             if (dist <= radius) {
                 float falloff = 1f - (float)(dist / radius);
                 enemy.takeDamage(Math.max(1, (int)(damage * falloff)));
             }
         }
+
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
-            double dist = centre.distanceTo(duck.getPosition());
+            float duckCenterX = duck.getPosition().getX() + duck.getHitbox().width / 2f;
+            float duckCenterY = duck.getPosition().getY() + duck.getHitbox().height / 2f;
+            Vector2D duckCenter = new Vector2D(duckCenterX, duckCenterY);
+
+            double dist = centre.distanceTo(duckCenter);
             if (dist <= radius) {
-                // kacky sa zabiaju jednym zasahom bez ohľadu na falloff
                 duck.takeDamage(duck.getHp());
                 Item drop = duck.onKilled();
                 if (drop != null) level.addItem(drop);
@@ -164,7 +213,7 @@ public class CollisionManager {
     }
 
     /**
-     * Single-hit dopad – poškodi prave zasiahnute zariadenie.
+     * Single-hit dopad – poskodi prave zasiahnute zariadenie.
      * Stena sposobi len deaktivaciu projektilu, ziadny damage.
      */
     private void applySingleHit(Projectile projectile, Object hitTarget, Level level) {
