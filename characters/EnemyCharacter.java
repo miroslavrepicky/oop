@@ -5,6 +5,7 @@ import sk.stuba.fiit.attacks.Attack;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
+import sk.stuba.fiit.core.MovementResolver;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -14,6 +15,7 @@ public abstract class EnemyCharacter extends Character {
     protected float detectionRange;
     protected Inventory inventory;
     private AIController aiController;
+    private MovementResolver movementResolver;
 
     // utok – nastavuju podtriedy v konstruktore (ako PlayerCharacter)
     protected Attack attack;
@@ -62,51 +64,25 @@ public abstract class EnemyCharacter extends Character {
             this, patrolStart, patrolEnd, attackRange, preferredRange);
     }
 
+    public void setMovementResolver(MovementResolver resolver) {
+        this.movementResolver = resolver;
+    }
+
     @Override
     public void move(Vector2D direction) {
-        Level level = GameManager.getInstance().getCurrentLevel();
+        float dx = direction.getX();
+        float dy = direction.getY();
 
-        if (level == null || level.getMapManager() == null) {
-            position.setX(position.getX() + direction.getX());
-            position.setY(position.getY() + direction.getY());
-            updateHitbox();
-            return;
-        }
-
-        if (direction.getX() == 0f && direction.getY() == 0f) {
+        if (movementResolver != null && dx != 0f) {
+            float allowed = movementResolver.resolveX(hitbox, dx);
+            lastMoveBlocked = (allowed == 0f && dx != 0f);
+            dx = allowed;
+        } else {
             lastMoveBlocked = false;
-            return;
         }
 
-        float newX = position.getX() + direction.getX();
-        float newY = position.getY() + direction.getY();
-        lastMoveBlocked = false;
-
-        // Test horizontalneho pohybu
-        if (direction.getX() != 0f) {
-            Rectangle testBox = new Rectangle(
-                newX,
-                position.getY(),
-                hitbox.width,
-                hitbox.height
-            );
-            for (Rectangle wall : level.getMapManager().getHitboxes()) {
-                if (testBox.overlaps(wall)) {
-                    float overlapX = Math.min(testBox.x + testBox.width, wall.x + wall.width)
-                        - Math.max(testBox.x, wall.x);
-                    float overlapY = Math.min(testBox.y + testBox.height, wall.y + wall.height)
-                        - Math.max(testBox.y, wall.y);
-                    if (overlapX < overlapY) {
-                        // bocna stena – zablokuj horizontalny pohyb
-                        newX = position.getX();
-                        lastMoveBlocked = true;
-                        break;
-                    }
-                }
-            }
-        }
-        position.setX(newX);
-        position.setY(newY);
+        position.setX(position.getX() + dx);
+        position.setY(position.getY() + dy);
         updateHitbox();
     }
 

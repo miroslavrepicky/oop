@@ -2,6 +2,7 @@ package sk.stuba.fiit.world;
 
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameManager;
+import sk.stuba.fiit.core.MovementResolver;
 import sk.stuba.fiit.core.Updatable;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.EggProjectileSpawner;
@@ -51,6 +52,7 @@ public class Level implements Updatable {
                 case "enemy_knight":
                     EnemyKnight ek = new EnemyKnight(new Vector2D(x, y));
                     ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 80f, 80f);
+                    ek.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(ek);
                     break;
                 case "duck":
@@ -65,16 +67,19 @@ public class Level implements Updatable {
                 case "enemy_archer":
                     EnemyArcher ea = new EnemyArcher(new Vector2D(x, y));
                     ea.initAI(new Vector2D(x - 150, y), new Vector2D(x + 150, y), 300f, 250f);
+                    ea.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(ea);
                     break;
                 case "enemy_wizzard":
                     EnemyWizzard ew = new EnemyWizzard(new Vector2D(x, y));
                     ew.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 350f, 280f);
+                    ew.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(ew);
                     break;
                 case "dark_knight":
                     DarkKnight dk = new DarkKnight(new Vector2D(x, y));
                     dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y), 200f, 150f);
+                    dk.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(dk);
                     break;
             }

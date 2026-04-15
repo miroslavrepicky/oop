@@ -10,6 +10,7 @@ public class AIController {
     private Vector2D patrolStart;
     private Vector2D patrolEnd;
     private boolean patrollingRight;
+    private boolean jumped = false;
 
     /** Vzdialenost, od ktorej enemy zacne utocit. */
     private final float attackRange;
@@ -23,6 +24,9 @@ public class AIController {
     // Default hodnoty pre spatnu kompatibilitu (melee)
     private static final float DEFAULT_ATTACK_RANGE   = 80f;
     private static final float DEFAULT_PREFERRED_RANGE = 80f;
+
+    private int blockedFrames = 0;
+    private static final int BLOCKED_THRESHOLD = 4;
 
     // -------------------------------------------------------------------------
     //  Konstruktory
@@ -71,22 +75,49 @@ public class AIController {
     // -------------------------------------------------------------------------
 
     private void handlePatrol(float deltaTime, PlayerCharacter player) {
-        float speed     = enemy.getSpeed() * deltaTime * 60;
-        Vector2D pos    = enemy.getPosition();
+        float speed = enemy.getSpeed() * deltaTime * 60;
+        Vector2D pos = enemy.getPosition();
         float tolerance = speed + 1f;
 
-        if (patrollingRight) {
-            enemy.move(new Vector2D(speed, 0));
-            enemy.setVelocityX(speed);
-            enemy.setFacingRight(true);
-            if (enemy.wasLastMoveBlocked() || pos.getX() >= patrolEnd.getX() - tolerance) {
-                patrollingRight = false;
-            }
+        // 1. Určenie smeru a pokus o pohyb
+        float currentDirectionX = patrollingRight ? speed : -speed;
+
+        enemy.move(new Vector2D(currentDirectionX, 0));
+        enemy.setFacingRight(patrollingRight);
+
+        // 2. Synchronizácia velocity pre animácie
+        // Ak bol pohyb zablokovaný, velocity by mala byť 0 (aby nepriateľ "nebežal do steny")
+        if (enemy.wasLastMoveBlocked()) {
+            enemy.setVelocityX(0);
+            blockedFrames++;
         } else {
-            enemy.move(new Vector2D(-speed, 0));
-            enemy.setVelocityX(-speed);
-            enemy.setFacingRight(false);
-            if (enemy.wasLastMoveBlocked() || pos.getX() <= patrolStart.getX() + tolerance) {
+            enemy.setVelocityX(currentDirectionX);
+            blockedFrames = 0;
+        }
+
+        // 3. Logika skoku
+        if (blockedFrames == 5 && enemy.isOnGround()) {
+            enemy.jump(50f);
+            // Pri skoku animácia pravdepodobne berie do úvahy velocityY,
+            // ktorú tvoja metóda jump() interne nastaví.
+        }
+
+        // 4. Logika otočenia pri dlhom zablokovaní
+        if (blockedFrames >= BLOCKED_THRESHOLD) {
+            patrollingRight = !patrollingRight;
+            blockedFrames = 0;
+
+            // Dynamický reset hraníc, aby sa hneď neotočil späť
+            float patrolRange = 200f;
+            patrolStart.setX(pos.getX() - (patrollingRight ? 0 : patrolRange));
+            patrolEnd.setX(pos.getX() + (patrollingRight ? patrolRange : 0));
+        }
+
+        // 5. Logika dosiahnutia konca trasy (len ak nie je zablokovaný)
+        if (!enemy.wasLastMoveBlocked()) {
+            if (patrollingRight && pos.getX() >= patrolEnd.getX() - tolerance) {
+                patrollingRight = false;
+            } else if (!patrollingRight && pos.getX() <= patrolStart.getX() + tolerance) {
                 patrollingRight = true;
             }
         }
@@ -116,7 +147,7 @@ public class AIController {
 
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
-            // ak je hrac v attackRange, rovnou utocit
+            // ak je hrac v attackRange, rovno utocit
             if (dist <= attackRange) {
                 state = AIState.ATTACK;
             }
