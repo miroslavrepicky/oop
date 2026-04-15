@@ -1,6 +1,5 @@
 package sk.stuba.fiit.characters;
 
-import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.attacks.Attack;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;

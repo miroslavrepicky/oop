@@ -10,8 +10,6 @@ public class AIController {
     private Vector2D patrolStart;
     private Vector2D patrolEnd;
     private boolean patrollingRight;
-    private boolean jumped = false;
-
     /** Vzdialenost, od ktorej enemy zacne utocit. */
     private final float attackRange;
     /**
@@ -79,14 +77,13 @@ public class AIController {
         Vector2D pos = enemy.getPosition();
         float tolerance = speed + 1f;
 
-        // 1. Určenie smeru a pokus o pohyb
+        // 1. Urcenie smeru a pokus o pohyb
         float currentDirectionX = patrollingRight ? speed : -speed;
 
         enemy.move(new Vector2D(currentDirectionX, 0));
         enemy.setFacingRight(patrollingRight);
 
-        // 2. Synchronizácia velocity pre animácie
-        // Ak bol pohyb zablokovaný, velocity by mala byť 0 (aby nepriateľ "nebežal do steny")
+        // 2. Synchronizacia velocity
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
             blockedFrames++;
@@ -98,11 +95,9 @@ public class AIController {
         // 3. Logika skoku
         if (blockedFrames == 5 && enemy.isOnGround()) {
             enemy.jump(50f);
-            // Pri skoku animácia pravdepodobne berie do úvahy velocityY,
-            // ktorú tvoja metóda jump() interne nastaví.
         }
 
-        // 4. Logika otočenia pri dlhom zablokovaní
+        // 4. Logika otocenia pri dlhom zablokovani
         if (blockedFrames >= BLOCKED_THRESHOLD) {
             patrollingRight = !patrollingRight;
             blockedFrames = 0;
@@ -113,7 +108,7 @@ public class AIController {
             patrolEnd.setX(pos.getX() + (patrollingRight ? patrolRange : 0));
         }
 
-        // 5. Logika dosiahnutia konca trasy (len ak nie je zablokovaný)
+        // 5. Logika dosiahnutia konca trasy (len ak nie je zablokovany)
         if (!enemy.wasLastMoveBlocked()) {
             if (patrollingRight && pos.getX() >= patrolEnd.getX() - tolerance) {
                 patrollingRight = false;
@@ -126,6 +121,13 @@ public class AIController {
     }
 
     private void handleChase(float deltaTime, PlayerCharacter player) {
+        if (!enemy.detectPlayer(player)) {
+            // Hrac sa stratil z dosahu detekcie – obnovime hliadku v okoli.
+            float currentX  = enemy.getPosition().getX();
+            patrolStart     = new Vector2D(currentX - 100, enemy.getPosition().getY());
+            patrolEnd       = new Vector2D(currentX + 100, enemy.getPosition().getY());
+            state = AIState.PATROL;
+        }
         Vector2D enemyPos  = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
         double dist        = enemyPos.distanceTo(playerPos);
@@ -154,6 +156,10 @@ public class AIController {
             return;
         }
 
+
+    }
+
+    private void handleAttack(float deltaTime, PlayerCharacter player) {
         if (!enemy.detectPlayer(player)) {
             // Hrac sa stratil z dosahu detekcie – obnovime hliadku v okoli.
             float currentX  = enemy.getPosition().getX();
@@ -161,9 +167,6 @@ public class AIController {
             patrolEnd       = new Vector2D(currentX + 100, enemy.getPosition().getY());
             state = AIState.PATROL;
         }
-    }
-
-    private void handleAttack(float deltaTime, PlayerCharacter player) {
         Vector2D enemyPos  = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
         double dist        = enemyPos.distanceTo(playerPos);

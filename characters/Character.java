@@ -1,6 +1,10 @@
 package sk.stuba.fiit.characters;
 
-import sk.stuba.fiit.core.*;
+import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.Collidable;
+import sk.stuba.fiit.core.GravityStrategy;
+import sk.stuba.fiit.core.Movable;
+import sk.stuba.fiit.core.Updatable;
 import sk.stuba.fiit.util.Vector2D;
 
 import com.badlogic.gdx.math.Rectangle;

@@ -11,7 +11,6 @@ import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
-import java.util.List;
 
 /**
  * Riadi vsetky kolizie v aktualnom leveli.

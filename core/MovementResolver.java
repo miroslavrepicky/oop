@@ -1,7 +1,6 @@
 package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.math.Rectangle;
-import sk.stuba.fiit.util.Vector2D;
 
 import java.util.List;
 
@@ -13,8 +12,8 @@ public class MovementResolver {
     }
 
     /**
-     * Skontroluje či je horizontálny pohyb o dx blokovaný stenou.
-     * Vracia skutočný posun (0 ak blokovaný, dx inak).
+     * Skontroluje ci je horizontalny pohyb o dx blokovany stenou.
+     * Vracia skutocny posun (0 ak blokovany, dx inak).
      */
     public float resolveX(Rectangle hitbox, float dx) {
         if (walls == null || dx == 0f) return dx;
@@ -29,7 +28,7 @@ public class MovementResolver {
                 - Math.max(test.x, wall.x);
             float overlapY = Math.min(test.y + test.height, wall.y + wall.height)
                 - Math.max(test.y, wall.y);
-            if (overlapX < overlapY) return 0f; // bočná stena
+            if (overlapX < overlapY) return 0f; // bocna stena
         }
         return dx;
     }
