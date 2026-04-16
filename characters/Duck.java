@@ -1,5 +1,6 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.FloatingGravity;
 import sk.stuba.fiit.items.EggProjectileSpawner;
@@ -7,17 +8,18 @@ import sk.stuba.fiit.items.FriendlyDuck;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.util.Vector2D;
 
+import java.util.List;
 import java.util.Random;
 
 public class Duck extends Character {
-    private static final int DUCK_HP     = 20;
-    private static final int DUCK_DAMAGE = 10;
+    private static final int   DUCK_HP     = 20;
+    private static final int   DUCK_DAMAGE = 10;
 
-    // patrol walking
-    private float walkTimer   = 0f;
-    private float idleTimer   = 0f;
-    private boolean walking   = false;
-    private float walkDir     = 1f;
+    private float walkTimer  = 0f;
+    private float idleTimer  = 0f;
+    private boolean walking  = false;
+    private float walkDir    = 1f;
+
     private static final float WALK_DURATION = 2.0f;
     private static final float IDLE_DURATION = 1.5f;
     private static final float WALK_SPEED    = 40f;
@@ -37,14 +39,10 @@ public class Duck extends Character {
     }
 
     @Override
-    public void performAttack() {
-        // Duck neutoci
-    }
+    public void performAttack() { }
 
     @Override
-    public AnimationManager getAnimationManager() {
-        return animationManager;
-    }
+    public AnimationManager getAnimationManager() { return animationManager; }
 
     @Override
     public void move(Vector2D direction) {
@@ -52,15 +50,20 @@ public class Duck extends Character {
         updateHitbox();
     }
 
-    @Override
-    public void update(float deltaTime) {
-        applyGravity(deltaTime);
+    /**
+     * Update s platformami predanými zvonku – Duck nemusí volať GameManager.
+     *
+     * @param deltaTime čas od posledného framu
+     * @param platforms kolízne obdĺžniky mapy
+     */
+    public void update(float deltaTime, List<Rectangle> platforms) {
+        applyGravity(deltaTime, platforms);
 
         if (walking) {
             walkTimer -= deltaTime;
             move(new Vector2D(walkDir * WALK_SPEED * deltaTime, 0));
             animationManager.play("walk");
-            this.setHitboxSize(animationManager.getAnimationSize("walk"));
+            setHitboxSize(animationManager.getAnimationSize("walk"));
             animationManager.update(deltaTime);
             if (walkTimer <= 0f) {
                 walking   = false;
@@ -70,32 +73,31 @@ public class Duck extends Character {
         } else {
             idleTimer -= deltaTime;
             animationManager.play("idle");
-            this.setHitboxSize(animationManager.getAnimationSize("idle"));
+            setHitboxSize(animationManager.getAnimationSize("idle"));
             animationManager.update(deltaTime);
             if (idleTimer <= 0f) {
                 walking   = true;
                 walkTimer = WALK_DURATION;
-                walkDir   = -walkDir; // zmena smeru kazdy cyklus
+                walkDir   = -walkDir;
             }
         }
     }
 
+    /** Spätne kompatibilný update – nevolaj ak máš platformy k dispozícii. */
+    @Deprecated
     @Override
-    public void onCollision(Object other) {
-        // kolizia s hracom – riesi CollisionManager
+    public void update(float deltaTime) {
+        update(deltaTime, java.util.Collections.emptyList());
     }
 
-    /**
-     * Zavola sa ked CollisionManager zabije kacku.
-     * 50 % -> FriendlyDuck (pickable item)
-     * 50 % -> EggProjectileSpawner (marker, ktory Level prekonvertuje na EggProjectile)
-     */
+    @Override
+    public void onCollision(Object other) { }
+
     public Item onKilled() {
         Random random = new Random();
         if (random.nextBoolean()) {
             return new FriendlyDuck(DUCK_DAMAGE, new Vector2D(position.getX(), position.getY()));
         } else {
-            // Vajce – special item marker; Level ho odstrani a nahradi EggProjectile
             return new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
         }
     }

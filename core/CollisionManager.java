@@ -8,30 +8,24 @@ import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.AoeProjectile;
 import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.projectiles.Projectile;
+import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
-
 /**
- * Riadi vsetky kolizie v aktualnom leveli.
+ * Riadi všetky kolízie v aktuálnom leveli.
  *
- * Zodpovednosti:
- *   - projektily hraca vs. nepriatelia, kacky a steny  (single-hit aj AOE)
- *   - projektily nepriatelov vs. hrac a steny
- *   - EggProjectile AOE vybuchy
- *   - hrac vs. itemy na zemi  (proximity pickup)
- *   - hrac vs. nepriatelia  (push)
- *
- * Kolizna odozva vzdy ide cez {@link Collidable#onCollision(Object)},
- * takze jednotlive triedy si samy riadia co sa s nimi stane.
+ * Zmeny oproti pôvodnému kódu:
+ *  - {@code isPlayerProjectile()} používa {@link ProjectileOwner} enum
+ *    namiesto {@code instanceof EnemyCharacter}
+ *  - Žiadna iná logická zmena – len čistejšia implementácia.
  */
 public class CollisionManager {
 
-    /** Item ktory je momentalne v dosahu hraca (pre HUD hint). */
     private Item nearbyItem = null;
 
     // -------------------------------------------------------------------------
-    //  Hlavny vstupny bod - vola sa kazdy frame z GameScreen
+    //  Hlavný vstupný bod
     // -------------------------------------------------------------------------
 
     public void update(Level level) {
@@ -50,21 +44,16 @@ public class CollisionManager {
     //  Pickup
     // -------------------------------------------------------------------------
 
-    /**
-     * Najde item v tesnej blizkosti hraca a ulozi ho ako {@code nearbyItem}.
-     * Samotne zdvihnutie spusta {@link #pickupNearbyItem} (klavesa E).
-     */
     private void checkNearbyItems(PlayerCharacter player, Level level) {
         nearbyItem = null;
         for (Item item : level.getItems()) {
             if (player.getHitbox().overlaps(item.getHitbox())) {
                 nearbyItem = item;
-                return; // staci prvy najdeny
+                return;
             }
         }
     }
 
-    /** Vola sa z {@link PlayerController} pri stlaceni E. */
     public void pickupNearbyItem(PlayerCharacter player, Level level) {
         if (nearbyItem == null) return;
         nearbyItem.onPickup(player);
@@ -73,14 +62,14 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Hracske projektily  (nepriatelia + kacky + steny, single-hit aj AOE)
+    //  Hráčske projektily
     // -------------------------------------------------------------------------
 
     private void checkPlayerProjectiles(Level level) {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
-            if (!isPlayerProjectile(projectile)) continue;
-            if (projectile instanceof EggProjectile) continue; // riesi checkEggExplosions
+            if (!projectile.isPlayerProjectile()) continue;
+            if (projectile instanceof EggProjectile) continue;
 
             Object hitTarget = resolveHit(projectile, level);
             if (hitTarget != null) {
@@ -89,11 +78,6 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Zisti co projektil zasiahol – nepriatel, kacka alebo stena.
-     * Vracia prvy najdeny ciel, alebo null ak projektil nic nezasiahol.
-     * Priorita: nepriatelia > kacky > steny.
-     */
     private Object resolveHit(Projectile projectile, Level level) {
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive()) continue;
@@ -111,50 +95,28 @@ public class CollisionManager {
         return null;
     }
 
-    /**
-     * Rozhodne ci ide o AOE alebo single-hit dopad a aplikuje poskodenie.
-     *
-     * OPRAVA: AOE projektil pri priamom zasahu nepriatela:
-     *   1) priamy zasah dostane plny damage (bez falloff)
-     *   2) ostatni v radiuse dostanu AOE damage s falloff (okrem priameho cela)
-     *
-     * Pri zasahu steny dostanu nepriatelia len AOE falloff damage.
-     */
     private void triggerImpact(Projectile projectile, Object hitTarget, Level level) {
         if (projectile instanceof AoeProjectile) {
             AoeProjectile aoe = (AoeProjectile) projectile;
 
             if (hitTarget instanceof EnemyCharacter) {
-                // PRIAMY ZASAH nepriatela: plny damage + AOE na ostatnych
                 EnemyCharacter directHit = (EnemyCharacter) hitTarget;
                 directHit.takeDamage(aoe.getDamage());
                 applyAoeExcluding(
                     projectile.getPosition().getX(),
                     projectile.getPosition().getY(),
-                    aoe.getAoeRadius(),
-                    aoe.getDamage(),
-                    level,
-                    directHit  // tento nepriatel uz dostal plny damage
-                );
+                    aoe.getAoeRadius(), aoe.getDamage(), level, directHit);
             } else if (hitTarget instanceof Duck) {
-                // Kacky sa zabiaju jednym zasahom vzdy
                 killDuck((Duck) hitTarget, projectile, level);
                 applyAoe(
                     projectile.getPosition().getX(),
                     projectile.getPosition().getY(),
-                    aoe.getAoeRadius(),
-                    aoe.getDamage(),
-                    level
-                );
+                    aoe.getAoeRadius(), aoe.getDamage(), level);
             } else {
-                // Stena: len AOE falloff pre vsetkych v radiuse
                 applyAoe(
                     projectile.getPosition().getX(),
                     projectile.getPosition().getY(),
-                    aoe.getAoeRadius(),
-                    aoe.getDamage(),
-                    level
-                );
+                    aoe.getAoeRadius(), aoe.getDamage(), level);
             }
         } else {
             applySingleHit(projectile, hitTarget, level);
@@ -162,34 +124,19 @@ public class CollisionManager {
         projectile.setActive(false);
     }
 
-    /**
-     * Plosne poskodenie – zasiahne vsetkych nepriatelov a kacky v polomere
-     * s poklesom poskodenia podla vzdialenosti (falloff).
-     * Pouziva stred hitboxu namiesto pozicie (lavy dolny roh) pre presnejsiu detekciu.
-     */
     private void applyAoe(float cx, float cy, float radius, int damage, Level level) {
         applyAoeExcluding(cx, cy, radius, damage, level, null);
     }
 
-    /**
-     * AOE damage pre vsetkych nepriatelov v radiuse, okrem excludedEnemy
-     * (ktory uz dostal priamy damage).
-     * Meria vzdialenost od stredu hitboxu nepriatela, nie od jeho pozicie.
-     */
     private void applyAoeExcluding(float cx, float cy, float radius, int damage,
                                    Level level, EnemyCharacter excludedEnemy) {
         Vector2D centre = new Vector2D(cx, cy);
 
         for (EnemyCharacter enemy : level.getEnemies()) {
-            if (!enemy.isAlive()) continue;
-            if (enemy == excludedEnemy) continue;
-
-            // Meriame od stredu hitboxu nepriatela (nie lavy dolny roh)
-            float enemyCenterX = enemy.getPosition().getX() + enemy.getHitbox().width / 2f;
-            float enemyCenterY = enemy.getPosition().getY() + enemy.getHitbox().height / 2f;
-            Vector2D enemyCenter = new Vector2D(enemyCenterX, enemyCenterY);
-
-            double dist = centre.distanceTo(enemyCenter);
+            if (!enemy.isAlive() || enemy == excludedEnemy) continue;
+            float ex   = enemy.getPosition().getX() + enemy.getHitbox().width  / 2f;
+            float ey   = enemy.getPosition().getY() + enemy.getHitbox().height / 2f;
+            double dist = centre.distanceTo(new Vector2D(ex, ey));
             if (dist <= radius) {
                 float falloff = 1f - (float)(dist / radius);
                 enemy.takeDamage(Math.max(1, (int)(damage * falloff)));
@@ -198,11 +145,9 @@ public class CollisionManager {
 
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
-            float duckCenterX = duck.getPosition().getX() + duck.getHitbox().width / 2f;
-            float duckCenterY = duck.getPosition().getY() + duck.getHitbox().height / 2f;
-            Vector2D duckCenter = new Vector2D(duckCenterX, duckCenterY);
-
-            double dist = centre.distanceTo(duckCenter);
+            float dx   = duck.getPosition().getX() + duck.getHitbox().width  / 2f;
+            float dy   = duck.getPosition().getY() + duck.getHitbox().height / 2f;
+            double dist = centre.distanceTo(new Vector2D(dx, dy));
             if (dist <= radius) {
                 duck.takeDamage(duck.getHp());
                 Item drop = duck.onKilled();
@@ -211,31 +156,22 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Single-hit dopad – poskodi prave zasiahnute zariadenie.
-     * Stena sposobi len deaktivaciu projektilu, ziadny damage.
-     */
     private void applySingleHit(Projectile projectile, Object hitTarget, Level level) {
         if (hitTarget instanceof EnemyCharacter) {
             projectile.onCollision(hitTarget);
         } else if (hitTarget instanceof Duck) {
             killDuck((Duck) hitTarget, projectile, level);
         }
-        // Rectangle (stena) -> len setActive(false) v triggerImpact, ziadny damage
     }
 
     // -------------------------------------------------------------------------
-    //  Nepriatelske projektily  (hrac + steny)
+    //  Nepriateľské projektily
     // -------------------------------------------------------------------------
 
-    /**
-     * Nepriatelske projektily sa spracovavaju spolocne – hrac aj steny
-     * v jednej iteracii, aby sme cez zoznam projektily nechodili dvakrat.
-     */
     private void checkEnemyProjectiles(PlayerCharacter player, Level level) {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
-            if (isPlayerProjectile(projectile)) continue;
+            if (projectile.isPlayerProjectile()) continue;   // ← enum, nie instanceof
             if (projectile instanceof EggProjectile) continue;
 
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
@@ -247,12 +183,7 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  EggProjectile AOE vybuchy
-    //
-    //  EggProjectile si riadi vlastny casovac a animacie (to je jeho
-    //  zodpovednost). CollisionManager len sleduje prechod do stavu BLASTING
-    //  a aplikuje AOE damage – bez akejkolvek referencie na GameManager
-    //  v samotnom projektile.
+    //  EggProjectile výbuchy
     // -------------------------------------------------------------------------
 
     private void checkEggExplosions(PlayerCharacter player, Level level) {
@@ -262,21 +193,14 @@ public class CollisionManager {
             if (egg.getEggState() != EggProjectile.EggState.BLASTING) continue;
             if (egg.isDamageDealt()) continue;
 
-            // AOE na nepriatelov a kacky
-            applyAoe(egg.getPosition().getX(),
-                egg.getPosition().getY(),
-                egg.getAoeRadius(),
-                egg.getDamage(),
-                level);
+            applyAoe(egg.getPosition().getX(), egg.getPosition().getY(),
+                egg.getAoeRadius(), egg.getDamage(), level);
 
-            // AOE aj na hraca – vajce je nepriatelsky "projektil"
             if (player != null) {
-                double dist = egg.getPosition()
-                    .distanceTo(player.getPosition());
+                double dist = egg.getPosition().distanceTo(player.getPosition());
                 if (dist <= egg.getAoeRadius()) {
                     float falloff = 1f - (float)(dist / egg.getAoeRadius());
-                    player.takeDamage(Math.max(1,
-                        (int)(egg.getDamage() * falloff)));
+                    player.takeDamage(Math.max(1, (int)(egg.getDamage() * falloff)));
                 }
             }
 
@@ -285,23 +209,20 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Hrac vs. nepriatelia – odsun (push)
+    //  Hráč vs. nepriatelia – odsun
     // -------------------------------------------------------------------------
 
     private void checkPlayerVsEnemyPush(PlayerCharacter player, Level level) {
         Rectangle playerBox = player.getHitbox();
-
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive()) continue;
             Rectangle enemyBox = enemy.getHitbox();
             if (!playerBox.overlaps(enemyBox)) continue;
 
-            float overlapX =
-                Math.min(playerBox.x + playerBox.width,  enemyBox.x + enemyBox.width)
-                    - Math.max(playerBox.x, enemyBox.x);
-            float overlapY =
-                Math.min(playerBox.y + playerBox.height, enemyBox.y + enemyBox.height)
-                    - Math.max(playerBox.y, enemyBox.y);
+            float overlapX = Math.min(playerBox.x + playerBox.width,  enemyBox.x + enemyBox.width)
+                - Math.max(playerBox.x, enemyBox.x);
+            float overlapY = Math.min(playerBox.y + playerBox.height, enemyBox.y + enemyBox.height)
+                - Math.max(playerBox.y, enemyBox.y);
 
             if (overlapX <= overlapY) {
                 float push = playerBox.x < enemyBox.x ? -overlapX : overlapX;
@@ -312,10 +233,9 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Pomocne metody
+    //  Pomocné metódy
     // -------------------------------------------------------------------------
 
-    /** Zabije kacku, prida drop do levelu a deaktivuje projektil. */
     private void killDuck(Duck duck, Projectile projectile, Level level) {
         duck.takeDamage(duck.getHp());
         Item drop = duck.onKilled();
@@ -323,7 +243,6 @@ public class CollisionManager {
         projectile.setActive(false);
     }
 
-    /** Skontroluje ci projektil narazil do niektorej steny v mape. */
     private boolean hitsWall(Projectile projectile, Level level) {
         if (level.getMapManager() == null) return false;
         for (Rectangle wall : level.getMapManager().getHitboxes()) {
@@ -331,18 +250,6 @@ public class CollisionManager {
         }
         return false;
     }
-
-    /**
-     * Projektil je "hracsky" ak ho vystrelil PlayerCharacter.
-     * Null shooter sa povazuje za hracsky (napr. debug projektily).
-     */
-    private boolean isPlayerProjectile(Projectile projectile) {
-        return !(projectile.getShooter() instanceof EnemyCharacter);
-    }
-
-    // -------------------------------------------------------------------------
-    //  Gettery pre HUD
-    // -------------------------------------------------------------------------
 
     public Item getNearbyItem() { return nearbyItem; }
 }

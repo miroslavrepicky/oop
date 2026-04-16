@@ -2,49 +2,45 @@ package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.world.Level;
+
+import java.util.Collections;
+import java.util.List;
 
 public class FloatingGravity implements GravityStrategy {
-    private static final float GRAVITY = -50f; // slaba gravitacia
+    private static final float GRAVITY = -50f;
 
     @Override
-    public void apply(Character character, float deltaTime) {
+    public void apply(Character character, float deltaTime, List<Rectangle> platforms) {
         character.setVelocityY(character.getVelocityY() + GRAVITY * deltaTime);
-        float newY = character.getPosition().getY() + character.getVelocityY() * deltaTime;
-        float currentX = character.getPosition().getX();
-
-        Level level = GameManager.getInstance().getCurrentLevel();
+        float newY      = character.getPosition().getY() + character.getVelocityY() * deltaTime;
+        float currentX  = character.getPosition().getX();
         boolean onGround = false;
 
-        if (level != null && level.getMapManager() != null) {
-            Rectangle charBox = new Rectangle(currentX, newY,
-                character.getHitbox().width, character.getHitbox().height);
+        List<Rectangle> walls = (platforms != null) ? platforms : Collections.emptyList();
 
-            for (Rectangle platform : level.getMapManager().getHitboxes()) {
-                if (!charBox.overlaps(platform)) continue;
+        Rectangle charBox = new Rectangle(
+            currentX, newY,
+            character.getHitbox().width, character.getHitbox().height
+        );
 
-                // Vypocitaj hlbku prieniku na oboch osiach
-                float overlapY = Math.min(charBox.y + charBox.height, platform.y + platform.height)
-                    - Math.max(charBox.y, platform.y);
-                float overlapX = Math.min(charBox.x + charBox.width, platform.x + platform.width)
-                    - Math.max(charBox.x, platform.x);
+        for (Rectangle platform : walls) {
+            if (!charBox.overlaps(platform)) continue;
 
-                // Reaguj len na vertikalnu koliziu (Y-prienik je mensi ako X-prienik)
-                if (overlapY <= overlapX) {
-                    if (character.getVelocityY() < 0) {
-                        // pad nadol – pristatie na vrchu platformy
-                        newY = platform.y + platform.height;
-                        character.setVelocityY(0f);
-                        onGround = true;
-                    } else if (character.getVelocityY() > 0) {
-                        // skok nahor - naraz do strechy
-                        newY = platform.y - charBox.height;
-                        character.setVelocityY(0f);
-                    }
-                    charBox.y = newY; // aktualizuj pre dalsie platformy
+            float overlapY = Math.min(charBox.y + charBox.height, platform.y + platform.height)
+                - Math.max(charBox.y, platform.y);
+            float overlapX = Math.min(charBox.x + charBox.width, platform.x + platform.width)
+                - Math.max(charBox.x, platform.x);
+
+            if (overlapY <= overlapX) {
+                if (character.getVelocityY() < 0) {
+                    newY = platform.y + platform.height;
+                    character.setVelocityY(0f);
+                    onGround = true;
+                } else if (character.getVelocityY() > 0) {
+                    newY = platform.y - charBox.height;
+                    character.setVelocityY(0f);
                 }
-                // Horizontalna kolizia (vacsi Y-prienik ako X) - gravitacia neriesi,
-                // to je uloha horizontalneho pohybu v PlayerController
+                charBox.y = newY;
             }
         }
 

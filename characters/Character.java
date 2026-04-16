@@ -1,5 +1,6 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.Collidable;
 import sk.stuba.fiit.core.GravityStrategy;
@@ -7,7 +8,8 @@ import sk.stuba.fiit.core.Movable;
 import sk.stuba.fiit.core.Updatable;
 import sk.stuba.fiit.util.Vector2D;
 
-import com.badlogic.gdx.math.Rectangle;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class Character implements Updatable, Movable, Collidable {
     protected String name;
@@ -24,9 +26,7 @@ public abstract class Character implements Updatable, Movable, Collidable {
     protected float velocityX = 0f;
     private float deathTimer = -1f;
 
-    /** Aktualna hodnota brnenia. Znizuje prijate poskodenie. */
     protected int armor;
-    /** Maximalna hodnota brnenia (strop pre armor). */
     protected int maxArmor;
 
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
@@ -35,14 +35,14 @@ public abstract class Character implements Updatable, Movable, Collidable {
 
     public Character(String name, int hp, int attackPower, float speed,
                      Vector2D position, int armor, int maxArmor) {
-        this.name = name;
-        this.hp = hp;
-        this.maxHp = hp;
+        this.name     = name;
+        this.hp       = hp;
+        this.maxHp    = hp;
         this.attackPower = attackPower;
-        this.speed = speed;
+        this.speed    = speed;
         this.position = position;
-        this.hitbox = new Rectangle(position.getX(), position.getY(), 64, 64);
-        this.armor = Math.min(armor, maxArmor);
+        this.hitbox   = new Rectangle(position.getX(), position.getY(), 64, 64);
+        this.armor    = Math.min(armor, maxArmor);
         this.maxArmor = maxArmor;
     }
 
@@ -50,18 +50,33 @@ public abstract class Character implements Updatable, Movable, Collidable {
         hitbox.setPosition(position.getX(), position.getY());
     }
 
-    public void applyGravity(float deltaTime) {
+    /**
+     * Aplikuje gravitáciu. Platformy sa predávajú zvonku – Character
+     * nemusí vedieť nič o Level ani GameManager.
+     *
+     * @param deltaTime čas od posledného framu
+     * @param platforms kolízne obdĺžniky mapy; null = žiadne platformy
+     */
+    public void applyGravity(float deltaTime, List<Rectangle> platforms) {
         if (gravityStrategy != null) {
-            gravityStrategy.apply(this, deltaTime);
+            gravityStrategy.apply(this, deltaTime, platforms);
         }
     }
 
+    /**
+     * Skratka pre situácie kde platformy nie sú k dispozícii
+     * (napr. projektily s NoGravity).
+     */
+    public void applyGravity(float deltaTime) {
+        applyGravity(deltaTime, Collections.emptyList());
+    }
+
     public void startDeathAnimation() {
-        if (deathTimer != -1f) return; // uz bezi
+        if (deathTimer != -1f) return;
         AnimationManager am = getAnimationManager();
         float duration = (am != null && am.hasAnimation("death"))
             ? am.getAnimationDuration("death")
-            : 1.0f; // fallback ak nema animaciu
+            : 1.0f;
         deathTimer = duration;
         if (am != null) am.play("death");
     }
@@ -76,26 +91,23 @@ public abstract class Character implements Updatable, Movable, Collidable {
         return !isAlive() && deathTimer == 0f;
     }
 
-    public boolean isFacingRight() { return facingRight; }
-    public void setFacingRight(boolean facingRight) { this.facingRight = facingRight; }
-
     public void jump(float jumpForce) {
         if (isOnGround) {
-            velocityY = jumpForce;
+            velocityY  = jumpForce;
             isOnGround = false;
         }
     }
 
     public void revive() {
-        this.hp = this.maxHp;
+        this.hp        = this.maxHp;
         this.velocityY = 0f;
         this.isOnGround = false;
         this.deathTimer = -1f;
     }
 
     /**
-     * Aplikuje poskodenie s odpocitanim brnenia.
-     * Zaporny dmg = liecenie (heal), brnenie sa vtedy neaplikuje.
+     * Aplikuje poškodenie s odpočítaním brnenia.
+     * Záporný dmg = liečenie; brnenie sa vtedy neaplikuje.
      */
     public void takeDamage(int dmg) {
         if (dmg > 0) {
@@ -108,9 +120,6 @@ public abstract class Character implements Updatable, Movable, Collidable {
         }
     }
 
-    /**
-     * Zvysi aktualny armor o {@code amount}, maximalne do maxArmor.
-     */
     public void addArmor(int amount) {
         armor = Math.min(maxArmor, armor + amount);
     }
@@ -125,23 +134,25 @@ public abstract class Character implements Updatable, Movable, Collidable {
         // override v podtriedach
     }
 
-    // gettery / settery
-    public String getName() { return name; }
-    public int getHp() { return hp; }
-    public int getMaxHp() { return maxHp; }
-    public int getAttackPower() { return attackPower; }
-    public float getSpeed() { return speed; }
-    public Vector2D getPosition() { return position; }
-    public void setPosition(Vector2D position) { this.position = position; }
-    public void setHitboxSize(Vector2D size) { this.hitbox.setSize(size.getX(), size.getY()); }
-    public Rectangle getHitbox() { return hitbox; }
-    public float getVelocityY() { return velocityY; }
-    public void setVelocityY(float velocityY) { this.velocityY = velocityY; }
-    public boolean isOnGround() { return isOnGround; }
-    public void setOnGround(boolean onGround) { this.isOnGround = onGround; }
+    // --- gettery / settery ---
+    public String      getName()        { return name; }
+    public int         getHp()          { return hp; }
+    public int         getMaxHp()       { return maxHp; }
+    public int         getAttackPower() { return attackPower; }
+    public float       getSpeed()       { return speed; }
+    public Vector2D    getPosition()    { return position; }
+    public void        setPosition(Vector2D position) { this.position = position; }
+    public void        setHitboxSize(Vector2D size)   { this.hitbox.setSize(size.getX(), size.getY()); }
+    public Rectangle   getHitbox()      { return hitbox; }
+    public float       getVelocityY()   { return velocityY; }
+    public void        setVelocityY(float v) { this.velocityY = v; }
+    public boolean     isOnGround()     { return isOnGround; }
+    public void        setOnGround(boolean b) { this.isOnGround = b; }
+    public boolean     isFacingRight()  { return facingRight; }
+    public void        setFacingRight(boolean b) { this.facingRight = b; }
+    public float       getVelocityX()   { return velocityX; }
+    public void        setVelocityX(float v) { this.velocityX = v; }
+    public int         getArmor()       { return armor; }
+    public int         getMaxArmor()    { return maxArmor; }
     public abstract AnimationManager getAnimationManager();
-    public float getVelocityX() { return velocityX; }
-    public void setVelocityX(float velocityX) { this.velocityX = velocityX; }
-    public int getArmor() { return armor; }
-    public int getMaxArmor() { return maxArmor; }
 }

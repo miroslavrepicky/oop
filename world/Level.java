@@ -1,5 +1,6 @@
 package sk.stuba.fiit.world;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.MovementResolver;
@@ -13,6 +14,7 @@ import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -88,12 +90,25 @@ public class Level implements Updatable {
 
     @Override
     public void update(float deltaTime) {
+        // Platformy sa vypočítajú raz a predajú všetkým čo ich potrebujú –
+        // gravitácia, enemy update. Žiadna z volaných tried nesiaha na GameManager.
+        List<Rectangle> platforms = (mapManager != null)
+            ? mapManager.getHitboxes()
+            : Collections.emptyList();
+
+        PlayerCharacter player = getActivePlayer();
+
+        // --- projektily ---
         projectiles.removeIf(p -> !p.isActive());
         for (Projectile p : projectiles) p.update(deltaTime);
 
+        // --- nepriatelia ---
         enemies.removeIf(e -> !e.isAlive() && e.isDeathAnimationDone());
-        for (EnemyCharacter e : enemies) e.update(deltaTime);
+        for (EnemyCharacter e : enemies) {
+            e.update(deltaTime, platforms, this, player);
+        }
 
+        // --- itemy ---
         Iterator<Item> itemIter = items.iterator();
         while (itemIter.hasNext()) {
             Item item = itemIter.next();
@@ -105,8 +120,12 @@ public class Level implements Updatable {
             item.update(deltaTime);
         }
 
+        // --- kačky ---
         ducks.removeIf(d -> !d.isAlive());
-        for (Duck d : ducks) d.update(deltaTime);
+        for (Duck d : ducks) {
+            // Duck používa FloatingGravity – platformy predané priamo
+            d.update(deltaTime, platforms);
+        }
 
         checkCompletion();
     }
@@ -116,7 +135,6 @@ public class Level implements Updatable {
         return isCompleted;
     }
 
-    /** Pomocna metoda – vracia aktivneho hraca pre Attack.execute() implementacie. */
     public PlayerCharacter getActivePlayer() {
         return GameManager.getInstance().getInventory().getActive();
     }
@@ -125,15 +143,11 @@ public class Level implements Updatable {
     public void addItem(Item item)               { items.add(item); }
     public void addDuck(Duck duck)               { ducks.add(duck); }
 
-    public List<EnemyCharacter> getEnemies()   { return enemies; }
-    public List<Item>           getItems()      { return items; }
-    public List<Duck>           getDucks()      { return ducks; }
-    public boolean              isCompleted()   { return isCompleted; }
-    public int                  getLevelNumber(){ return levelNumber; }
-    public List<Projectile>     getProjectiles(){ return projectiles; }
-    public MapManager           getMapManager() { return mapManager; }
+    public List<EnemyCharacter> getEnemies()    { return enemies; }
+    public List<Item>           getItems()       { return items; }
+    public List<Duck>           getDucks()       { return ducks; }
+    public boolean              isCompleted()    { return isCompleted; }
+    public int                  getLevelNumber() { return levelNumber; }
+    public List<Projectile>     getProjectiles() { return projectiles; }
+    public MapManager           getMapManager()  { return mapManager; }
 }
-
-
-
-

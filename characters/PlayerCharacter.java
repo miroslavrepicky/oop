@@ -8,39 +8,43 @@ import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
+/**
+ * Základná trieda pre všetky hráčom ovládané postavy.
+ *
+ * Zmeny oproti pôvodnému kódu:
+ *  - Gravitáciu riadi {@link sk.stuba.fiit.core.PlayerController}
+ *    (predáva platformy priamo). PlayerCharacter samotný gravitáciu
+ *    nevolá – to by vyžadovalo prístup k platformám cez GameManager.
+ *  - Žiadne iné logické zmeny.
+ */
 public abstract class PlayerCharacter extends Character {
     protected Attack primaryAttack;
     protected Attack secondaryAttack;
-    protected boolean isAttacking = false;
-    protected float attackAnimTimer = 0f;
-    protected Attack currentAttack;
+    protected boolean isAttacking       = false;
+    protected float   attackAnimTimer   = 0f;
+    protected Attack  currentAttack     = null;
     protected boolean projectileSpawned = false;
 
-    /**
-     * Zakladny konstruktor – armor = 0, maxArmor = 0.
-     * Podtriedy mozu zavolat rozsireny konstruktor s maxArmor.
-     */
-    public PlayerCharacter(String name, int hp, int attackPower, float speed, Vector2D position) {
+    public PlayerCharacter(String name, int hp, int attackPower,
+                           float speed, Vector2D position) {
         this(name, hp, attackPower, speed, position, 0);
     }
 
-    /**
-     * Rozsireny konstruktor – armor startuje na 0, maxArmor je strop.
-     *
-     * @param maxArmor maximalna hodnota brnenia ktoru hrac moze nazbierat
-     */
     public PlayerCharacter(String name, int hp, int attackPower, float speed,
                            Vector2D position, int maxArmor) {
         super(name, hp, attackPower, speed, position, 0, maxArmor);
     }
 
-    // mana - defaultne nepotrebna, Wizzard override-ne
-    protected int getMana() { return Integer.MAX_VALUE; }
-    protected void spendMana(int amount) {}
+    // --- mana – default prázdna implementácia, Wizzard override-ne ---
+    protected int  getMana()             { return Integer.MAX_VALUE; }
+    protected void spendMana(int amount) { }
+
+    // -------------------------------------------------------------------------
+    //  Útok
+    // -------------------------------------------------------------------------
 
     protected void executeAttack(Attack attack) {
-        if (attack == null) return;
-        if (isAttacking) return;
+        if (attack == null || isAttacking) return;
 
         if (attack instanceof SpellAttack) {
             SpellAttack spell = (SpellAttack) attack;
@@ -53,13 +57,11 @@ public abstract class PlayerCharacter extends Character {
 
         AnimationManager am = getAnimationManager();
         if (am != null) {
-            isAttacking    = true;
-            currentAttack  = attack;
-            attackAnimTimer = attack.getAnimationDuration(am);
+            isAttacking       = true;
+            currentAttack     = attack;
+            attackAnimTimer   = attack.getAnimationDuration(am);
             projectileSpawned = false;
         }
-
-        //attack.execute(this, level);
     }
 
     public void performPrimaryAttack()   { executeAttack(primaryAttack); }
@@ -67,6 +69,10 @@ public abstract class PlayerCharacter extends Character {
 
     @Override
     public void performAttack() { performPrimaryAttack(); }
+
+    // -------------------------------------------------------------------------
+    //  Animácia
+    // -------------------------------------------------------------------------
 
     @Override
     public void updateAnimation(float deltaTime) {
@@ -80,12 +86,13 @@ public abstract class PlayerCharacter extends Character {
             if (isDeathAnimationDone()) {
                 Inventory inv = GameManager.getInstance().getInventory();
                 if (inv.getActive() == this) {
-                    inv.switchToNextAlive(); // len prepni, GameManager riesi party defeated
+                    inv.switchToNextAlive();
                 }
             }
             return;
         }
 
+        // Spawn projektilu pri správnom frame útočnej animácie
         if (!projectileSpawned && currentAttack != null) {
             float frameDuration = currentAttack.getFrameDuration(getAnimationManager());
             if (attackAnimTimer <= frameDuration * 3) {
@@ -110,6 +117,7 @@ public abstract class PlayerCharacter extends Character {
         } else {
             anim = "idle";
         }
+
         getAnimationManager().play(anim);
         getAnimationManager().update(deltaTime);
     }
@@ -131,5 +139,5 @@ public abstract class PlayerCharacter extends Character {
     }
 
     @Override
-    public void onCollision(Object other) {}
+    public void onCollision(Object other) { }
 }

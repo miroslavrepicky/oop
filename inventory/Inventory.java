@@ -5,6 +5,7 @@ import sk.stuba.fiit.characters.Knight;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.util.Vector2D;
+import sk.stuba.fiit.world.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Inventory {
     private PlayerCharacter activeCharacter;
     private List<PlayerCharacter> characters;
     private List<Item> items;
-    private int selectedSlot = 0; // aktualne vybrany slot
+    private int selectedSlot = 0;
     private PlayerCharacter baseCharacter;
 
     public Inventory(int totalSlots) {
@@ -34,7 +35,7 @@ public class Inventory {
             baseCharacter = character;
             characters.add(character);
             if (activeCharacter == null) activeCharacter = character;
-            return true; // bez slot cost
+            return true;
         }
         int cost = 3;
         if (usedSlots + cost > totalSlots) return false;
@@ -45,7 +46,7 @@ public class Inventory {
     }
 
     public boolean removeCharacter(PlayerCharacter character) {
-        if (character == baseCharacter) return false; // Knight sa neda odstranit
+        if (character == baseCharacter) return false;
         if (!characters.remove(character)) return false;
         usedSlots -= 3;
         if (activeCharacter == character) {
@@ -69,49 +70,48 @@ public class Inventory {
     public void removeItem(Item item) {
         if (items.remove(item)) {
             usedSlots -= item.getSlotsRequired();
-            // oprav selectedSlot ak vysiel mimo
             if (selectedSlot >= items.size() && selectedSlot > 0) {
                 selectedSlot = items.size() - 1;
             }
         }
     }
 
-    /** Posunie vyber o jeden slot dolava (Q). */
     public void selectPrevious() {
         if (items.isEmpty()) return;
         selectedSlot = (selectedSlot - 1 + items.size()) % items.size();
     }
 
-    /** Posunie vyber o jeden slot doprava (W). */
     public void selectNext() {
         if (items.isEmpty()) return;
         selectedSlot = (selectedSlot + 1) % items.size();
     }
 
-    /** Pouzije aktualne vybrany item (E). */
-    public void useSelected(PlayerCharacter character) {
+    /**
+     * Použije aktuálne vybraný item.
+     * Level sa predáva zvonku – Inventory nemusí volať GameManager.
+     *
+     * @param character aktívna postava
+     * @param level     aktuálny level (predaný z PlayerController)
+     */
+    public void useSelected(PlayerCharacter character, Level level) {
         if (items.isEmpty() || selectedSlot >= items.size()) return;
-        items.get(selectedSlot).use(character);
+        items.get(selectedSlot).use(character, level);
     }
 
     public void switchCharacter(int key) {
         if (key >= 1 && key <= characters.size()) {
             PlayerCharacter next = characters.get(key - 1);
             if (next == activeCharacter) return;
-
-            // Prenesie poziciu a smer pohladu na novu postavu
             next.setPosition(activeCharacter.getPosition());
             next.setFacingRight(activeCharacter.isFacingRight());
             next.updateHitbox();
-
             activeCharacter = next;
         }
     }
 
     public boolean switchToNextAlive() {
-        Vector2D currentPosition  = activeCharacter.getPosition();
-        boolean  currentFacing    = activeCharacter.isFacingRight();
-
+        Vector2D currentPosition = activeCharacter.getPosition();
+        boolean  currentFacing   = activeCharacter.isFacingRight();
         for (PlayerCharacter c : characters) {
             if (c != activeCharacter && c.isAlive()) {
                 c.setPosition(currentPosition);
@@ -128,11 +128,11 @@ public class Inventory {
         return characters.stream().noneMatch(Character::isAlive);
     }
 
-    public int getSelectedSlot()              { return selectedSlot; }
-    public PlayerCharacter getActive()        { return activeCharacter; }
-    public List<PlayerCharacter> getCharacters() { return characters; }
-    public List<Item> getItems()              { return items; }
-    public int getTotalSlots()                { return totalSlots; }
-    public int getUsedSlots()                 { return usedSlots; }
-    public int getFreeSlots()                 { return totalSlots - usedSlots; }
+    public int              getSelectedSlot()               { return selectedSlot; }
+    public PlayerCharacter  getActive()                     { return activeCharacter; }
+    public List<PlayerCharacter> getCharacters()            { return characters; }
+    public List<Item>       getItems()                      { return items; }
+    public int              getTotalSlots()                 { return totalSlots; }
+    public int              getUsedSlots()                  { return usedSlots; }
+    public int              getFreeSlots()                  { return totalSlots - usedSlots; }
 }

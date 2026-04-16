@@ -1,6 +1,8 @@
 package sk.stuba.fiit.characters;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.attacks.Attack;
+import sk.stuba.fiit.core.AIControllable;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
@@ -9,41 +11,49 @@ import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
-public abstract class EnemyCharacter extends Character {
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Základná trieda pre všetkých nepriateľov.
+ *
+ * Implementuje {@link AIControllable} – {@link AIController} závisí
+ * len od tohto interface, nie od tejto konkrétnej triedy.
+ *
+ * Zmeny oproti pôvodnému kódu:
+ *  - {@code update(float)} dostáva {@code Level} ako parameter namiesto
+ *    volania {@code GameManager.getInstance().getCurrentLevel()}
+ *  - gravitácia dostáva platformy priamo, nie cez GameManager
+ *  - {@code AIController} pracuje cez {@code AIControllable} interface
+ */
+public abstract class EnemyCharacter extends Character implements AIControllable {
     protected float patrolRange;
     protected float detectionRange;
     protected Inventory inventory;
     private AIController aiController;
     private MovementResolver movementResolver;
 
-    // utok – nastavuju podtriedy v konstruktore (ako PlayerCharacter)
     protected Attack attack;
 
     private float attackCooldown             = 0f;
     private static final float ATTACK_COOLDOWN_MAX = 1.5f;
 
-    // stav utocnej animacie
     protected boolean isAttacking        = false;
     private   float   attackAnimTimer    = 0f;
     private   float   attackAnimDuration = 0f;
     private   boolean damageDealt        = false;
     private   PlayerCharacter pendingTarget = null;
-    private boolean lastMoveBlocked = false;
+    private   boolean lastMoveBlocked    = false;
 
-    /**
-     * Zakladny konstruktor – armor = 0, maxArmor = 0.
-     */
+    // -------------------------------------------------------------------------
+    //  Konštruktory
+    // -------------------------------------------------------------------------
+
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange) {
         this(name, hp, attackPower, speed, position, patrolRange, detectionRange, 0, 0);
     }
 
-    /**
-     * Rozsireny konstruktor s pevnou hodnotou brnenia.
-     *
-     * @param armor    pociatocne (a zaroven maximalne) brnenie nepriatela
-     * @param maxArmor strop brnenia (zvycajne rovnaky ako armor)
-     */
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange,
                           int armor, int maxArmor) {
@@ -53,9 +63,21 @@ public abstract class EnemyCharacter extends Character {
         this.inventory      = new Inventory();
     }
 
+    // -------------------------------------------------------------------------
+    //  AIControllable implementácia
+    // -------------------------------------------------------------------------
+
+    @Override
     public boolean detectPlayer(PlayerCharacter player) {
         return position.distanceTo(player.getPosition()) <= detectionRange;
     }
+
+    @Override
+    public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
+
+    // -------------------------------------------------------------------------
+    //  AI inicializácia
+    // -------------------------------------------------------------------------
 
     public void initAI(Vector2D patrolStart, Vector2D patrolEnd,
                        float attackRange, float preferredRange) {
@@ -67,15 +89,19 @@ public abstract class EnemyCharacter extends Character {
         this.movementResolver = resolver;
     }
 
+    // -------------------------------------------------------------------------
+    //  Pohyb
+    // -------------------------------------------------------------------------
+
     @Override
     public void move(Vector2D direction) {
         float dx = direction.getX();
         float dy = direction.getY();
 
         if (movementResolver != null && dx != 0f) {
-            float allowed = movementResolver.resolveX(hitbox, dx);
-            lastMoveBlocked = (allowed == 0f && dx != 0f);
-            dx = allowed;
+            float allowed   = movementResolver.resolveX(hitbox, dx);
+            lastMoveBlocked = (allowed == 0f);
+            dx              = allowed;
         } else {
             lastMoveBlocked = false;
         }
@@ -85,72 +111,61 @@ public abstract class EnemyCharacter extends Character {
         updateHitbox();
     }
 
+    // -------------------------------------------------------------------------
+    //  Útok (volaný z AIController cez AIControllable.performAttack)
+    // -------------------------------------------------------------------------
+
     /**
-     * Volana z AIController ked je hrac v ATTACK_RANGE.
-     * Spusti utocnu animaciu; damage pride na KONCI animacie (posledny frame).
+     * Spustí útočnú animáciu; skutočný damage príde na konci animácie
+     * v {@link #update(float, List)}.
      */
+    @Override
     public void performAttack(PlayerCharacter player) {
         if (attackCooldown > 0 || isAttacking || attack == null) return;
 
-        attackCooldown  = ATTACK_COOLDOWN_MAX;
-        isAttacking     = true;
-        damageDealt     = false;
-        pendingTarget   = player;
+        attackCooldown     = ATTACK_COOLDOWN_MAX;
+        isAttacking        = true;
+        damageDealt        = false;
+        pendingTarget      = player;
 
         AnimationManager am = getAnimationManager();
-        attackAnimDuration = attack.getAnimationDuration(am);
-        attackAnimTimer    = attackAnimDuration;
+        attackAnimDuration  = attack.getAnimationDuration(am);
+        attackAnimTimer     = attackAnimDuration;
 
-        // spusti animaciu
         if (am != null) am.play(attack.getAnimationName());
 
-        // spusti vlastnu logiku podtriedy (napr. DarkKnight prepinanie faz)
-        performAttack();
+        performAttack(); // hook pre podtriedy (napr. DarkKnight zmena fázy)
     }
 
-    protected String getAttackAnimationName() {
-        return "attack";
-    }
+    protected String getAttackAnimationName() { return "attack"; }
 
-    @Override
-    public void updateAnimation(float deltaTime) {
-        AnimationManager am = getAnimationManager();
-        if (am == null) return;
-        String anim;
-        if (!isAlive()) {
-            anim = "death";
-        } else if (isAttacking()) {
-            anim = getAttackAnimationName();
-        } else if (!isOnGround()) {
-            anim = am.hasAnimation("jump") ? "jump" : "idle";
-        } else if (Math.abs(getVelocityX()) > 0.1f) {
-            anim = "walk";
-        } else {
-            anim = "idle";
-        }
-        //this.setHitboxSize(am.getAnimationSize(anim));
-        am.play(anim);
-        am.update(deltaTime);
-    }
+    // -------------------------------------------------------------------------
+    //  Update – Level predaný ako parameter, nie cez GameManager
+    // -------------------------------------------------------------------------
 
-    @Override
-    public void onCollision(Object other) {}
-
-    @Override
-    public void update(float deltaTime) {
+    /**
+     * Hlavný update. {@code Level} je predaný zvonku (z {@code Level.update()})
+     * – EnemyCharacter nemusí volať {@code GameManager.getInstance()}.
+     *
+     * @param deltaTime čas od posledného framu
+     * @param platforms kolízne obdĺžniky mapy pre gravitáciu
+     * @param level     aktuálny level (potrebný pre útok)
+     * @param player    aktívny hráč (potrebný pre AI)
+     */
+    public void update(float deltaTime, List<Rectangle> platforms,
+                       Level level, PlayerCharacter player) {
         if (!isAlive()) {
             startDeathAnimation();
             updateDeathTimer(deltaTime);
             return;
         }
+
         attackCooldown -= deltaTime;
 
         if (isAttacking) {
             attackAnimTimer -= deltaTime;
 
-            // damage na konci animacie (posledny frame)
             if (!damageDealt && attackAnimTimer <= 0f) {
-                Level level = GameManager.getInstance().getCurrentLevel();
                 if (level != null && attack != null) {
                     attack.execute(this, level);
                 }
@@ -163,17 +178,58 @@ public abstract class EnemyCharacter extends Character {
             }
         }
 
-        applyGravity(deltaTime);
+        // Gravitácia – platformy predané priamo, bez GameManager
+        applyGravity(deltaTime, platforms);
 
-        if (aiController != null) {
-            PlayerCharacter player = GameManager.getInstance()
-                .getInventory().getActive();
-            if (player != null) {
-                aiController.update(deltaTime, player);
-            }
+        if (aiController != null && player != null) {
+            aiController.update(deltaTime, player);
         }
     }
 
+    /**
+     * Spätne kompatibilný update – používa GameManager ak ešte niekto volá
+     * starý podpis. Interne deleguje na nový update.
+     *
+     * @deprecated Použi {@link #update(float, List, Level, PlayerCharacter)}
+     */
+    @Deprecated
+    @Override
+    public void update(float deltaTime) {
+        Level level   = GameManager.getInstance().getCurrentLevel();
+        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
+        List<Rectangle> platforms = (level != null && level.getMapManager() != null)
+            ? level.getMapManager().getHitboxes()
+            : Collections.emptyList();
+        update(deltaTime, platforms, level, player);
+    }
+
+    // -------------------------------------------------------------------------
+    //  Animácia
+    // -------------------------------------------------------------------------
+
+    @Override
+    public void updateAnimation(float deltaTime) {
+        AnimationManager am = getAnimationManager();
+        if (am == null) return;
+
+        String anim;
+        if (!isAlive()) {
+            anim = "death";
+        } else if (isAttacking()) {
+            anim = getAttackAnimationName();
+        } else if (!isOnGround()) {
+            anim = am.hasAnimation("jump") ? "jump" : "idle";
+        } else if (Math.abs(getVelocityX()) > 0.1f) {
+            anim = "walk";
+        } else {
+            anim = "idle";
+        }
+        am.play(anim);
+        am.update(deltaTime);
+    }
+
+    @Override
+    public void onCollision(Object other) {}
+
     public boolean isAttacking() { return isAttacking; }
-    public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
 }

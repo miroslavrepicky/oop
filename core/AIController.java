@@ -1,50 +1,48 @@
 package sk.stuba.fiit.core;
 
-import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.util.Vector2D;
 
+/**
+ * Riadi AI logiku (PATROL → CHASE → ATTACK) pre ľubovoľnú postavu
+ * implementujúcu {@link AIControllable}.
+ *
+ * Controller nepozná {@code EnemyCharacter} – všetka komunikácia
+ * prebieha cez interface. Vďaka tomu je možné pridať nové typy
+ * nepriateľov alebo dokonca NPC bez zmeny tejto triedy.
+ */
 public class AIController {
-    private EnemyCharacter enemy;
+    private final AIControllable enemy;
     private AIState state;
     private Vector2D patrolStart;
     private Vector2D patrolEnd;
     private boolean patrollingRight;
-    /** Vzdialenost, od ktorej enemy zacne utocit. */
+
+    /** Vzdialenosť, od ktorej enemy začne útočiť. */
     private final float attackRange;
     /**
-     * Idealna bojova vzdialenost - ranged enemy sa snazi udrzat tuto
-     * vzdialenost od hraca a nebude sa k nemu dalej priblizovat.
-     * Pre melee je rovnaka ako attackRange.
+     * Ideálna bojová vzdialenosť – ranged enemy sa snaží udržať túto
+     * vzdialenosť a nepribližovať sa ďalej. Pre melee == attackRange.
      */
     private final float preferredRange;
 
-    // Default hodnoty pre spatnu kompatibilitu (melee)
-    private static final float DEFAULT_ATTACK_RANGE   = 80f;
+    private static final float DEFAULT_ATTACK_RANGE    = 80f;
     private static final float DEFAULT_PREFERRED_RANGE = 80f;
+    private static final int   BLOCKED_THRESHOLD       = 4;
 
     private int blockedFrames = 0;
-    private static final int BLOCKED_THRESHOLD = 4;
 
     // -------------------------------------------------------------------------
-    //  Konstruktory
+    //  Konštruktory
     // -------------------------------------------------------------------------
 
-    /** Spatne kompatibilny konstruktor. Sprava sa ako povodny melee AI. */
-    public AIController(EnemyCharacter enemy,
+    public AIController(AIControllable enemy,
                         Vector2D patrolStart, Vector2D patrolEnd) {
         this(enemy, patrolStart, patrolEnd,
             DEFAULT_ATTACK_RANGE, DEFAULT_PREFERRED_RANGE);
     }
 
-    /**
-     * Plny konstruktor.
-     *
-     * @param attackRange    maximalna vzdialenost, od ktorej enemy utoci
-     * @param preferredRange idealna bojova vzdialenost (ranged: vacsia ako attackRange,
-     *                       melee: rovnaka ako attackRange)
-     */
-    public AIController(EnemyCharacter enemy,
+    public AIController(AIControllable enemy,
                         Vector2D patrolStart, Vector2D patrolEnd,
                         float attackRange, float preferredRange) {
         this.enemy          = enemy;
@@ -57,7 +55,7 @@ public class AIController {
     }
 
     // -------------------------------------------------------------------------
-    //  Update
+    //  Hlavný update
     // -------------------------------------------------------------------------
 
     public void update(float deltaTime, PlayerCharacter player) {
@@ -73,42 +71,34 @@ public class AIController {
     // -------------------------------------------------------------------------
 
     private void handlePatrol(float deltaTime, PlayerCharacter player) {
-        float speed = enemy.getSpeed() * deltaTime * 60;
-        Vector2D pos = enemy.getPosition();
+        float speed     = enemy.getSpeed() * deltaTime * 60;
         float tolerance = speed + 1f;
+        Vector2D pos    = enemy.getPosition();
 
-        // 1. Urcenie smeru a pokus o pohyb
-        float currentDirectionX = patrollingRight ? speed : -speed;
-
-        enemy.move(new Vector2D(currentDirectionX, 0));
+        float dx = patrollingRight ? speed : -speed;
+        enemy.move(new Vector2D(dx, 0));
         enemy.setFacingRight(patrollingRight);
 
-        // 2. Synchronizacia velocity
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
             blockedFrames++;
         } else {
-            enemy.setVelocityX(currentDirectionX);
+            enemy.setVelocityX(dx);
             blockedFrames = 0;
         }
 
-        // 3. Logika skoku
         if (blockedFrames == 5 && enemy.isOnGround()) {
             enemy.jump(50f);
         }
 
-        // 4. Logika otocenia pri dlhom zablokovani
         if (blockedFrames >= BLOCKED_THRESHOLD) {
             patrollingRight = !patrollingRight;
-            blockedFrames = 0;
-
-            // Dynamický reset hraníc, aby sa hneď neotočil späť
-            float patrolRange = 200f;
-            patrolStart.setX(pos.getX() - (patrollingRight ? 0 : patrolRange));
-            patrolEnd.setX(pos.getX() + (patrollingRight ? patrolRange : 0));
+            blockedFrames   = 0;
+            float range     = 200f;
+            patrolStart.setX(pos.getX() - (patrollingRight ? 0 : range));
+            patrolEnd.setX(  pos.getX() + (patrollingRight ? range : 0));
         }
 
-        // 5. Logika dosiahnutia konca trasy (len ak nie je zablokovany)
         if (!enemy.wasLastMoveBlocked()) {
             if (patrollingRight && pos.getX() >= patrolEnd.getX() - tolerance) {
                 patrollingRight = false;
@@ -122,26 +112,22 @@ public class AIController {
 
     private void handleChase(float deltaTime, PlayerCharacter player) {
         if (!enemy.detectPlayer(player)) {
-            // Hrac sa stratil z dosahu detekcie – obnovime hliadku v okoli.
-            float currentX  = enemy.getPosition().getX();
-            patrolStart     = new Vector2D(currentX - 100, enemy.getPosition().getY());
-            patrolEnd       = new Vector2D(currentX + 100, enemy.getPosition().getY());
+            resetPatrolAroundCurrent();
             state = AIState.PATROL;
+            return;
         }
+
         Vector2D enemyPos  = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
-        double dist        = enemyPos.distanceTo(playerPos);
-        float speed        = enemy.getSpeed() * deltaTime * 60;
+        double   dist      = enemyPos.distanceTo(playerPos);
+        float    speed     = enemy.getSpeed() * deltaTime * 60;
 
         if (dist <= preferredRange) {
-            // Sme dostatocne blizko – stojime a prejdeme do utoku.
-            // (Ranged enemy sa tu zastavi, melee tiez – utok nastane hned.)
             enemy.setVelocityX(0);
             state = AIState.ATTACK;
             return;
         }
 
-        // Stale mimo preferredRange – pohybujeme sa smerom k hracovi.
         float dx = playerPos.getX() > enemyPos.getX() ? speed : -speed;
         enemy.move(new Vector2D(dx, 0));
         enemy.setVelocityX(dx);
@@ -149,39 +135,38 @@ public class AIController {
 
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
-            // ak je hrac v attackRange, rovno utocit
-            if (dist <= attackRange) {
-                state = AIState.ATTACK;
-            }
-            return;
+            if (dist <= attackRange) state = AIState.ATTACK;
         }
-
-
     }
 
     private void handleAttack(float deltaTime, PlayerCharacter player) {
         if (!enemy.detectPlayer(player)) {
-            // Hrac sa stratil z dosahu detekcie – obnovime hliadku v okoli.
-            float currentX  = enemy.getPosition().getX();
-            patrolStart     = new Vector2D(currentX - 100, enemy.getPosition().getY());
-            patrolEnd       = new Vector2D(currentX + 100, enemy.getPosition().getY());
+            resetPatrolAroundCurrent();
             state = AIState.PATROL;
+            return;
         }
+
         Vector2D enemyPos  = enemy.getPosition();
         Vector2D playerPos = player.getPosition();
-        double dist        = enemyPos.distanceTo(playerPos);
+        double   dist      = enemyPos.distanceTo(playerPos);
 
-        // Otocime sa k hracovi aj pocas utoku.
         enemy.setFacingRight(playerPos.getX() > enemyPos.getX());
         enemy.setVelocityX(0);
-
         enemy.performAttack(player);
 
-        // Hrac je prilis daleko od attackRange – nahaname ho znova.
-        if (dist > attackRange) state = AIState.CHASE;
+        if (dist > attackRange)            state = AIState.CHASE;
+        if (!enemy.detectPlayer(player))   state = AIState.PATROL;
+    }
 
-        // Hrac uplne vypadol z detekcie – spat na hliadku.
-        if (!enemy.detectPlayer(player)) state = AIState.PATROL;
+    // -------------------------------------------------------------------------
+    //  Pomocné metódy
+    // -------------------------------------------------------------------------
+
+    private void resetPatrolAroundCurrent() {
+        float x   = enemy.getPosition().getX();
+        float y   = enemy.getPosition().getY();
+        patrolStart = new Vector2D(x - 100, y);
+        patrolEnd   = new Vector2D(x + 100, y);
     }
 
     public AIState getState() { return state; }
