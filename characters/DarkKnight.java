@@ -3,10 +3,11 @@ package sk.stuba.fiit.characters;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
 import sk.stuba.fiit.projectiles.MagicSpell;
+import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
 
 public class DarkKnight extends EnemyCharacter {
-    private static final int ARMOR = 30; // silny boss – vysoke brnenie
+    private static final int ARMOR = 30; // silný boss – vysoké brnenie
 
     private int phase;
     private float specialCooldown;
@@ -38,13 +39,15 @@ public class DarkKnight extends EnemyCharacter {
     }
 
     private void meleeAttack() {
-        // silny melee utok
+        // silný melee útok – riešený cez MeleeAttack.execute() v EnemyCharacter
     }
 
     public MagicSpell castSpell() {
         specialCooldown = COOLDOWN_MAX;
         Vector2D direction = new Vector2D(-1, 0);
-        return new MagicSpell(attackPower * 2, 6.0f, position, direction, 100.0f);
+        MagicSpell spell = new MagicSpell(attackPower * 2, 6.0f, position, direction, 100.0f);
+        spell.setOwner(ProjectileOwner.ENEMY);
+        return spell;
     }
 
     public void switchPhase() {
@@ -55,8 +58,8 @@ public class DarkKnight extends EnemyCharacter {
 
     @Override
     public void update(float deltaTime) {
-        super.update(deltaTime); // AI logika z EnemyCharacter
-        // prepnutie fazy podla HP
+        // AI logika z EnemyCharacter (deprecated fallback)
+        // prepnutie fázy podľa HP
         if (phase == 1 && hp < maxHp * 0.66f) switchPhase();
         if (phase == 2 && hp < maxHp * 0.33f) switchPhase();
 

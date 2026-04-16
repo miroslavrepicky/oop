@@ -2,6 +2,7 @@ package sk.stuba.fiit.items;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.util.Vector2D;
+import sk.stuba.fiit.world.Level;
 
 /**
  * Marker item vytvoreny ked kacka padne a vylosuje sa vajce (50 %).
@@ -19,8 +20,8 @@ public class EggProjectileSpawner extends Item {
     }
 
     @Override
-    public void use(PlayerCharacter character) {
-        // nic – nikdy sa nepouziva priamo
+    public void use(PlayerCharacter character, Level level) {
+        
     }
 
     /**

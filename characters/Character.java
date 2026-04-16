@@ -63,14 +63,6 @@ public abstract class Character implements Updatable, Movable, Collidable {
         }
     }
 
-    /**
-     * Skratka pre situácie kde platformy nie sú k dispozícii
-     * (napr. projektily s NoGravity).
-     */
-    public void applyGravity(float deltaTime) {
-        applyGravity(deltaTime, Collections.emptyList());
-    }
-
     public void startDeathAnimation() {
         if (deathTimer != -1f) return;
         AnimationManager am = getAnimationManager();

@@ -36,4 +36,5 @@ public class EnemyKnight extends EnemyCharacter {
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }
+
 }

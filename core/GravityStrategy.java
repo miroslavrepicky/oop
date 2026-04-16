@@ -5,6 +5,12 @@ import sk.stuba.fiit.characters.Character;
 
 import java.util.List;
 
+/**
+ * Stratégia gravitácie pre {@link Character} a jeho podtriedy.
+ *
+ * Projektily gravitáciu nepoužívajú – ich pohyb je riadený
+ * výlučne cez {@code direction * speed} v {@code Projectile.move()}.
+ */
 public interface GravityStrategy {
     /**
      * Aplikuje gravitáciu na postavu.

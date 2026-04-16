@@ -1,8 +1,10 @@
 package sk.stuba.fiit.attacks;
 
 import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.projectiles.Arrow;
+import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -32,8 +34,11 @@ public class ArrowAttack implements Attack {
             piercing
         );
 
-        // nepriatelske sipy budu kolidovat s hracom – to riesi CollisionManager
-        arrow.setShooter(attacker);
+        // Nastav vlastníka podľa typu útočníka
+        arrow.setOwner(attacker instanceof EnemyCharacter
+            ? ProjectileOwner.ENEMY
+            : ProjectileOwner.PLAYER);
+
         level.addProjectile(arrow);
     }
 

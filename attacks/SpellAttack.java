@@ -1,8 +1,10 @@
 package sk.stuba.fiit.attacks;
 
 import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.projectiles.MagicSpell;
+import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -35,7 +37,12 @@ public class SpellAttack implements Attack {
             direction,
             aoeRadius
         );
-        spell.setShooter(attacker);
+
+        // Nastav vlastníka podľa typu útočníka
+        spell.setOwner(attacker instanceof EnemyCharacter
+            ? ProjectileOwner.ENEMY
+            : ProjectileOwner.PLAYER);
+
         level.addProjectile(spell);
     }
 

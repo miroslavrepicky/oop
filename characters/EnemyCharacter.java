@@ -117,7 +117,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
     /**
      * Spustí útočnú animáciu; skutočný damage príde na konci animácie
-     * v {@link #update(float, List)}.
+     * v {@link #update(float, List, Level, PlayerCharacter)}.
      */
     @Override
     public void performAttack(PlayerCharacter player) {
@@ -195,7 +195,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     @Deprecated
     @Override
     public void update(float deltaTime) {
-        Level level   = GameManager.getInstance().getCurrentLevel();
+        Level level = GameManager.getInstance().getCurrentLevel();
         PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
         List<Rectangle> platforms = (level != null && level.getMapManager() != null)
             ? level.getMapManager().getHitboxes()
