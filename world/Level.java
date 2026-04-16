@@ -1,6 +1,7 @@
 package sk.stuba.fiit.world;
 
 import com.badlogic.gdx.math.Rectangle;
+import sk.stuba.fiit.attacks.StatusEffect;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.MovementResolver;
@@ -13,6 +14,8 @@ import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
+import sk.stuba.fiit.attacks.FireSpellDecorator.BurnEffect;
+import sk.stuba.fiit.attacks.FreezeSpellDecorator.FreezeEffect;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +31,9 @@ public class Level implements Updatable {
     private boolean isCompleted;
     private List<Projectile> projectiles = new ArrayList<>();
     private MapManager mapManager;
+    private List<BurnEffect>   burnEffects   = new ArrayList<>();
+    private List<FreezeEffect> freezeEffects = new ArrayList<>();
+    private List<StatusEffect> effects = new ArrayList<>();
 
     public Level(int levelNumber) {
         this.levelNumber = levelNumber;
@@ -89,13 +95,10 @@ public class Level implements Updatable {
         }
     }
 
-    @Override
-    public void update(UpdateContext ctx) {
-
-    }
 
     @Override
-    public void update(float deltaTime) {
+    public void update(UpdateContext upx) {
+        float deltaTime = upx.deltaTime;
         List<Rectangle> platforms = (mapManager != null)
             ? mapManager.getHitboxes()
             : Collections.emptyList();
@@ -129,13 +132,38 @@ public class Level implements Updatable {
         // --- kačky ---
         ducks.removeIf(d -> !d.isAlive());
         for (Duck d : ducks) d.update(ctx);
+        tickStatusEffects(deltaTime);
 
         checkCompletion();
+
+
     }
 
     public boolean checkCompletion() {
         isCompleted = enemies.stream().allMatch(e -> !e.isAlive());
         return isCompleted;
+    }
+
+    /**
+     * Pridá status efekt do levelu.
+     * Akceptuje BurnEffect alebo FreezeEffect (pomocou Object pre
+     * jednoduchosť – alternatívne môžeš zaviesť interface StatusEffect).
+     */
+    public void addStatusEffect(StatusEffect effect) {
+        if (effect instanceof FreezeEffect) {
+            effects.removeIf(e ->
+                e instanceof FreezeEffect &&
+                    e.getTarget() == effect.getTarget()
+            );
+        }
+        effects.add(effect);
+    }
+
+    private void tickStatusEffects(float deltaTime) {
+        for (StatusEffect effect : effects) {
+            effect.tick(deltaTime);
+        }
+        effects.removeIf(StatusEffect::isExpired);
     }
 
     public PlayerCharacter getActivePlayer() {
