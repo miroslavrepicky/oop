@@ -106,15 +106,6 @@ public class HUDRenderer {
             font.draw(batch, "[E] PICK-UP ITEM", 300, 60);
         }
 
-        if (GameManager.getInstance().getGameState() == GameState.WIN) {
-            font.setColor(Color.GOLD);
-            font.draw(batch, "YOU HAVE WON!", 320, 240);
-        }
-        if (GameManager.getInstance().getGameState() == GameState.GAME_OVER) {
-            font.setColor(Color.RED);
-            font.draw(batch, "GAME OVER – restart...", 300, 240);
-        }
-
         batch.end();
     }
 

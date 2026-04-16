@@ -1,11 +1,10 @@
 package sk.stuba.fiit.core;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+
 /**
  * Stav: hra beží – hráč sa pohybuje, AI útočí, kolízie sa riešia.
- *
- * Zapuzdruje logiku, ktorá bola predtým rozhádzaná v:
- *   GameScreen.render()  → if (state == PLAYING) playerController.update(...)
- *   GameManager.update() → if (state == PLAYING) currentLevel.update(...)
  */
 public class PlayingState implements IGameState {
 
@@ -29,38 +28,46 @@ public class PlayingState implements IGameState {
 
     @Override
     public void update(float deltaTime) {
+        // --- 1. Kontrola vstupu pre Pauzu ---
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            nextState = new PausedState(gameRenderer, this);
+            return;
+        }
+
+        // --- 2. Update hernej logiky ---
         playerController.update(deltaTime);
-        gameManager.update(deltaTime);
+
+        if (gameManager.getCurrentLevel() != null) {
+            gameManager.getCurrentLevel().update(deltaTime);
+        }
         collisionManager.update(gameManager.getCurrentLevel());
 
-        // --- prechody stavu ---
-        GameState gs = gameManager.getGameState();
-
-        if (gs == GameState.GAME_OVER_DELAY) {
+        // --- 3. Prechody stavu (Vyhodnotenie podmienok) ---
+        if (gameManager.getInventory().isPartyDefeated()) {
             nextState = new GameOverDelayState(
                 gameManager, gameRenderer, GameOverDelayState.DELAY);
             return;
         }
-        if (gs == GameState.LEVEL_COMPLETE) {
-            nextState = new LevelCompleteState(gameManager);
-            return;
-        }
-        if (gs == GameState.WIN) {
-            nextState = new WinState();
-            return;
+
+        if (gameManager.getCurrentLevel() != null && gameManager.getCurrentLevel().isCompleted()) {
+            int nextLevel = gameManager.getCurrentLevel().getLevelNumber() + 1;
+            if (nextLevel > gameManager.getMaxLevels()) {
+                nextState = new WinState();
+            } else {
+                nextState = new LevelCompleteState(gameManager);
+            }
         }
     }
 
     @Override
     public void render(float deltaTime) {
-        // Celé vykresľovanie levelu – žiaden špeciálny overlay
         gameRenderer.render(deltaTime);
     }
 
     @Override
     public IGameState next() {
         IGameState result = nextState;
-        nextState = null;  // reset – next() sa nesmie volať viac raz za frame
+        nextState = null;  // reset
         return result;
     }
 }

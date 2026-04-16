@@ -1,6 +1,7 @@
 package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
@@ -25,10 +26,10 @@ public class MagicSpell extends Projectile implements AoeProjectile {
     }
 
     @Override
-    public void update(float deltaTime) {
+    public void update(UpdateContext ctx) {
         move();
         hitbox.setPosition(position.getX(), position.getY());
-        animationManager.update(deltaTime);
+        animationManager.update(ctx.deltaTime);
     }
 
     public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch, boolean flipX) {

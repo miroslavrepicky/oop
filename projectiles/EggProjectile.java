@@ -3,6 +3,7 @@ package sk.stuba.fiit.projectiles;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 
@@ -47,7 +48,8 @@ public class EggProjectile extends Projectile {
      * tu iba menime stav a animaciu.
      */
     @Override
-    public void update(float deltaTime) {
+    public void update(UpdateContext ctx) {
+        float deltaTime = ctx.deltaTime;
         stateTimer -= deltaTime;
         if (animationManager != null) animationManager.update(deltaTime);
 

@@ -2,6 +2,7 @@ package sk.stuba.fiit.characters;
 
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
@@ -57,13 +58,12 @@ public class DarkKnight extends EnemyCharacter {
     }
 
     @Override
-    public void update(float deltaTime) {
-        // AI logika z EnemyCharacter (deprecated fallback)
+    public void update(UpdateContext ctx) {
         // prepnutie fázy podľa HP
         if (phase == 1 && hp < maxHp * 0.66f) switchPhase();
         if (phase == 2 && hp < maxHp * 0.33f) switchPhase();
 
-        if (specialCooldown > 0) specialCooldown -= deltaTime;
+        if (specialCooldown > 0) specialCooldown -= ctx.deltaTime;
     }
 
     public int getPhase() { return phase; }

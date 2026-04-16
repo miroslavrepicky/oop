@@ -120,10 +120,5 @@ public class PlayerController {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) inventory.switchCharacter(1);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) inventory.switchCharacter(2);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) inventory.switchCharacter(3);
-
-        // --- Pauza ---
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            GameManager.getInstance().setGameState(GameState.PAUSED);
-        }
     }
 }
