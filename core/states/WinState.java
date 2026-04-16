@@ -1,8 +1,5 @@
 package sk.stuba.fiit.core.states;
 
-import sk.stuba.fiit.core.GameManager;
-import sk.stuba.fiit.render.GameRenderer;
-
 // ─────────────────────────────────────────────────────────────────────────────
 //  Terminálny stav: hráč vyhral hru.
 // ─────────────────────────────────────────────────────────────────────────────
