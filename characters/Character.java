@@ -2,12 +2,12 @@ package sk.stuba.fiit.characters;
 
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.Collidable;
-import sk.stuba.fiit.core.GravityStrategy;
-import sk.stuba.fiit.core.Movable;
-import sk.stuba.fiit.core.Physicable;
-import sk.stuba.fiit.core.Updatable;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.core.engine.Collidable;
+import sk.stuba.fiit.physics.GravityStrategy;
+import sk.stuba.fiit.core.engine.Movable;
+import sk.stuba.fiit.core.engine.Physicable;
+import sk.stuba.fiit.core.engine.Updatable;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Základná trieda pre všetky postavy.
  *
- * Implementuje {@link Physicable} – vďaka tomu môže {@link sk.stuba.fiit.core.GravityStrategy}
+ * Implementuje {@link Physicable} – vďaka tomu môže {@link GravityStrategy}
  * pracovať s postavou bez toho, aby vedela, že ide o {@code Character}.
  * Tým sa gravitácia dá používať aj pre {@code Projectile} alebo iné objekty.
  *

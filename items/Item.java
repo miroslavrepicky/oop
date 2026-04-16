@@ -1,9 +1,9 @@
 package sk.stuba.fiit.items;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
-import sk.stuba.fiit.core.Pickable;
-import sk.stuba.fiit.core.Updatable;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.core.engine.Pickable;
+import sk.stuba.fiit.core.engine.Updatable;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 

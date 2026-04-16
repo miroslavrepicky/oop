@@ -2,7 +2,7 @@ package sk.stuba.fiit.items;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.projectiles.TurdflyProjectile;
 import sk.stuba.fiit.util.Vector2D;

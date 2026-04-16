@@ -1,13 +1,14 @@
 package sk.stuba.fiit.projectiles;
 
 import com.badlogic.gdx.math.Rectangle;
-import sk.stuba.fiit.core.Collidable;
-import sk.stuba.fiit.core.GravityStrategy;
-import sk.stuba.fiit.core.NoGravity;
-import sk.stuba.fiit.core.Physicable;
-import sk.stuba.fiit.core.Updatable;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.core.engine.Collidable;
+import sk.stuba.fiit.physics.GravityStrategy;
+import sk.stuba.fiit.physics.NoGravity;
+import sk.stuba.fiit.core.engine.Physicable;
+import sk.stuba.fiit.core.engine.Updatable;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
@@ -31,7 +32,7 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
     /**
      * Gravitačná stratégia. Predvolene {@link NoGravity} – projektily
      * letia horizontálne. Podtrieda (napr. parabolický šíp) môže nastaviť
-     * {@link sk.stuba.fiit.core.NormalGravity} cez konštruktor.
+     * {@link NormalGravity} cez konštruktor.
      */
     private GravityStrategy gravityStrategy = new NoGravity();
 

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.inventory.Inventory;
+import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 

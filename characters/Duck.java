@@ -2,8 +2,8 @@ package sk.stuba.fiit.characters;
 
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.FloatingGravity;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.physics.FloatingGravity;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.FriendlyDuck;
 import sk.stuba.fiit.items.Item;

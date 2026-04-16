@@ -4,8 +4,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import sk.stuba.fiit.attacks.MeleeAttack;
 import sk.stuba.fiit.attacks.SpellAttack;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.NormalGravity;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.physics.NormalGravity;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 

@@ -1,6 +1,7 @@
 package sk.stuba.fiit.core;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**

@@ -1,16 +1,13 @@
 package sk.stuba.fiit.characters;
 
-import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.attacks.Attack;
-import sk.stuba.fiit.core.AIControllable;
+import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.MovementResolver;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.physics.MovementResolver;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
-
-import java.util.List;
 
 /**
  * Základná trieda pre všetkých nepriateľov.

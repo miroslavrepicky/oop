@@ -3,7 +3,7 @@ package sk.stuba.fiit.characters;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import sk.stuba.fiit.attacks.ArrowAttack;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.NormalGravity;
+import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyArcher extends EnemyCharacter {

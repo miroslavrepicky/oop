@@ -1,7 +1,7 @@
 package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.UpdateContext;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 //TODO consider not using piercing, currently not used anywhere
