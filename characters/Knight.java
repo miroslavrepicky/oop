@@ -30,12 +30,11 @@ public class Knight extends PlayerCharacter {
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
     }
 
-    @Override
-    public void handleInput() {}
+    private void handleInput() {}
 
     @Override
     public void update(float deltaTime) {
-        handleInput();
+
     }
 
     @Override

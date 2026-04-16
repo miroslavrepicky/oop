@@ -130,8 +130,6 @@ public abstract class PlayerCharacter extends Character {
         return GameManager.getInstance().getInventory();
     }
 
-    public abstract void handleInput();
-
     @Override
     public void move(Vector2D direction) {
         position = position.add(direction);

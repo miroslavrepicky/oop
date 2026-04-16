@@ -47,11 +47,7 @@ public class Wizzard extends PlayerCharacter {
     }
 
     @Override
-    public void handleInput() {}
-
-    @Override
     public void update(float deltaTime) {
-        handleInput();
         regenerateMana(deltaTime);
     }
 

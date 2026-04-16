@@ -21,7 +21,7 @@ public class EggProjectileSpawner extends Item {
 
     @Override
     public void use(PlayerCharacter character, Level level) {
-        
+
     }
 
     /**
