@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import sk.stuba.fiit.attacks.MeleeAttack;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 
@@ -33,7 +34,7 @@ public class Knight extends PlayerCharacter {
     private void handleInput() {}
 
     @Override
-    public void update(float deltaTime) {
+    public void update(UpdateContext ctx) {
 
     }
 

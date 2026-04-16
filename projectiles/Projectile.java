@@ -1,25 +1,45 @@
 package sk.stuba.fiit.projectiles;
 
+import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.Collidable;
+import sk.stuba.fiit.core.GravityStrategy;
+import sk.stuba.fiit.core.NoGravity;
+import sk.stuba.fiit.core.Physicable;
 import sk.stuba.fiit.core.Updatable;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.util.Vector2D;
 
-import com.badlogic.gdx.math.Rectangle;
-
-public abstract class Projectile implements Updatable, Collidable {
-    protected int damage;
-    protected float speed;
+/**
+ * Základná trieda pre všetky projektily.
+ *
+ * Implementuje {@link Physicable} – vďaka tomu môže voliteľne využívať
+ * {@link GravityStrategy} (napr. parabolický let šípu) bez dedičnosti od
+ * {@code Character}. Predvolená stratégia je {@link NoGravity}.
+ *
+ * Implementuje {@link Updatable} cez {@link #update(UpdateContext)} –
+ * rovnaký kontrakt ako ostatné objekty v hernej slučke.
+ */
+public abstract class Projectile implements Updatable, Collidable, Physicable {
+    protected int      damage;
+    protected float    speed;
     protected Vector2D position;
     protected Vector2D direction;
-    protected boolean active;
+    protected boolean  active;
     protected Rectangle hitbox;
 
     /**
-     * Kto vystrelil projektil – PLAYER alebo ENEMY.
-     * CollisionManager podľa toho rozhodne s kým koliduje.
-     * Predvolená hodnota je PLAYER (napr. pre debug projektily).
+     * Gravitačná stratégia. Predvolene {@link NoGravity} – projektily
+     * letia horizontálne. Podtrieda (napr. parabolický šíp) môže nastaviť
+     * {@link sk.stuba.fiit.core.NormalGravity} cez konštruktor.
      */
+    private GravityStrategy gravityStrategy = new NoGravity();
+
+    // Physicable – projektily nemajú vertikálnu rýchlosť v pôvodnom zmysle,
+    // ale Physicable.velocityY sa využíva keď je nastavená gravitácia.
+    private float velocityY = 0f;
+    private boolean onGround = false;
+
     private ProjectileOwner owner = ProjectileOwner.PLAYER;
 
     public Projectile(int damage, float speed, Vector2D position, Vector2D direction) {
@@ -31,9 +51,41 @@ public abstract class Projectile implements Updatable, Collidable {
         this.hitbox    = new Rectangle(position.getX(), position.getY(), 16, 8);
     }
 
+    // -------------------------------------------------------------------------
+    //  Physicable implementácia
+    // -------------------------------------------------------------------------
+
+    @Override public Vector2D  getPosition()           { return position; }
+    @Override public void      setPosition(Vector2D p) { this.position = p; }
+    @Override public float     getVelocityY()          { return velocityY; }
+    @Override public void      setVelocityY(float vy)  { this.velocityY = vy; }
+    @Override public Rectangle getHitbox()             { return hitbox; }
+    @Override public boolean   isOnGround()            { return onGround; }
+    @Override public void      setOnGround(boolean b)  { this.onGround = b; }
+    @Override public void      updateHitbox()          { hitbox.setPosition(position.getX(), position.getY()); }
+
+    // -------------------------------------------------------------------------
+    //  Pohyb a update
+    // -------------------------------------------------------------------------
+
     public void move() {
         position = position.add(direction.scale(speed));
     }
+
+    /**
+     * Predvolená implementácia: pohyb + voliteľná gravitácia + update hitboxu.
+     * Podtriedy override-ujú ak potrebujú animáciu alebo špeciálnu logiku.
+     */
+    @Override
+    public void update(UpdateContext ctx) {
+        gravityStrategy.apply(this, ctx.deltaTime, ctx.platforms);
+        move();
+        hitbox.setPosition(position.getX(), position.getY());
+    }
+
+    // -------------------------------------------------------------------------
+    //  Kolízie
+    // -------------------------------------------------------------------------
 
     public void onHit(Character target) {
         target.takeDamage(damage);
@@ -47,23 +99,17 @@ public abstract class Projectile implements Updatable, Collidable {
         }
     }
 
-    @Override
-    public void update(float deltaTime) {
-        move();
-        hitbox.setPosition(position.getX(), position.getY());
-        // Projektily nemajú gravitáciu – pohybujú sa len podľa direction * speed.
-        // Ak by konkrétny projektil potreboval gravitáciu, override-ne update().
+    // -------------------------------------------------------------------------
+    //  Gettery / settery
+    // -------------------------------------------------------------------------
+
+    public void setGravityStrategy(GravityStrategy strategy) {
+        this.gravityStrategy = (strategy != null) ? strategy : new NoGravity();
     }
 
-    public boolean isPlayerProjectile() {
-        return owner == ProjectileOwner.PLAYER;
-    }
-
-    // --- gettery / settery ---
+    public boolean         isPlayerProjectile()         { return owner == ProjectileOwner.PLAYER; }
     public void            setActive(boolean active)    { this.active = active; }
     public boolean         isActive()                   { return active; }
-    public Vector2D        getPosition()                { return position; }
-    public Rectangle       getHitbox()                  { return hitbox; }
     public Vector2D        getDirection()               { return direction; }
     public ProjectileOwner getOwner()                   { return owner; }
     public void            setOwner(ProjectileOwner o)  { this.owner = o; }

@@ -1,23 +1,25 @@
 package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.math.Rectangle;
-import sk.stuba.fiit.characters.Character;
 
 import java.util.List;
 
 /**
- * Stratégia gravitácie pre {@link Character} a jeho podtriedy.
+ * Stratégia gravitácie pre ľubovoľný objekt implementujúci {@link Physicable}.
  *
- * Projektily gravitáciu nepoužívajú – ich pohyb je riadený
- * výlučne cez {@code direction * speed} v {@code Projectile.move()}.
+ * Zmena oproti pôvodnému kódu: parameter je {@link Physicable} namiesto
+ * {@code Character}. Tým sa gravitácia odviazala od hierarchie postáv –
+ * je možné ju aplikovať aj na {@code Projectile} alebo iný objekt
+ * bez akejkoľvek zmeny implementácií (NormalGravity, FloatingGravity, NoGravity).
  */
 public interface GravityStrategy {
+
     /**
-     * Aplikuje gravitáciu na postavu.
+     * Aplikuje gravitáciu na fyzikálny objekt.
      *
-     * @param character postava na ktorú sa aplikuje gravitácia
-     * @param deltaTime čas od posledného framu
-     * @param platforms zoznam kolíznych obdĺžnikov z mapy (môže byť null alebo prázdny)
+     * @param body      objekt, na ktorý sa gravitácia aplikuje
+     * @param deltaTime čas od posledného snímka
+     * @param platforms kolízne obdĺžniky mapy; {@code null} alebo prázdny = žiadne platformy
      */
-    void apply(Character character, float deltaTime, List<Rectangle> platforms);
+    void apply(Physicable body, float deltaTime, List<Rectangle> platforms);
 }

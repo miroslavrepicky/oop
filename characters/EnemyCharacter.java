@@ -5,26 +5,19 @@ import sk.stuba.fiit.attacks.Attack;
 import sk.stuba.fiit.core.AIControllable;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
-import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.MovementResolver;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
-import sk.stuba.fiit.world.Level;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Základná trieda pre všetkých nepriateľov.
  *
- * Implementuje {@link AIControllable} – {@link AIController} závisí
- * len od tohto interface, nie od tejto konkrétnej triedy.
- *
- * Zmeny oproti pôvodnému kódu:
- *  - {@code update(float)} dostáva {@code Level} ako parameter namiesto
- *    volania {@code GameManager.getInstance().getCurrentLevel()}
- *  - gravitácia dostáva platformy priamo, nie cez GameManager
- *  - {@code AIController} pracuje cez {@code AIControllable} interface
+ * Update logika prešla na {@link #update(UpdateContext)} –
+ * všetky kontextové dáta (platformy, level, hráč) sú v {@code ctx}.
+ * Trieda nemusí volať {@code GameManager} vôbec.
  */
 public abstract class EnemyCharacter extends Character implements AIControllable {
     protected float patrolRange;
@@ -112,21 +105,17 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     }
 
     // -------------------------------------------------------------------------
-    //  Útok (volaný z AIController cez AIControllable.performAttack)
+    //  Útok
     // -------------------------------------------------------------------------
 
-    /**
-     * Spustí útočnú animáciu; skutočný damage príde na konci animácie
-     * v {@link #update(float, List, Level, PlayerCharacter)}.
-     */
     @Override
     public void performAttack(PlayerCharacter player) {
         if (attackCooldown > 0 || isAttacking || attack == null) return;
 
-        attackCooldown     = ATTACK_COOLDOWN_MAX;
-        isAttacking        = true;
-        damageDealt        = false;
-        pendingTarget      = player;
+        attackCooldown    = ATTACK_COOLDOWN_MAX;
+        isAttacking       = true;
+        damageDealt       = false;
+        pendingTarget     = player;
 
         AnimationManager am = getAnimationManager();
         attackAnimDuration  = attack.getAnimationDuration(am);
@@ -134,40 +123,36 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
         if (am != null) am.play(attack.getAnimationName());
 
-        performAttack(); // hook pre podtriedy (napr. DarkKnight zmena fázy)
+        performAttack();
     }
 
     protected String getAttackAnimationName() { return "attack"; }
 
     // -------------------------------------------------------------------------
-    //  Update – Level predaný ako parameter, nie cez GameManager
+    //  Updatable – hlavná update metóda
     // -------------------------------------------------------------------------
 
     /**
-     * Hlavný update. {@code Level} je predaný zvonku (z {@code Level.update()})
-     * – EnemyCharacter nemusí volať {@code GameManager.getInstance()}.
-     *
-     * @param deltaTime čas od posledného framu
-     * @param platforms kolízne obdĺžniky mapy pre gravitáciu
-     * @param level     aktuálny level (potrebný pre útok)
-     * @param player    aktívny hráč (potrebný pre AI)
+     * Všetky potrebné dáta sú v {@code ctx}.
+     * Nepriateľ si zoberie {@code ctx.platforms} pre gravitáciu,
+     * {@code ctx.level} pre útok a {@code ctx.player} pre AI.
      */
-    public void update(float deltaTime, List<Rectangle> platforms,
-                       Level level, PlayerCharacter player) {
+    @Override
+    public void update(UpdateContext ctx) {
         if (!isAlive()) {
             startDeathAnimation();
-            updateDeathTimer(deltaTime);
+            updateDeathTimer(ctx.deltaTime);
             return;
         }
 
-        attackCooldown -= deltaTime;
+        attackCooldown -= ctx.deltaTime;
 
         if (isAttacking) {
-            attackAnimTimer -= deltaTime;
+            attackAnimTimer -= ctx.deltaTime;
 
             if (!damageDealt && attackAnimTimer <= 0f) {
-                if (level != null && attack != null) {
-                    attack.execute(this, level);
+                if (ctx.level != null && attack != null) {
+                    attack.execute(this, ctx.level);
                 }
                 damageDealt = true;
             }
@@ -178,29 +163,11 @@ public abstract class EnemyCharacter extends Character implements AIControllable
             }
         }
 
-        // Gravitácia – platformy predané priamo, bez GameManager
-        applyGravity(deltaTime, platforms);
+        applyGravity(ctx.deltaTime, ctx.platforms);
 
-        if (aiController != null && player != null) {
-            aiController.update(deltaTime, player);
+        if (aiController != null && ctx.player != null) {
+            aiController.update(ctx.deltaTime, ctx.player);
         }
-    }
-
-    /**
-     * Spätne kompatibilný update – používa GameManager ak ešte niekto volá
-     * starý podpis. Interne deleguje na nový update.
-     *
-     * @deprecated Použi {@link #update(float, List, Level, PlayerCharacter)}
-     */
-    @Deprecated
-    @Override
-    public void update(float deltaTime) {
-        Level level = GameManager.getInstance().getCurrentLevel();
-        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
-        List<Rectangle> platforms = (level != null && level.getMapManager() != null)
-            ? level.getMapManager().getHitboxes()
-            : Collections.emptyList();
-        update(deltaTime, platforms, level, player);
     }
 
     // -------------------------------------------------------------------------

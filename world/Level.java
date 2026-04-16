@@ -5,6 +5,7 @@ import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.MovementResolver;
 import sk.stuba.fiit.core.Updatable;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.HealingPotion;
@@ -89,24 +90,29 @@ public class Level implements Updatable {
     }
 
     @Override
+    public void update(UpdateContext ctx) {
+
+    }
+
+    @Override
     public void update(float deltaTime) {
-        // Platformy sa vypočítajú raz a predajú všetkým čo ich potrebujú –
-        // gravitácia, enemy update. Žiadna z volaných tried nesiaha na GameManager.
         List<Rectangle> platforms = (mapManager != null)
             ? mapManager.getHitboxes()
             : Collections.emptyList();
 
         PlayerCharacter player = getActivePlayer();
 
+        // Kontext sa vytvorí raz a predá všetkým – žiadna trieda
+        // nevolá GameManager na získanie levelu, hráča alebo platforiem.
+        UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, player);
+
         // --- projektily ---
         projectiles.removeIf(p -> !p.isActive());
-        for (Projectile p : projectiles) p.update(deltaTime);
+        for (Projectile p : projectiles) p.update(ctx);
 
         // --- nepriatelia ---
         enemies.removeIf(e -> !e.isAlive() && e.isDeathAnimationDone());
-        for (EnemyCharacter e : enemies) {
-            e.update(deltaTime, platforms, this, player);
-        }
+        for (EnemyCharacter e : enemies) e.update(ctx);
 
         // --- itemy ---
         Iterator<Item> itemIter = items.iterator();
@@ -117,15 +123,12 @@ public class Level implements Updatable {
                 itemIter.remove();
                 continue;
             }
-            item.update(deltaTime);
+            item.update(ctx);   // Item.update tiež prejde na UpdateContext
         }
 
         // --- kačky ---
         ducks.removeIf(d -> !d.isAlive());
-        for (Duck d : ducks) {
-            // Duck používa FloatingGravity – platformy predané priamo
-            d.update(deltaTime, platforms);
-        }
+        for (Duck d : ducks) d.update(ctx);
 
         checkCompletion();
     }

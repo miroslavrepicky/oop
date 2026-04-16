@@ -3,6 +3,7 @@ package sk.stuba.fiit.characters;
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.FloatingGravity;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.FriendlyDuck;
 import sk.stuba.fiit.items.Item;
@@ -51,12 +52,11 @@ public class Duck extends Character {
     }
 
     /**
-     * Update s platformami predanými zvonku – Duck nemusí volať GameManager.
-     *
-     * @param deltaTime čas od posledného framu
-     * @param platforms kolízne obdĺžniky mapy
+     * Update s platformami predanými zvonku.
      */
-    public void update(float deltaTime, List<Rectangle> platforms) {
+    public void update(UpdateContext ctx) {
+        float deltaTime = ctx.deltaTime;
+        List<Rectangle> platforms = ctx.platforms;
         applyGravity(deltaTime, platforms);
 
         if (walking) {
@@ -81,13 +81,6 @@ public class Duck extends Character {
                 walkDir   = -walkDir;
             }
         }
-    }
-
-    /** Spätne kompatibilný update – nevolaj ak máš platformy k dispozícii. */
-    @Deprecated
-    @Override
-    public void update(float deltaTime) {
-        update(deltaTime, java.util.Collections.emptyList());
     }
 
     @Override

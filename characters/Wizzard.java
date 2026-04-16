@@ -5,6 +5,7 @@ import sk.stuba.fiit.attacks.MeleeAttack;
 import sk.stuba.fiit.attacks.SpellAttack;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.NormalGravity;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 
@@ -47,8 +48,8 @@ public class Wizzard extends PlayerCharacter {
     }
 
     @Override
-    public void update(float deltaTime) {
-        regenerateMana(deltaTime);
+    public void update(UpdateContext ctx) {
+        regenerateMana(ctx.deltaTime);
     }
 
     private void regenerateMana(float deltaTime) {

@@ -3,6 +3,7 @@ package sk.stuba.fiit.items;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.Pickable;
 import sk.stuba.fiit.core.Updatable;
+import sk.stuba.fiit.core.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -40,7 +41,7 @@ public abstract class Item implements Pickable, Updatable {
     }
 
     @Override
-    public void update(float deltaTime) {
+    public void update(UpdateContext ctx) {
         // predmety sa nehýbu, override ak treba
     }
 
