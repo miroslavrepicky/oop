@@ -2,6 +2,7 @@ package sk.stuba.fiit.core.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.render.GameRenderer;
@@ -42,7 +43,7 @@ public class PlayingState implements IGameState {
         playerController.update(deltaTime);
 
         if (gameManager.getCurrentLevel() != null) {
-            gameManager.getCurrentLevel().update(deltaTime);
+            gameManager.getCurrentLevel().update(new UpdateContext(deltaTime));
         }
         collisionManager.update(gameManager.getCurrentLevel());
 

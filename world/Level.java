@@ -133,16 +133,8 @@ public class Level implements Updatable {
         ducks.removeIf(d -> !d.isAlive());
         for (Duck d : ducks) d.update(ctx);
         tickStatusEffects(deltaTime);
-
-        checkCompletion();
-
-
     }
 
-    public boolean checkCompletion() {
-        isCompleted = enemies.stream().allMatch(e -> !e.isAlive());
-        return isCompleted;
-    }
 
     /**
      * Pridá status efekt do levelu.

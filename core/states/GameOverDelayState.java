@@ -1,6 +1,7 @@
 package sk.stuba.fiit.core.states;
 
 import sk.stuba.fiit.core.GameManager;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.GameRenderer;
 
 /**
@@ -33,7 +34,7 @@ public class GameOverDelayState implements IGameState {
     public void update(float deltaTime) {
         // Level stále beží – prebiehajú animácie smrti nepriateľov/hrdinov
         if (gameManager.getCurrentLevel() != null) {
-            gameManager.getCurrentLevel().update(deltaTime);
+            gameManager.getCurrentLevel().update(new UpdateContext(deltaTime));
         }
 
         timer -= deltaTime;
@@ -44,7 +45,7 @@ public class GameOverDelayState implements IGameState {
 
     @Override
     public void render(float deltaTime) {
-        // Rovnaký renderer ako pri hraní – žiaden overlay zatiaľ
+        // Rovnaký renderer, ako pri hraní – žiaden overlay zatiaľ
         gameRenderer.render(deltaTime);
     }
 

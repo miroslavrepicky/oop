@@ -32,10 +32,6 @@ public class MagicSpell extends Projectile implements AoeProjectile {
         animationManager.update(ctx.deltaTime);
     }
 
-    public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch, boolean flipX) {
-        animationManager.render(batch, position.getX(), position.getY(), 64, 36, flipX);
-    }
-
     /** Exponuje damage z Projectile pre CollisionManager.AoeProjectile kontrakt. */
     @Override
     public int getDamage() { return damage; }

@@ -17,6 +17,15 @@ import sk.stuba.fiit.projectiles.*;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.world.Level;
 
+/**
+ * Riadi vykresľovanie celej hernej scény.
+ *
+ * Zmeny po refaktore AnimationManager/AnimationRenderer:
+ *  - Všetky volania {@code am.render()} a {@code am.renderActualSize()}
+ *    nahradené statickými volaniami {@link AnimationRenderer}.
+ *  - {@code AnimationManager} sa používa výlučne na správu stavu animácií
+ *    (play, update, getCurrentAnimation) – žiadne vykresľovanie.
+ */
 public class GameRenderer {
     private OrthographicCamera camera;
     private SpriteBatch batch;
@@ -25,11 +34,12 @@ public class GameRenderer {
     private ItemIconRenderer itemIconRenderer;
     private CollisionManager collisionManager;
     private boolean debugHitboxes = false;
-    private static final float BAR_WIDTH = 40f;
-    private static final float BAR_H_HP = 5f;
-    private static final float BAR_H_ARM = 3f;
-    private static final float BAR_GAP = 8f;   // medzera nad hitboxom
-    private static final float BAR_SPACING = 2f;  // medzera medzi HP a armor barom
+
+    private static final float BAR_WIDTH   = 40f;
+    private static final float BAR_H_HP    = 5f;
+    private static final float BAR_H_ARM   = 3f;
+    private static final float BAR_GAP     = 8f;
+    private static final float BAR_SPACING = 2f;
 
     public GameRenderer() {
         camera = new OrthographicCamera();
@@ -60,7 +70,7 @@ public class GameRenderer {
             level.getMapManager().render(camera);
         }
 
-        // 2. ShapeRenderer – fallback pre objekty BEZ animacie
+        // 2. ShapeRenderer – fallback pre objekty BEZ animácie
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
@@ -77,107 +87,111 @@ public class GameRenderer {
 
         shapeRenderer.end();
 
-        // 3. SpriteBatch – vsetky animovane objekty
+        // 3. SpriteBatch – všetky animované objekty
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // hrac – skutocna velkost kazdeho framu, centrovana na hitbox
+        // --- Hráč ---
         if (player != null) {
             AnimationManager pam = player.getAnimationManager();
             if (pam != null) {
                 player.updateAnimation(deltaTime);
-                String currentAnim = pam.getCurrentAnimation();
-                boolean isAttackAnim = "attack".equals(currentAnim);
-                pam.renderActualSize(batch,
+                boolean isAttackAnim = "attack".equals(pam.getCurrentAnimation());
+                AnimationRenderer.renderActualSize(
+                    batch, pam,
                     player.getPosition().getX(),
                     player.getPosition().getY(),
                     player.getHitbox().width,
                     !player.isFacingRight(),
-                    isAttackAnim);
+                    isAttackAnim
+                );
             }
         }
 
-        // nepriatelia – skutocna velkost kazdeho framu, centrovana na hitbox
+        // --- Nepriatelia ---
         for (EnemyCharacter enemy : level.getEnemies()) {
             AnimationManager am = enemy.getAnimationManager();
             if (am == null) continue;
             enemy.updateAnimation(deltaTime);
-            String currentAnim = am.getCurrentAnimation();
-            boolean isAttackAnim = "attack".equals(currentAnim);
-            am.renderActualSize(batch,
+            boolean isAttackAnim = "attack".equals(am.getCurrentAnimation());
+            AnimationRenderer.renderActualSize(
+                batch, am,
                 enemy.getPosition().getX(),
                 enemy.getPosition().getY(),
                 enemy.getHitbox().width,
-                !enemy.isFacingRight(), isAttackAnim);
+                !enemy.isFacingRight(),
+                isAttackAnim
+            );
         }
 
-        // kacky – skutocna velkost, centrovana na hitbox
+        // --- Kačky ---
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
             AnimationManager am = duck.getAnimationManager();
             if (am == null) continue;
-            am.renderActualSize(batch,
+            AnimationRenderer.renderActualSize(
+                batch, am,
                 duck.getPosition().getX(),
                 duck.getPosition().getY(),
                 duck.getHitbox().width,
-                !duck.isFacingRight());
+                !duck.isFacingRight()
+            );
         }
 
-        // ikony itemov na zemi
+        // --- Ikony itemov na zemi ---
         itemIconRenderer.render(batch, level.getItems());
 
-        // projektily – pevna velkost cez render() (tu roztahovanie nevadi)
+        // --- Projektily ---
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
 
             if (projectile instanceof MagicSpell) {
                 MagicSpell spell = (MagicSpell) projectile;
                 AnimationManager am = spell.getAnimationManager();
-                if (am != null) {
-                    boolean flipX = spell.getDirection().getX() < 0;
-                    am.render(batch,
-                        spell.getPosition().getX(),
-                        spell.getPosition().getY(),
-                        64, 36, flipX);
-                    am.update(deltaTime);
-                }
+                boolean flipX = spell.getDirection().getX() < 0;
+                AnimationRenderer.render(
+                    batch, am,
+                    spell.getPosition().getX(),
+                    spell.getPosition().getY(),
+                    64, 36, flipX
+                );
 
             } else if (projectile instanceof Arrow) {
                 Arrow arrow = (Arrow) projectile;
                 AnimationManager am = arrow.getAnimationManager();
-                if (am != null) {
-                    boolean flipX = arrow.getDirection().getX() < 0;
-                    am.render(batch,
-                        arrow.getPosition().getX(),
-                        arrow.getPosition().getY(),
-                        32, 16, flipX);
-                }
+                boolean flipX = arrow.getDirection().getX() < 0;
+                AnimationRenderer.render(
+                    batch, am,
+                    arrow.getPosition().getX(),
+                    arrow.getPosition().getY(),
+                    32, 16, flipX
+                );
 
             } else if (projectile instanceof EggProjectile) {
                 EggProjectile egg = (EggProjectile) projectile;
                 AnimationManager am = egg.getAnimationManager();
-                if (am != null) {
-                    boolean blasting = egg.getEggState() == EggProjectile.EggState.BLASTING;
-                    float w = blasting ? 64f : 32f;
-                    float h = blasting ? 64f : 32f;
-                    float offsetX = blasting ? -16f : 0f;
-                    float offsetY = blasting ? -16f : 0f;
-                    am.render(batch,
-                        egg.getPosition().getX() + offsetX,
-                        egg.getPosition().getY() + offsetY,
-                        w, h, false);
-                }
+                boolean blasting = egg.getEggState() == EggProjectile.EggState.BLASTING;
+                float w       = blasting ? 64f : 32f;
+                float h       = blasting ? 64f : 32f;
+                float offsetX = blasting ? -16f : 0f;
+                float offsetY = blasting ? -16f : 0f;
+                AnimationRenderer.render(
+                    batch, am,
+                    egg.getPosition().getX() + offsetX,
+                    egg.getPosition().getY() + offsetY,
+                    w, h, false
+                );
 
             } else if (projectile instanceof TurdflyProjectile) {
                 TurdflyProjectile turdfly = (TurdflyProjectile) projectile;
                 AnimationManager am = turdfly.getAnimationManager();
-                if (am != null) {
-                    boolean flyingLeft = turdfly.getDirection().getX() < 0;
-                    am.render(batch,
-                        turdfly.getPosition().getX(),
-                        turdfly.getPosition().getY(),
-                        46, 33, flyingLeft);
-                }
+                boolean flyingLeft = turdfly.getDirection().getX() < 0;
+                AnimationRenderer.render(
+                    batch, am,
+                    turdfly.getPosition().getX(),
+                    turdfly.getPosition().getY(),
+                    46, 33, flyingLeft
+                );
             }
         }
 
@@ -197,6 +211,10 @@ public class GameRenderer {
         hudRenderer.render();
     }
 
+    // -------------------------------------------------------------------------
+    //  HP / Armor bary nepriateľov
+    // -------------------------------------------------------------------------
+
     private void renderEnemyBars(Level level) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -204,39 +222,29 @@ public class GameRenderer {
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive()) continue;
 
-            float ex = enemy.getPosition().getX();
-            float ey = enemy.getPosition().getY();
-            float ew = enemy.getHitbox().width;
+            float ex  = enemy.getPosition().getX();
+            float ey  = enemy.getPosition().getY();
+            float ew  = enemy.getHitbox().width;
             float top = ey + enemy.getHitbox().height + BAR_GAP;
+            float barX = ex + (ew - BAR_WIDTH) / 2f;
 
-            float barX = ex + (ew - BAR_WIDTH) / 2f;  // centrovany nad hitboxom
-
-            // === HP bar ===
+            // HP bar
             float hpRatio = (float) enemy.getHp() / enemy.getMaxHp();
-
-            // pozadie
             shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.85f);
             shapeRenderer.rect(barX, top, BAR_WIDTH, BAR_H_HP);
 
-            // vypln – farba podla HP
-            if (hpRatio > 0.5f) {
-                shapeRenderer.setColor(0.25f, 0.75f, 0.15f, 1f); // zelena
-            } else if (hpRatio > 0.25f) {
-                shapeRenderer.setColor(0.95f, 0.65f, 0.05f, 1f); // oranzova
-            } else {
-                shapeRenderer.setColor(0.9f, 0.15f, 0.1f, 1f);   // cervena
-            }
+            if (hpRatio > 0.5f)      shapeRenderer.setColor(0.25f, 0.75f, 0.15f, 1f);
+            else if (hpRatio > 0.25f) shapeRenderer.setColor(0.95f, 0.65f, 0.05f, 1f);
+            else                      shapeRenderer.setColor(0.90f, 0.15f, 0.10f, 1f);
             shapeRenderer.rect(barX, top, BAR_WIDTH * hpRatio, BAR_H_HP);
 
-            // === Armor bar (len ak ma armor) ===
+            // Armor bar
             if (enemy.getMaxArmor() > 0) {
                 float armRatio = (float) enemy.getArmor() / enemy.getMaxArmor();
                 float armY = top + BAR_H_HP + BAR_SPACING;
-
                 shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.85f);
                 shapeRenderer.rect(barX, armY, BAR_WIDTH, BAR_H_ARM);
-
-                shapeRenderer.setColor(0.2f, 0.55f, 0.9f, 1f);   // modra
+                shapeRenderer.setColor(0.2f, 0.55f, 0.9f, 1f);
                 shapeRenderer.rect(barX, armY, BAR_WIDTH * armRatio, BAR_H_ARM);
             }
         }
@@ -244,32 +252,33 @@ public class GameRenderer {
         shapeRenderer.end();
     }
 
-    /**
-     * Kresli maly obrateny trojuholnik nad hlavou aktivneho hraca.
-     * Trojuholnik je vykresleny vo world suradniciach (camera.combined),
-     * takze sa pohybuje spolu s postavou.
-     */
+    // -------------------------------------------------------------------------
+    //  Indikátor aktívneho hráča
+    // -------------------------------------------------------------------------
+
     private void renderPlayerIndicator(PlayerCharacter player) {
-        // Vyska trojuholnika nad hitboxom
         float hitboxTop = player.getPosition().getY() + player.getHitbox().height;
-        float margin    = 6f;   // medzera medzi hlavou a trojuholnikom
-        float triH      = 10f;  // vyska trojuholnika
-        float triW      = 12f;  // sirka zakladne
-        float cx        = player.getPosition().getX() + player.getHitbox().width / 2f;
-        float top       = hitboxTop + margin + triH;  // zakladna (hore)
-        float tip       = hitboxTop + margin;         // spicka (dole)
+        float margin = 6f;
+        float triH   = 10f;
+        float triW   = 12f;
+        float cx     = player.getPosition().getX() + player.getHitbox().width / 2f;
+        float top    = hitboxTop + margin + triH;
+        float tip    = hitboxTop + margin;
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.CYAN);
-        // LibGDX triangle: v1 (lavy roh zakladne), v2 (pravy roh zakladne), v3 (spicka)
         shapeRenderer.triangle(
-            cx - triW / 2f, top,   // lavy roh zakladne
-            cx + triW / 2f, top,   // pravy roh zakladne
-            cx,             tip    // spicka dole
+            cx - triW / 2f, top,
+            cx + triW / 2f, top,
+            cx,             tip
         );
         shapeRenderer.end();
     }
+
+    // -------------------------------------------------------------------------
+    //  Debug hitboxy
+    // -------------------------------------------------------------------------
 
     private void renderHitboxes(Level level, PlayerCharacter player) {
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -309,6 +318,10 @@ public class GameRenderer {
 
         shapeRenderer.end();
     }
+
+    // -------------------------------------------------------------------------
+    //  Verejné API
+    // -------------------------------------------------------------------------
 
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
