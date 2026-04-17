@@ -5,15 +5,14 @@ import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.GameRenderer;
 import sk.stuba.fiit.render.RenderSnapshot;
+import sk.stuba.fiit.render.SnapshotBuilder;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Stav: krátkodobý prechod po smrti party – level ešte beží (animácia
- * smrti), ale hráč už nestráda. Po uplynutí {@link #DELAY} sekúnd
- * prejde na GameOverState.
+ * Stav: krátkodobý prechod po smrti party.
  *
- * Zmena: render() zostavuje RenderSnapshot rovnako ako PlayingState.
- * nearbyItemAvailable = false (party je mŕtva, pick-up hint nedáva zmysel).
+ * ZMENA: render() tiež používa SnapshotBuilder – žiadna duplikácia
+ * konverznej logiky medzi PlayingState a GameOverDelayState.
  */
 public class GameOverDelayState implements IGameState {
 
@@ -52,16 +51,8 @@ public class GameOverDelayState implements IGameState {
 
         PlayerCharacter player = gameManager.getInventory().getActive();
 
-        RenderSnapshot snapshot = new RenderSnapshot(
-            player,
-            level.getEnemies(),
-            level.getDucks(),
-            level.getItems(),
-            level.getProjectiles(),
-            level.getMapManager(),
-            gameRenderer.isDebugHitboxes(),
-            false   // party je mŕtva – pick-up hint nedáva zmysel
-        );
+        RenderSnapshot snapshot = SnapshotBuilder.build(
+            player, level, gameRenderer.isDebugHitboxes(), false);
 
         gameRenderer.render(snapshot, deltaTime);
     }

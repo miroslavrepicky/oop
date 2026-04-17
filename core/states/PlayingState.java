@@ -8,18 +8,17 @@ import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.render.GameRenderer;
 import sk.stuba.fiit.render.RenderSnapshot;
+import sk.stuba.fiit.render.SnapshotBuilder;
 import sk.stuba.fiit.core.PlayerController;
 import sk.stuba.fiit.world.Level;
 
 /**
  * Stav: hra beží – hráč sa pohybuje, AI útočí, kolízie sa riešia.
  *
- * Zmena oproti pôvodnému kódu:
- *  - render() zostavuje {@link RenderSnapshot} a predáva ho do
- *    {@link GameRenderer#render(RenderSnapshot, float)}.
- *    GameRenderer tak nemusí volať GameManager sám.
- *  - nearbyItemAvailable sa číta z CollisionManager tu (high-level stav)
- *    a predáva sa do snapshotu – HUDRenderer o CollisionManager nevie.
+ * ZMENA: render() zostavuje RenderSnapshot cez SnapshotBuilder
+ * namiesto priameho predávania model objektov.
+ * PlayingState stále smie importovať model (je Controller) –
+ * ale GameRenderer ich cez snapshot nedostane.
  */
 public class PlayingState implements IGameState {
 
@@ -39,10 +38,6 @@ public class PlayingState implements IGameState {
         this.collisionManager = collisionManager;
         this.gameRenderer     = gameRenderer;
     }
-
-    // -------------------------------------------------------------------------
-    //  Update
-    // -------------------------------------------------------------------------
 
     @Override
     public void update(float deltaTime) {
@@ -73,35 +68,20 @@ public class PlayingState implements IGameState {
         }
     }
 
-    // -------------------------------------------------------------------------
-    //  Render – zostavíme snapshot tu, nie v GameRenderer
-    // -------------------------------------------------------------------------
-
     @Override
     public void render(float deltaTime) {
         Level level = gameManager.getCurrentLevel();
         if (level == null) return;
 
-        PlayerCharacter player = gameManager.getInventory().getActive();
-        boolean nearbyItem = collisionManager.getNearbyItem() != null;
+        PlayerCharacter player    = gameManager.getInventory().getActive();
+        boolean         nearbyItem = collisionManager.getNearbyItem() != null;
 
-        RenderSnapshot snapshot = new RenderSnapshot(
-            player,
-            level.getEnemies(),
-            level.getDucks(),
-            level.getItems(),
-            level.getProjectiles(),
-            level.getMapManager(),
-            gameRenderer.isDebugHitboxes(),
-            nearbyItem
-        );
+        // Controller zostaví DTO – GameRenderer model nevidí
+        RenderSnapshot snapshot = SnapshotBuilder.build(
+            player, level, gameRenderer.isDebugHitboxes(), nearbyItem);
 
         gameRenderer.render(snapshot, deltaTime);
     }
-
-    // -------------------------------------------------------------------------
-    //  Prechod stavu
-    // -------------------------------------------------------------------------
 
     @Override
     public IGameState next() {
