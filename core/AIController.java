@@ -153,7 +153,9 @@ public class AIController {
 
         enemy.setFacingRight(playerPos.getX() > enemyPos.getX());
         enemy.setVelocityX(0);
-        enemy.performAttack(player);
+        if (!enemy.isAttacking()) {
+            enemy.performAttack(player);
+        }
 
         if (dist > attackRange)            state = AIState.CHASE;
         if (!enemy.detectPlayer(player))   state = AIState.PATROL;

@@ -145,7 +145,6 @@ public class GameRenderer {
     private void renderEntity(EntityRenderData data, float deltaTime, boolean isPlayer) {
         AnimationManager am = data.animationManager;
         if (am == null) return;
-        am.update(deltaTime);
         boolean anchorOpposite = "attack".equals(am.getCurrentAnimation());
         renderEntityActualSize(am, data.x, data.y, data.hitboxWidth, data.flipX, anchorOpposite);
     }

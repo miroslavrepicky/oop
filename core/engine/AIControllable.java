@@ -34,4 +34,7 @@ public interface AIControllable {
 
     // --- útok ---
     void performAttack(PlayerCharacter target);
+
+    /** Vráti true ak nepriateľ práve prehráva útočnú animáciu. */
+    boolean isAttacking();
 }

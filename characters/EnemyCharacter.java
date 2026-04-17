@@ -139,6 +139,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         if (!isAlive()) {
             startDeathAnimation();
             updateDeathTimer(ctx.deltaTime);
+            updateAnimation(ctx.deltaTime);
             return;
         }
 
@@ -147,11 +148,15 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         if (isAttacking) {
             attackAnimTimer -= ctx.deltaTime;
 
-            if (!damageDealt && attackAnimTimer <= 0f) {
-                if (ctx.level != null && attack != null) {
-                    attack.execute(this, ctx.level);
+            if (!damageDealt && attack != null) {
+                AnimationManager am = getAnimationManager();
+                float frameDuration = attack.getFrameDuration(am);
+                if (attackAnimTimer <= frameDuration * 2) {   // ← predposledný frame
+                    if (ctx.level != null) {
+                        attack.execute(this, ctx.level);
+                    }
+                    damageDealt = true;
                 }
-                damageDealt = true;
             }
 
             if (attackAnimTimer <= 0f) {
@@ -165,6 +170,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         if (aiController != null && ctx.player != null) {
             aiController.update(ctx.deltaTime, ctx.player);
         }
+        updateAnimation(ctx.deltaTime);
     }
 
     // -------------------------------------------------------------------------
