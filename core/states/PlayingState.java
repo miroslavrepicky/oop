@@ -2,23 +2,32 @@ package sk.stuba.fiit.core.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.render.GameRenderer;
+import sk.stuba.fiit.render.RenderSnapshot;
 import sk.stuba.fiit.core.PlayerController;
+import sk.stuba.fiit.world.Level;
 
 /**
  * Stav: hra beží – hráč sa pohybuje, AI útočí, kolízie sa riešia.
+ *
+ * Zmena oproti pôvodnému kódu:
+ *  - render() zostavuje {@link RenderSnapshot} a predáva ho do
+ *    {@link GameRenderer#render(RenderSnapshot, float)}.
+ *    GameRenderer tak nemusí volať GameManager sám.
+ *  - nearbyItemAvailable sa číta z CollisionManager tu (high-level stav)
+ *    a predáva sa do snapshotu – HUDRenderer o CollisionManager nevie.
  */
 public class PlayingState implements IGameState {
 
     private final PlayerController playerController;
-    private final GameManager gameManager;
+    private final GameManager      gameManager;
     private final CollisionManager collisionManager;
-    private final GameRenderer gameRenderer;
+    private final GameRenderer     gameRenderer;
 
-    /** Nasledujúci stav nastavený zvnútra (pri splnení podmienky prechodu). */
     private IGameState nextState = null;
 
     public PlayingState(PlayerController playerController,
@@ -31,48 +40,73 @@ public class PlayingState implements IGameState {
         this.gameRenderer     = gameRenderer;
     }
 
+    // -------------------------------------------------------------------------
+    //  Update
+    // -------------------------------------------------------------------------
+
     @Override
     public void update(float deltaTime) {
-        // --- 1. Kontrola vstupu pre Pauzu ---
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             nextState = new PausedState(gameRenderer, this);
             return;
         }
 
-        // --- 2. Update hernej logiky ---
         playerController.update(deltaTime);
 
-        if (gameManager.getCurrentLevel() != null) {
-            gameManager.getCurrentLevel().update(new UpdateContext(deltaTime));
+        Level level = gameManager.getCurrentLevel();
+        if (level != null) {
+            level.update(new UpdateContext(deltaTime));
         }
-        collisionManager.update(gameManager.getCurrentLevel());
+        collisionManager.update(level);
 
-        // --- 3. Prechody stavu (Vyhodnotenie podmienok) ---
         if (gameManager.getInventory().isPartyDefeated()) {
             nextState = new GameOverDelayState(
                 gameManager, gameRenderer, GameOverDelayState.DELAY);
             return;
         }
 
-        if (gameManager.getCurrentLevel() != null && gameManager.getCurrentLevel().isCompleted()) {
-            int nextLevel = gameManager.getCurrentLevel().getLevelNumber() + 1;
-            if (nextLevel > gameManager.getMaxLevels()) {
-                nextState = new WinState();
-            } else {
-                nextState = new LevelCompleteState(gameManager);
-            }
+        if (level != null && level.isCompleted()) {
+            int nextLevel = level.getLevelNumber() + 1;
+            nextState = (nextLevel > gameManager.getMaxLevels())
+                ? new WinState()
+                : new LevelCompleteState(gameManager);
         }
     }
 
+    // -------------------------------------------------------------------------
+    //  Render – zostavíme snapshot tu, nie v GameRenderer
+    // -------------------------------------------------------------------------
+
     @Override
     public void render(float deltaTime) {
-        gameRenderer.render(deltaTime);
+        Level level = gameManager.getCurrentLevel();
+        if (level == null) return;
+
+        PlayerCharacter player = gameManager.getInventory().getActive();
+        boolean nearbyItem = collisionManager.getNearbyItem() != null;
+
+        RenderSnapshot snapshot = new RenderSnapshot(
+            player,
+            level.getEnemies(),
+            level.getDucks(),
+            level.getItems(),
+            level.getProjectiles(),
+            level.getMapManager(),
+            gameRenderer.isDebugHitboxes(),
+            nearbyItem
+        );
+
+        gameRenderer.render(snapshot, deltaTime);
     }
+
+    // -------------------------------------------------------------------------
+    //  Prechod stavu
+    // -------------------------------------------------------------------------
 
     @Override
     public IGameState next() {
         IGameState result = nextState;
-        nextState = null;  // reset
+        nextState = null;
         return result;
     }
 }
