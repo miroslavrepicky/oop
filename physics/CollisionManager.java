@@ -1,9 +1,12 @@
 package sk.stuba.fiit.physics;
 
 import com.badlogic.gdx.math.Rectangle;
+import org.slf4j.Logger;
+
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.AoeProjectile;
@@ -24,6 +27,7 @@ import sk.stuba.fiit.world.Level;
 public class CollisionManager {
 
     private Item nearbyItem = null;
+    private static final Logger log = GameLogger.get(CollisionManager.class);
 
     // -------------------------------------------------------------------------
     //  Hlavný vstupný bod
@@ -56,7 +60,13 @@ public class CollisionManager {
     }
 
     public void pickupNearbyItem(PlayerCharacter player, Level level) {
-        if (nearbyItem == null) return;
+        if (nearbyItem == null) {
+            log.debug("pickupNearbyItem called but no nearby item");
+            return;
+        }
+        log.info("Item picked up: item={}, player={}",
+            nearbyItem.getClass().getSimpleName(),
+            player.getName());
         nearbyItem.onPickup(player);
         level.getItems().remove(nearbyItem);
         nearbyItem = null;
@@ -74,6 +84,12 @@ public class CollisionManager {
 
             Object hitTarget = resolveHit(projectile, level);
             if (hitTarget != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Projectile hit: target={}, pos=({},{})",
+                        hitTarget.getClass().getSimpleName(),
+                        projectile.getPosition().getX(),
+                        projectile.getPosition().getY());
+                }
                 triggerImpact(projectile, hitTarget, level);
             }
         }

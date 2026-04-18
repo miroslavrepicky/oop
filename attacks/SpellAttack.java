@@ -1,8 +1,10 @@
 package sk.stuba.fiit.attacks;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
@@ -12,6 +14,7 @@ public class SpellAttack implements Attack {
     private final float aoeRadius;
     private final float projectileSpeed;
     private final int   manaCost;
+    private static final Logger log = GameLogger.get(ArrowAttack.class);
 
     public SpellAttack(float projectileSpeed, float aoeRadius, int manaCost) {
         this.projectileSpeed = projectileSpeed;
@@ -44,6 +47,14 @@ public class SpellAttack implements Attack {
             : ProjectileOwner.PLAYER);
 
         level.addProjectile(spell);
+        if (log.isDebugEnabled()) {
+            log.debug("Spell spawned: owner={}, AOE radius={}, dmg={}, pos=({},{})",
+                spell.getOwner(), aoeRadius,
+                attacker.getAttackPower(),
+                String.format("%.1f", spawnPos.getX()),
+                String.format("%.1f", spawnPos.getY()));
+        }
+
     }
 
     @Override

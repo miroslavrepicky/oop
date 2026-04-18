@@ -1,5 +1,6 @@
 package sk.stuba.fiit.core;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.util.Vector2D;
@@ -33,6 +34,8 @@ public class AIController {
 
     private int blockedFrames = 0;
 
+    private static final Logger log = GameLogger.get(AIController.class);
+
     // -------------------------------------------------------------------------
     //  Konštruktory
     // -------------------------------------------------------------------------
@@ -63,7 +66,7 @@ public class AIController {
         switch (state) {
             case PATROL: handlePatrol(deltaTime, player); break;
             case CHASE:  handleChase(deltaTime, player);  break;
-            case ATTACK: handleAttack(deltaTime, player); break;
+            case ATTACK: handleAttack(player); break;
         }
     }
 
@@ -108,13 +111,13 @@ public class AIController {
             }
         }
 
-        if (enemy.detectPlayer(player)) state = AIState.CHASE;
+        if (enemy.detectPlayer(player)) transitionTo(AIState.CHASE);
     }
 
     private void handleChase(float deltaTime, PlayerCharacter player) {
         if (!enemy.detectPlayer(player)) {
             resetPatrolAroundCurrent();
-            state = AIState.PATROL;
+            transitionTo(AIState.PATROL);
             return;
         }
 
@@ -125,7 +128,7 @@ public class AIController {
 
         if (dist <= preferredRange) {
             enemy.setVelocityX(0);
-            state = AIState.ATTACK;
+            transitionTo(AIState.ATTACK);
             return;
         }
 
@@ -136,14 +139,14 @@ public class AIController {
 
         if (enemy.wasLastMoveBlocked()) {
             enemy.setVelocityX(0);
-            if (dist <= attackRange) state = AIState.ATTACK;
+            if (dist <= attackRange) transitionTo(AIState.ATTACK);
         }
     }
 
-    private void handleAttack(float deltaTime, PlayerCharacter player) {
+    private void handleAttack(PlayerCharacter player) {
         if (!enemy.detectPlayer(player)) {
             resetPatrolAroundCurrent();
-            state = AIState.PATROL;
+            transitionTo(AIState.PATROL);
             return;
         }
 
@@ -157,13 +160,21 @@ public class AIController {
             enemy.performAttack(player);
         }
 
-        if (dist > attackRange)            state = AIState.CHASE;
-        if (!enemy.detectPlayer(player))   state = AIState.PATROL;
+        if (dist > attackRange) transitionTo(AIState.CHASE);
+        if (!enemy.detectPlayer(player)) transitionTo(AIState.PATROL);
     }
 
     // -------------------------------------------------------------------------
     //  Pomocné metódy
     // -------------------------------------------------------------------------
+
+    private void transitionTo(AIState newState) {
+        if (log.isDebugEnabled()) {
+            log.debug("AI state transition: enemy={}, from={}, to={}",
+                enemy.getPosition(), state, newState);
+        }
+        state = newState;
+    }
 
     private void resetPatrolAroundCurrent() {
         float x   = enemy.getPosition().getX();
@@ -171,6 +182,4 @@ public class AIController {
         patrolStart = new Vector2D(x - 100, y);
         patrolEnd   = new Vector2D(x + 100, y);
     }
-
-    public AIState getState() { return state; }
 }

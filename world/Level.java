@@ -3,6 +3,7 @@ package sk.stuba.fiit.world;
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.attacks.StatusEffect;
 import sk.stuba.fiit.characters.*;
+import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.physics.MovementResolver;
 import sk.stuba.fiit.core.engine.Updatable;
@@ -133,6 +134,10 @@ public class Level implements Updatable {
         ducks.removeIf(d -> !d.isAlive());
         for (Duck d : ducks) d.update(ctx);
         tickStatusEffects(deltaTime);
+
+        if (!isCompleted && !enemies.isEmpty() && enemies.stream().noneMatch(Character::isAlive)) {
+            isCompleted = true;
+        }
     }
 
 

@@ -1,9 +1,11 @@
 package sk.stuba.fiit.attacks;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.world.Level;
 
 /**
@@ -26,6 +28,8 @@ public class FreezeSpellDecorator extends AttackDecorator {
     private static final float FREEZE_DURATION  = 2.5f;
     /** Zníženie mana costu oproti základu. */
     private static final int   DISCOUNT_MANA    = 5;
+
+    private static final Logger log = GameLogger.get(FireSpellDecorator.class);
 
     public FreezeSpellDecorator(Attack wrapped) {
         super(wrapped);
@@ -134,14 +138,19 @@ public class FreezeSpellDecorator extends AttackDecorator {
         }
 
         private void applyFreeze() {
-            // EnemyCharacter.speed je protected – pristupujeme cez setSpeed()
-            // (ak metóda neexistuje, treba ju pridať do Character)
             target.setSpeed(originalSpeed * slowFactor);
             applied = true;
+            log.info("Freeze applied: target={}, speedReduced={}->{}",
+                target.getName(),
+                String.format("%.1f", originalSpeed),
+                String.format("%.1f", originalSpeed * slowFactor));
         }
 
         private void restoreSpeed() {
             target.setSpeed(originalSpeed);
+            log.info("Freeze expired: target={}, speedRestored={}",
+                target.getName(),
+                String.format("%.1f", originalSpeed));
         }
 
         public boolean isExpired() {

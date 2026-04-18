@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
+import org.slf4j.Logger;
+import sk.stuba.fiit.core.exceptions.AssetLoadException;
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.HashMap;
@@ -26,9 +28,10 @@ public class AnimationManager {
     private Map<String, Float> frameDurations;
     private String currentAnimation;
     private float stateTime;
+    private static final Logger log = GameLogger.get(AnimationManager.class);
 
     public AnimationManager(String atlasPath) {
-        atlas = new TextureAtlas(Gdx.files.internal(atlasPath));
+        atlas = AtlasCache.getInstance().get(atlasPath);
         animations = new HashMap<>();
         frameDurations = new HashMap<>();
         stateTime = 0f;
@@ -46,13 +49,18 @@ public class AnimationManager {
                              Animation.PlayMode playMode) {
         Array<TextureAtlas.AtlasRegion> regions = atlas.findRegions(regionName);
         if (regions.size == 0) {
-            System.out.println("Region nenajdeny: " + regionName);
+            log.warn("Atlas region not found – animation skipped: region={}, animation={}",
+                regionName, name);
             return;
         }
         Animation<TextureAtlas.AtlasRegion> animation =
             new Animation<>(frameDuration, regions, playMode);
         animations.put(name, animation);
         frameDurations.put(name, frameDuration);
+        if (log.isDebugEnabled()) {
+            log.debug("Animation registered: name={}, region={}, frames={}, frameDuration={}, playMode={}",
+                name, regionName, regions.size, frameDuration, playMode);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -62,6 +70,13 @@ public class AnimationManager {
     /** Spustí animáciu (resetuje časovač ak sa animácia zmenila). */
     public void play(String name) {
         if (!name.equals(currentAnimation)) {
+            if (!animations.containsKey(name)) {
+                log.error("Attempted to play unknown animation: name={}", name);
+                throw new AssetLoadException("animation:" + name);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Animation changed: from={}, to={}", currentAnimation, name);
+            }
             currentAnimation = name;
             stateTime = 0f;
         }
@@ -163,6 +178,7 @@ public class AnimationManager {
     }
 
     public void dispose() {
-        atlas.dispose();
+        animations.clear();
+        frameDurations.clear();
     }
 }

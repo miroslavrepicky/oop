@@ -1,7 +1,9 @@
 package sk.stuba.fiit.characters;
 
 import com.badlogic.gdx.math.Rectangle;
+import org.slf4j.Logger;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.engine.Collidable;
 import sk.stuba.fiit.physics.GravityStrategy;
 import sk.stuba.fiit.core.engine.Movable;
@@ -39,6 +41,8 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
 
     protected int armor;
     protected int maxArmor;
+
+    private static final Logger log = GameLogger.get(Character.class);
 
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
         this(name, hp, attackPower, speed, position, 0, 0);
@@ -149,8 +153,28 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
             armor = Math.max(0, armor - armorAbsorb);
             int reduced = Math.max(0, dmg - armorAbsorb);
             this.hp = Math.max(0, this.hp - reduced);
+
+            // Guard check – takeDamage môže byť volaný každý frame (DoT, AOE)
+            if (log.isDebugEnabled()) {
+                log.debug("Damage taken: target={}, rawDmg={}, armorAbsorb={}, reduced={}, hpAfter={}/{}",
+                    name, dmg, armorAbsorb, reduced, this.hp, this.maxHp);
+            }
+
+            // INFO len pri death – nie hot path
+            if (!isAlive()) {
+                log.info("Character died: name={}, killedBy={}dmg", name, dmg);
+            }
+
         } else {
+            // Healing
+            int healAmount = -dmg;
+            int actualHeal = Math.min(healAmount, maxHp - this.hp);
             this.hp = Math.min(maxHp, this.hp - dmg);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Healing applied: target={}, healAmount={}, actualHeal={}, hpAfter={}/{}",
+                    name, healAmount, actualHeal, this.hp, this.maxHp);
+            }
         }
     }
 

@@ -38,6 +38,11 @@ public class GameOverDelayState implements IGameState {
             level.update(new UpdateContext(deltaTime));
         }
 
+        PlayerCharacter player = gameManager.getInventory().getActive();
+        if (player != null) {
+            player.updateAnimation(deltaTime);
+        }
+
         timer -= deltaTime;
         if (timer <= 0f) {
             nextState = new GameOverState();

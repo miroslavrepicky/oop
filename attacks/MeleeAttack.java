@@ -1,15 +1,18 @@
 package sk.stuba.fiit.attacks;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.world.Level;
 
 public class MeleeAttack implements Attack {
     private final int rangeTiles; // pocet dlazdic dosahu (1 = blizky melee)
+    private static final Logger log = GameLogger.get(MeleeAttack.class);
 
     public MeleeAttack(int rangeTiles) {
         this.rangeTiles = rangeTiles;
@@ -17,7 +20,7 @@ public class MeleeAttack implements Attack {
 
     @Override
     public void execute(Character attacker, Level level) {
-        float reach = rangeTiles * 52f; // kazda dlazdica = 64 px
+        float reach = rangeTiles * 52f;
 
         if (attacker instanceof PlayerCharacter) {
             // hrac trafi nepriatelov v dosahu
@@ -30,6 +33,12 @@ public class MeleeAttack implements Attack {
                 float ex = enemy.getPosition().getX();
                 float dist = (ex - ax) * dirX; // kladne = pred hracom
                 if (dist >= 0 && dist <= reach) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Melee hit enemy: attacker={}, target={}, dist={}, dmg={}",
+                            attacker.getName(), enemy.getName(),
+                            String.format("%.1f", dist),
+                            attacker.getAttackPower());
+                    }
                     enemy.takeDamage(attacker.getAttackPower());
                     return;
                 }
@@ -39,8 +48,19 @@ public class MeleeAttack implements Attack {
                 float dx = duck.getPosition().getX();
                 float dist = (dx - ax) * dirX;
                 if (dist >= 0 && dist <= reach) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Melee hit duck: attacker={}, dist={}, dmg=instant kill",
+                            attacker.getName(),
+                            String.format("%.1f", dist));
+                    }
                     duck.takeDamage(duck.getHp()); // jeden zasah = zabitie
                     Item result = duck.onKilled();
+                    if (result != null) {
+                        log.info("Duck killed – drop: item={}, pos=({},{})",
+                            result.getClass().getSimpleName(),
+                            String.format("%.1f", duck.getPosition().getX()),
+                            String.format("%.1f", duck.getPosition().getY()));
+                    }
                     level.addItem(result);
                     return;
                 }
@@ -53,7 +73,20 @@ public class MeleeAttack implements Attack {
 
             double dist = attacker.getPosition().distanceTo(player.getPosition());
             if (dist <= reach) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Enemy melee hit player: attacker={}, target={}, dist={}, dmg={}",
+                        attacker.getName(), player.getName(),
+                        String.format("%.1f", dist),
+                        attacker.getAttackPower());
+                }
                 player.takeDamage(attacker.getAttackPower());
+            }else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Enemy melee missed player: attacker={}, dist={}, reach={}",
+                        attacker.getName(),
+                        String.format("%.1f", dist),
+                        reach);
+                }
             }
         }
     }

@@ -44,7 +44,9 @@ public abstract class PlayerCharacter extends Character {
     // -------------------------------------------------------------------------
 
     protected void executeAttack(Attack attack) {
-        if (attack == null || isAttacking) return;
+        if (attack == null || isAttacking) {
+            return;
+        }
 
         if (attack instanceof SpellAttack) {
             SpellAttack spell = (SpellAttack) attack;
@@ -85,8 +87,9 @@ public abstract class PlayerCharacter extends Character {
 
             if (isDeathAnimationDone()) {
                 Inventory inv = GameManager.getInstance().getInventory();
-                if (inv.getActive() == this) {
-                    inv.switchToNextAlive();
+                if (inv.getActive() == this && !inv.switchToNextAlive()) {
+                    // žiadna živá postava – party je porazená, nič nerob,
+                    // PlayingState.update() zachytí isPartyDefeated() a prepne stav
                 }
             }
             return;

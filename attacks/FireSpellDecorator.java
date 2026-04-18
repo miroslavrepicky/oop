@@ -1,9 +1,11 @@
 package sk.stuba.fiit.attacks;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.world.Level;
 
 /**
@@ -30,6 +32,8 @@ public class FireSpellDecorator extends AttackDecorator {
     private static final int   BURN_DPS    = 8;
     /** Príplatok k mana costu základného útoku. */
     private static final int   EXTRA_MANA  = 15;
+
+    private static final Logger log = GameLogger.get(FireSpellDecorator.class);
 
     public FireSpellDecorator(Attack wrapped) {
         super(wrapped);
@@ -141,6 +145,10 @@ public class FireSpellDecorator extends AttackDecorator {
             if (dmg > 0) {
                 target.takeDamage(dmg);
                 damageAccumulator -= dmg;
+                if (log.isDebugEnabled()) {
+                    log.debug("Burn tick: target={}, dmg={}, remaining={:.1f}s",
+                        target.getName(), dmg, remainingTime);
+                }
             }
         }
 

@@ -55,8 +55,13 @@ public class PlayingState implements IGameState {
         collisionManager.update(level);
 
         if (gameManager.getInventory().isPartyDefeated()) {
-            nextState = new GameOverDelayState(
-                gameManager, gameRenderer, GameOverDelayState.DELAY);
+            PlayerCharacter player = gameManager.getInventory().getActive();
+            float deathDuration = GameOverDelayState.DELAY;
+            if (player != null && player.getAnimationManager() != null
+                && player.getAnimationManager().hasAnimation("death")) {
+                deathDuration = player.getAnimationManager().getAnimationDuration("death");
+            }
+            nextState = new GameOverDelayState(gameManager, gameRenderer, deathDuration);
             return;
         }
 

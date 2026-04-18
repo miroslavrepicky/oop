@@ -11,6 +11,7 @@ public class ShadowQuest extends Game {
 
     @Override
     public void dispose() {
+        AtlasCache.getInstance().dispose();
         super.dispose();
     }
 }

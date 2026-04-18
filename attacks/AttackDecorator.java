@@ -2,6 +2,7 @@ package sk.stuba.fiit.attacks;
 
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.exceptions.InvalidAttackException;
 import sk.stuba.fiit.world.Level;
 
 /**
@@ -31,7 +32,9 @@ public abstract class AttackDecorator implements Attack {
     protected final Attack wrapped;
 
     protected AttackDecorator(Attack wrapped) {
-        if (wrapped == null) throw new IllegalArgumentException("wrapped Attack nesmie byť null");
+        if (wrapped == null) {
+            throw new InvalidAttackException("unknown", "wrapped Attack nesmie byt null");
+        }
         this.wrapped = wrapped;
     }
 

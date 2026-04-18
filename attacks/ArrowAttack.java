@@ -1,8 +1,10 @@
 package sk.stuba.fiit.attacks;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.projectiles.Arrow;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
@@ -10,6 +12,8 @@ import sk.stuba.fiit.world.Level;
 
 public class ArrowAttack implements Attack {
     private final boolean piercing;
+
+    private static final Logger log = GameLogger.get(ArrowAttack.class);
 
     public ArrowAttack(boolean piercing) {
         this.piercing = piercing;
@@ -40,6 +44,14 @@ public class ArrowAttack implements Attack {
             : ProjectileOwner.PLAYER);
 
         level.addProjectile(arrow);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Arrow spawned: owner={}, piercing={}, dmg={}, pos=({},{})",
+                arrow.getOwner(), piercing,
+                attacker.getAttackPower(),
+                String.format("%.1f", spawnPos.getX()),
+                String.format("%.1f", spawnPos.getY()));
+        }
     }
 
     @Override
