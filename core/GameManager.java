@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.exceptions.GameStateException;
 import sk.stuba.fiit.inventory.Inventory;
+import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -57,6 +58,8 @@ public class GameManager {
         inventory = new Inventory();
         currentLevel = null;
         AtlasCache.getInstance().dispose();
+        ProjectilePool.getInstance().clearAll();
+        log.info("ProjectilePool cleared on reset");
     }
 
     public void reviveParty() {

@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.ShadowQuest;
+import sk.stuba.fiit.save.SaveManager;
 
 public class MainMenuScreen implements Screen {
 
@@ -23,7 +24,10 @@ public class MainMenuScreen implements Screen {
     private final ShapeRenderer shape;
     private final BitmapFont font;
     private final Rectangle btnNewGame;
+    private final Rectangle btnContinue;
     private final Rectangle btnExit;
+
+    private final boolean hasSave;
 
     public MainMenuScreen(ShadowQuest game) {
         this.game = game;
@@ -37,8 +41,11 @@ public class MainMenuScreen implements Screen {
         font.getData().setScale(1.5f);
 
         // stred obrazovky - tlacidla vycentrovane
-        btnNewGame = new Rectangle(W / 2 - 100, 240, 200, 44);
-        btnExit    = new Rectangle(W / 2 - 100, 175, 200, 44);
+        btnNewGame  = new Rectangle(W / 2 - 100, 275, 200, 44);
+        btnContinue = new Rectangle(W / 2 - 100, 215, 200, 44);
+        btnExit     = new Rectangle(W / 2 - 100, 155, 200, 44);
+
+        hasSave = SaveManager.getInstance().hasSave();
     }
 
     @Override
@@ -61,18 +68,25 @@ public class MainMenuScreen implements Screen {
 
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
-        drawButtonShape(btnNewGame, mx, my);
-        drawButtonShape(btnExit, mx, my);
+        drawButtonShape(btnNewGame,  mx, my, false);
+        drawButtonShape(btnContinue, mx, my, !hasSave);
+        drawButtonShape(btnExit,     mx, my, false);
         shape.end();
 
         shape.begin(ShapeRenderer.ShapeType.Line);
         shape.setColor(Color.DARK_GRAY);
         shape.rect(btnNewGame.x, btnNewGame.y, btnNewGame.width, btnNewGame.height);
         shape.rect(btnExit.x,    btnExit.y,    btnExit.width,    btnExit.height);
+        shape.setColor(hasSave ? Color.GOLD : Color.DARK_GRAY);
+        shape.rect(btnContinue.x, btnContinue.y, btnContinue.width, btnContinue.height);
         shape.end();
     }
 
-    private void drawButtonShape(Rectangle btn, float mx, float my) {
+    private void drawButtonShape(Rectangle btn, float mx, float my, boolean disabled) {
+        if (disabled) {
+            shape.setColor(0.12f, 0.12f, 0.12f, 1f); // zašednuté
+            return;
+        }
         boolean hover = btn.contains(mx, my);
         shape.setColor(hover ? 0.25f : 0.15f, hover ? 0.45f : 0.28f, hover ? 0.25f : 0.15f, 1f);
         shape.rect(btn.x, btn.y, btn.width, btn.height);
@@ -82,26 +96,50 @@ public class MainMenuScreen implements Screen {
         batch.begin();
 
         font.setColor(Color.WHITE);
-        font.draw(batch, "SHADOW QUEST", W / 2 - 90, 380f);
+        font.draw(batch, "SHADOW QUEST", W / 2 - 90, 400f);
 
-        drawButtonLabel(btnNewGame, "New Game", mx, my);
-        drawButtonLabel(btnExit,    "Exit",     mx, my);
+        drawButtonLabel(btnNewGame, "New Game", mx, my, false);
+        drawButtonLabel(btnContinue,
+            hasSave ? "Continue" : "Continue  (no save)",
+            mx, my, !hasSave);
+        drawButtonLabel(btnExit, "Exit", mx, my, false);
 
         batch.end();
     }
 
-    private void drawButtonLabel(Rectangle btn, String label, float mx, float my) {
-        boolean hover = btn.contains(mx, my);
-        font.setColor(hover ? Color.WHITE : Color.LIGHT_GRAY);
+    private void drawButtonLabel(Rectangle btn, String label,
+                                 float mx, float my, boolean disabled) {
+        if (disabled) {
+            font.setColor(Color.DARK_GRAY);
+        } else {
+            boolean hover = btn.contains(mx, my);
+            font.setColor(hover ? Color.WHITE : Color.LIGHT_GRAY);
+        }
         font.draw(batch, label, btn.x + 10, btn.y + btn.height - 10);
     }
 
     private void handleClick(float mx, float my) {
         if (btnNewGame.contains(mx, my)) {
+            SaveManager.getInstance().deleteSave(); // vymaž starý save pri New Game
             GameManager.getInstance().resetGame();
             GameManager.getInstance().initGame();
             game.setScreen(new InventoryScreen(game, 1));
         }
+
+        if (hasSave && btnContinue.contains(mx, my)) {
+            int level = SaveManager.getInstance().load();
+            if (level > 0) {
+                // Inventory je už rekonštruovaný v SaveManager.load()
+                GameManager.getInstance().startLevel(level);
+                game.setScreen(new GameScreen(game));
+            } else {
+                // Načítanie zlyhalo – fallback na novu hru
+                GameManager.getInstance().resetGame();
+                GameManager.getInstance().initGame();
+                game.setScreen(new InventoryScreen(game, 1));
+            }
+        }
+
         if (btnExit.contains(mx, my)) {
             Gdx.app.exit();
         }

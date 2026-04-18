@@ -18,6 +18,7 @@ import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.save.SaveManager;
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class InventoryScreen implements Screen {
     private final BitmapFont         font;
 
     private final Rectangle btnStart;
+    private final Rectangle btnSave;
 
     private final List<PlayerCharacter> availableChars = new ArrayList<>();
     private final List<ItemOffer> offers = new ArrayList<>();
@@ -84,6 +86,7 @@ public class InventoryScreen implements Screen {
 
         // Start tlacidlo - vpravo dole
         btnStart = new Rectangle(W - PAD - 180, PAD, 180, 36);
+        btnSave  = new Rectangle(W - PAD - 180, PAD + 46,     180, 36);
 
         offers.add(new ItemOffer("HealingPotion", 2,
             () -> new HealingPotion(50, new Vector2D(0, 0))));
@@ -201,8 +204,8 @@ public class InventoryScreen implements Screen {
         for (Rectangle btn : remCharBtns) drawButtonShape(btn, mx, my, true);
         for (Rectangle btn : remItemBtns) drawButtonShape(btn, mx, my, true);
         drawButtonShape(btnStart, mx, my, false);
+        drawButtonShape(btnSave,  mx, my, false);
 
-        // outline - samostatny pass
         shape.end();
         shape.begin(ShapeRenderer.ShapeType.Line);
         shape.setColor(Color.DARK_GRAY);
@@ -212,6 +215,8 @@ public class InventoryScreen implements Screen {
         for (Rectangle btn : remItemBtns) shape.rect(btn.x, btn.y, btn.width, btn.height);
         shape.setColor(Color.GOLD);
         shape.rect(btnStart.x, btnStart.y, btnStart.width, btnStart.height);
+        shape.setColor(new Color(0.4f, 0.8f, 1f, 1f)); // cyan pre Save
+        shape.rect(btnSave.x, btnSave.y, btnSave.width, btnSave.height);
         shape.end();
         shape.begin(ShapeRenderer.ShapeType.Filled);
     }
@@ -338,6 +343,14 @@ public class InventoryScreen implements Screen {
         font.draw(batch, "Start  Level " + levelToStart,
             btnStart.x + 10, btnStart.y + btnStart.height - 6);
 
+        boolean saveHover = btnSave.contains(
+            Gdx.input.getX() * (W / Gdx.graphics.getWidth()),
+            H - Gdx.input.getY() * (H / Gdx.graphics.getHeight())
+        );
+        font.setColor(saveHover ? Color.WHITE : new Color(0.4f, 0.8f, 1f, 1f));
+        font.draw(batch, "Ulozit hru",
+            btnSave.x + 10, btnSave.y + btnSave.height - 6);
+
         batch.end();
     }
 
@@ -404,6 +417,18 @@ public class InventoryScreen implements Screen {
                 return;
             }
         }
+
+        // --- Uložiť hru ---
+        if (btnSave.contains(mx, my)) {
+            try {
+                SaveManager.getInstance().save(levelToStart);
+                feedback = "Hra ulozena!  (Level " + levelToStart + ")";
+            } catch (SaveManager.SaveException e) {
+                feedback = "Ulozenie zlyhalo: " + e.getMessage();
+            }
+            return;
+        }
+
         if (btnStart.contains(mx, my)) {
             GameManager.getInstance().startLevel(levelToStart);
             game.setScreen(new GameScreen(game));

@@ -7,6 +7,7 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.projectiles.Arrow;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
+import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -30,13 +31,8 @@ public class ArrowAttack implements Attack {
         );
         Vector2D direction = new Vector2D(dirX, 0);
 
-        Arrow arrow = new Arrow(
-            attacker.getAttackPower(),
-            5.0f,
-            spawnPos,
-            direction,
-            piercing
-        );
+        Arrow arrow = ProjectilePool.getInstance().obtainArrow();
+        arrow.reset(attacker.getAttackPower(), 5.0f, spawnPos, direction, piercing);
 
         // Nastav vlastníka podľa typu útočníka
         arrow.setOwner(attacker instanceof EnemyCharacter

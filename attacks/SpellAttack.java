@@ -7,6 +7,7 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
+import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -33,13 +34,8 @@ public class SpellAttack implements Attack {
         );
         Vector2D direction = new Vector2D(dirX, 0);
 
-        MagicSpell spell = new MagicSpell(
-            attacker.getAttackPower(),
-            projectileSpeed,
-            spawnPos,
-            direction,
-            aoeRadius
-        );
+        MagicSpell spell = ProjectilePool.getInstance().obtainSpell();
+        spell.reset(attacker.getAttackPower(), projectileSpeed, spawnPos, direction, aoeRadius);
 
         // Nastav vlastníka podľa typu útočníka
         spell.setOwner(attacker instanceof EnemyCharacter

@@ -4,6 +4,7 @@ import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
+import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.projectiles.TurdflyProjectile;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -47,7 +48,8 @@ public class FriendlyDuck extends Item {
             character.getPosition().getY() + 10f
         );
 
-        TurdflyProjectile turdfly = new TurdflyProjectile(spawnPos, direction);
+        TurdflyProjectile turdfly = ProjectilePool.getInstance().obtainTurdfly();
+        turdfly.reset(spawnPos, direction);
         turdfly.setOwner(ProjectileOwner.PLAYER);
         level.addProjectile(turdfly);
 

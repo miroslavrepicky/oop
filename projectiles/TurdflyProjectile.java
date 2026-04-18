@@ -10,7 +10,7 @@ import sk.stuba.fiit.util.Vector2D;
  *
  * Implementuje {@link Renderable} – GameRenderer nemusí poznať tento typ.
  */
-public class TurdflyProjectile extends Projectile implements Renderable {
+public class TurdflyProjectile extends Projectile implements Renderable, Poolable {
 
     private static final int   TURDFLY_DAMAGE = 25;
     private static final float TURDFLY_SPEED  = 7.0f;
@@ -25,6 +25,37 @@ public class TurdflyProjectile extends Projectile implements Renderable {
         animationManager.addAnimation("fly", "TURDFLY/TURDFLY", 0.1f);
         animationManager.play("fly");
         setHitboxSize(animationManager.getAnimationSize("fly"));
+    }
+
+
+    @Override
+    public void returnToPool() {
+        ProjectilePool.getInstance().free(this);
+    }
+
+    // -------------------------------------------------------------------------
+    //  Reset pre ObjectPool
+    // -------------------------------------------------------------------------
+
+    /**
+     * Reinicializuje TurdflyProjectile na nové herné hodnoty.
+     * Volá sa ihneď po {@code ProjectilePool.getInstance().obtainTurdfly()}.
+     *
+     * <p>Poškodenie a rýchlosť sú fixné konštanty – reinicializujeme
+     * len pozíciu, smer a aktivitu.
+     */
+    public void reset(Vector2D position, Vector2D direction) {
+        this.damage    = TURDFLY_DAMAGE;
+        this.speed     = TURDFLY_SPEED;
+        this.position  = new Vector2D(position.getX(), position.getY());
+        this.direction = direction;
+        this.active    = true;
+        this.setVelocityY(0f);
+        this.setOnGround(false);
+        this.setOwner(ProjectileOwner.PLAYER);
+        hitbox.setPosition(position.getX(), position.getY());
+        setHitboxSize(animationManager.getAnimationSize("fly"));
+        animationManager.play("fly");
     }
 
     @Override

@@ -13,9 +13,9 @@ import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.EggProjectile;
+import sk.stuba.fiit.projectiles.Poolable;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
-import sk.stuba.fiit.attacks.FireSpellDecorator.BurnEffect;
 import sk.stuba.fiit.attacks.FreezeSpellDecorator.FreezeEffect;
 
 import java.util.ArrayList;
@@ -32,8 +32,6 @@ public class Level implements Updatable {
     private boolean isCompleted;
     private List<Projectile> projectiles = new ArrayList<>();
     private MapManager mapManager;
-    private List<BurnEffect>   burnEffects   = new ArrayList<>();
-    private List<FreezeEffect> freezeEffects = new ArrayList<>();
     private List<StatusEffect> effects = new ArrayList<>();
 
     public Level(int levelNumber) {
@@ -110,6 +108,7 @@ public class Level implements Updatable {
         // nevolá GameManager na získanie levelu, hráča alebo platforiem.
         UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, player);
 
+        returnInactiveProjectilesToPool();
         // --- projektily ---
         projectiles.removeIf(p -> !p.isActive());
         for (Projectile p : projectiles) p.update(ctx);
@@ -137,6 +136,21 @@ public class Level implements Updatable {
 
         if (!isCompleted && !enemies.isEmpty() && enemies.stream().noneMatch(Character::isAlive)) {
             isCompleted = true;
+        }
+    }
+
+    /**
+     * Projektil sa vracia ak implementuje {@link Poolable} –
+     * žiadne {@code instanceof} checky na konkrétne typy.
+     *
+     * <p>EggProjectile {@link Poolable} neimplementuje, takže ho GC
+     * zoberie štandardne.
+     */
+    private void returnInactiveProjectilesToPool() {
+        for (Projectile p : projectiles) {
+            if (!p.isActive() && p instanceof Poolable) {
+                ((Poolable) p).returnToPool();
+            }
         }
     }
 
