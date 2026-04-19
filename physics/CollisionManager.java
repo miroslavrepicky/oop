@@ -3,44 +3,33 @@ package sk.stuba.fiit.physics;
 import com.badlogic.gdx.math.Rectangle;
 import org.slf4j.Logger;
 
+import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.items.Item;
-import sk.stuba.fiit.projectiles.*;
+import sk.stuba.fiit.projectiles.AoeProjectile;
+import sk.stuba.fiit.projectiles.EggProjectile;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
  * Manages all collision detection and response for the active level.
  *
- * <p>Responsibilities per frame (called from {@code PlayingState.update()}):
- * <ol>
- *   <li>Item proximity detection – stores the nearest item for the pick-up hint.</li>
- *   <li>Player projectile vs. enemies/ducks/walls.</li>
- *   <li>Enemy projectile vs. player/walls.</li>
- *   <li>Egg explosion AOE damage.</li>
- *   <li>Player–enemy body push to prevent overlap.</li>
- * </ol>
- *
- * <p>{@link ProjectileOwner} is used instead of {@code instanceof EnemyCharacter}
- * to distinguish attacker types, keeping the collision logic decoupled from the
- * character hierarchy.
+ * <p>On-hit effects (DOT, slow) carried by projectiles are applied here directly
+ * to the hit {@link Character} via {@link Character#applyDot} and
+ * {@link Character#applySlow}. No separate status-effect list is needed.
  */
 public class CollisionManager {
 
     private Item nearbyItem = null;
     private static final Logger log = GameLogger.get(CollisionManager.class);
 
-    // -------------------------------------------------------------------------
-    //  Hlavný vstupný bod
-    // -------------------------------------------------------------------------
-
     public void update(Level level) {
-        PlayerCharacter player = GameManager.getInstance()
-            .getInventory().getActive();
+        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
         if (player == null || level == null) return;
 
         checkNearbyItems(player, level);
@@ -70,15 +59,14 @@ public class CollisionManager {
             return;
         }
         log.info("Item picked up: item={}, player={}",
-            nearbyItem.getClass().getSimpleName(),
-            player.getName());
+            nearbyItem.getClass().getSimpleName(), player.getName());
         nearbyItem.onPickup(player);
         level.getItems().remove(nearbyItem);
         nearbyItem = null;
     }
 
     // -------------------------------------------------------------------------
-    //  Hráčske projektily
+    //  Player projectiles
     // -------------------------------------------------------------------------
 
     private void checkPlayerProjectiles(Level level) {
@@ -124,7 +112,7 @@ public class CollisionManager {
             if (hitTarget instanceof EnemyCharacter) {
                 EnemyCharacter directHit = (EnemyCharacter) hitTarget;
                 directHit.takeDamage(aoe.getDamage());
-                applyStatusEffect(projectile, directHit, level);
+                applyOnHitEffects(projectile, directHit);
                 applyAoeExcluding(
                     projectile.getPosition().getX(),
                     projectile.getPosition().getY(),
@@ -147,6 +135,18 @@ public class CollisionManager {
         projectile.setActive(false);
     }
 
+    /**
+     * Applies DOT and slow effects carried by the projectile to the hit character.
+     */
+    private void applyOnHitEffects(Projectile projectile, Character target) {
+        if (projectile.hasDotEffect()) {
+            target.applyDot(projectile.getDotDps(), projectile.getDotDuration());
+        }
+        if (projectile.hasSlowEffect()) {
+            target.applySlow(projectile.getSlowMultiplier(), projectile.getSlowDuration());
+        }
+    }
+
     private void applyAoe(float cx, float cy, float radius, int damage, Level level) {
         applyAoeExcluding(cx, cy, radius, damage, level, null);
     }
@@ -157,8 +157,8 @@ public class CollisionManager {
 
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive() || enemy == excludedEnemy) continue;
-            float ex   = enemy.getPosition().getX() + enemy.getHitbox().width  / 2f;
-            float ey   = enemy.getPosition().getY() + enemy.getHitbox().height / 2f;
+            float ex    = enemy.getPosition().getX() + enemy.getHitbox().width  / 2f;
+            float ey    = enemy.getPosition().getY() + enemy.getHitbox().height / 2f;
             double dist = centre.distanceTo(new Vector2D(ex, ey));
             if (dist <= radius) {
                 float falloff = 1f - (float)(dist / radius);
@@ -168,8 +168,8 @@ public class CollisionManager {
 
         for (Duck duck : level.getDucks()) {
             if (!duck.isAlive()) continue;
-            float dx   = duck.getPosition().getX() + duck.getHitbox().width  / 2f;
-            float dy   = duck.getPosition().getY() + duck.getHitbox().height / 2f;
+            float dx    = duck.getPosition().getX() + duck.getHitbox().width  / 2f;
+            float dy    = duck.getPosition().getY() + duck.getHitbox().height / 2f;
             double dist = centre.distanceTo(new Vector2D(dx, dy));
             if (dist <= radius) {
                 duck.takeDamage(duck.getHp());
@@ -181,20 +181,22 @@ public class CollisionManager {
 
     private void applySingleHit(Projectile projectile, Object hitTarget, Level level) {
         if (hitTarget instanceof EnemyCharacter) {
-            projectile.onCollision(hitTarget);
+            EnemyCharacter enemy = (EnemyCharacter) hitTarget;
+            projectile.onCollision(enemy);
+            applyOnHitEffects(projectile, enemy);
         } else if (hitTarget instanceof Duck) {
             killDuck((Duck) hitTarget, projectile, level);
         }
     }
 
     // -------------------------------------------------------------------------
-    //  Nepriateľské projektily
+    //  Enemy projectiles
     // -------------------------------------------------------------------------
 
     private void checkEnemyProjectiles(PlayerCharacter player, Level level) {
         for (Projectile projectile : level.getProjectiles()) {
             if (!projectile.isActive()) continue;
-            if (projectile.isPlayerProjectile()) continue;   // ← enum, nie instanceof
+            if (projectile.isPlayerProjectile()) continue;
             if (projectile instanceof EggProjectile) continue;
 
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
@@ -206,7 +208,7 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  EggProjectile výbuchy
+    //  Egg explosions
     // -------------------------------------------------------------------------
 
     private void checkEggExplosions(PlayerCharacter player, Level level) {
@@ -232,7 +234,7 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Hráč vs. nepriatelia – odsun
+    //  Player vs enemy push
     // -------------------------------------------------------------------------
 
     private void checkPlayerVsEnemyPush(PlayerCharacter player, Level level) {
@@ -256,7 +258,7 @@ public class CollisionManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Pomocné metódy
+    //  Helpers
     // -------------------------------------------------------------------------
 
     private void killDuck(Duck duck, Projectile projectile, Level level) {
@@ -272,12 +274,6 @@ public class CollisionManager {
             if (projectile.getHitbox().overlaps(wall)) return true;
         }
         return false;
-    }
-
-    private void applyStatusEffect(Projectile projectile, EnemyCharacter target, Level level) {
-        StatusEffectFactory factory = projectile.getEffectFactory();
-        if (factory == null) return;
-        level.addStatusEffect(factory.create(target));
     }
 
     public Item getNearbyItem() { return nearbyItem; }

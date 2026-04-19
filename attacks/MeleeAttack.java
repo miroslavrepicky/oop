@@ -1,0 +1,104 @@
+package sk.stuba.fiit.attacks;
+
+import org.slf4j.Logger;
+import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.characters.Duck;
+import sk.stuba.fiit.characters.EnemyCharacter;
+import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
+import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.projectiles.Projectile;
+import sk.stuba.fiit.world.Level;
+
+/**
+ * Melee attack that damages the nearest target within a tile-based reach.
+ *
+ * <p>Does not spawn a projectile – returns {@code null} from {@link #execute}.
+ * Decorators that receive {@code null} skip effect attachment gracefully.
+ */
+public class MeleeAttack implements Attack {
+
+    private final int rangeTiles;
+    private static final Logger log = GameLogger.get(MeleeAttack.class);
+
+    public MeleeAttack(int rangeTiles) {
+        this.rangeTiles = rangeTiles;
+    }
+
+    /**
+     * Applies melee damage directly to the nearest valid target.
+     *
+     * @return {@code null} – melee attacks do not spawn projectiles
+     */
+    @Override
+    public Projectile execute(Character attacker, Level level) {
+        float reach = rangeTiles * 52f;
+
+        if (attacker instanceof PlayerCharacter) {
+            PlayerCharacter player = (PlayerCharacter) attacker;
+            float ax   = player.getPosition().getX();
+            float dirX = player.isFacingRight() ? 1f : -1f;
+
+            for (EnemyCharacter enemy : level.getEnemies()) {
+                if (!enemy.isAlive()) continue;
+                float dist = (enemy.getPosition().getX() - ax) * dirX;
+                if (dist >= 0 && dist <= reach) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Melee hit enemy: attacker={}, target={}, dist={}, dmg={}",
+                            attacker.getName(), enemy.getName(),
+                            String.format("%.1f", dist), attacker.getAttackPower());
+                    }
+                    enemy.takeDamage(attacker.getAttackPower());
+                    return null;
+                }
+            }
+            for (Duck duck : level.getDucks()) {
+                if (!duck.isAlive()) continue;
+                float dist = (duck.getPosition().getX() - ax) * dirX;
+                if (dist >= 0 && dist <= reach) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Melee hit duck: attacker={}, dist={}, dmg=instant kill",
+                            attacker.getName(), String.format("%.1f", dist));
+                    }
+                    duck.takeDamage(duck.getHp());
+                    Item result = duck.onKilled();
+                    if (result != null) {
+                        log.info("Duck killed – drop: item={}, pos=({},{})",
+                            result.getClass().getSimpleName(),
+                            String.format("%.1f", duck.getPosition().getX()),
+                            String.format("%.1f", duck.getPosition().getY()));
+                        level.addItem(result);
+                    }
+                    return null;
+                }
+            }
+
+        } else if (attacker instanceof EnemyCharacter) {
+            PlayerCharacter player = level.getActivePlayer();
+            if (player == null || !player.isAlive()) return null;
+
+            double dist = attacker.getPosition().distanceTo(player.getPosition());
+            if (dist <= reach) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Enemy melee hit player: attacker={}, target={}, dist={}, dmg={}",
+                        attacker.getName(), player.getName(),
+                        String.format("%.1f", dist), attacker.getAttackPower());
+                }
+                player.takeDamage(attacker.getAttackPower());
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getAnimationName() { return "attack"; }
+
+    @Override
+    public float getAnimationDuration(AnimationManager am) {
+        return am != null && am.hasAnimation("attack")
+            ? am.getAnimationDuration("attack")
+            : 0.4f;
+    }
+}

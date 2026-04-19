@@ -12,44 +12,25 @@ import sk.stuba.fiit.util.Vector2D;
 /**
  * Base class for all AI-controlled enemy characters.
  *
- * <p>Implements {@link AIControllable} so that {@link AIController} can drive
- * the enemy without knowing the concrete type. All update data (platforms, level,
- * player) arrives via {@link UpdateContext} – no call to {@code GameManager}.
- *
- * <p>Attack lifecycle:
- * <ol>
- *   <li>{@code AIController} calls {@link #performAttack(PlayerCharacter)} when in range.</li>
- *   <li>The method starts the animation timer and sets {@code isAttacking = true}.</li>
- *   <li>During {@link #update(UpdateContext)}, at the second-to-last animation frame,
- *       {@code attack.execute()} is called and damage is dealt.</li>
- *   <li>When the timer expires, {@code isAttacking} is reset.</li>
- * </ol>
- *
- * <p>Movement: {@link MovementResolver} checks horizontal wall collisions before
- * applying the displacement, and the result is exposed via {@link #wasLastMoveBlocked()}.
+ * <p>On-hit effects (DOT, slow) received from projectiles are ticked each frame
+ * via {@link #tickEffects(float)} inherited from {@link Character}.
  */
 public abstract class EnemyCharacter extends Character implements AIControllable {
-    protected float patrolRange;
-    protected float detectionRange;
+    protected float     patrolRange;
+    protected float     detectionRange;
     protected Inventory inventory;
-    private AIController aiController;
-    private MovementResolver movementResolver;
+    private   AIController     aiController;
+    private   MovementResolver movementResolver;
 
     protected Attack attack;
 
-    private float attackCooldown             = 0f;
+    private float   attackCooldown              = 0f;
     private static final float ATTACK_COOLDOWN_MAX = 1.5f;
 
-    protected boolean isAttacking        = false;
-    private   float   attackAnimTimer    = 0f;
-    private   float   attackAnimDuration = 0f;
-    private   boolean damageDealt        = false;
-    private   PlayerCharacter pendingTarget = null;
-    private   boolean lastMoveBlocked    = false;
-
-    // -------------------------------------------------------------------------
-    //  Konštruktory
-    // -------------------------------------------------------------------------
+    protected boolean isAttacking     = false;
+    private   float   attackAnimTimer = 0f;
+    private   boolean damageDealt     = false;
+    private   boolean lastMoveBlocked = false;
 
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
                           Vector2D position, float patrolRange, float detectionRange) {
@@ -66,7 +47,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     }
 
     // -------------------------------------------------------------------------
-    //  AIControllable implementácia
+    //  AIControllable
     // -------------------------------------------------------------------------
 
     @Override
@@ -77,31 +58,18 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     @Override
     public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
 
-    /**
-     * Initialises the AI controller with patrol waypoints and combat ranges.
-     *
-     * @param patrolStart    left boundary of the patrol route
-     * @param patrolEnd      right boundary of the patrol route
-     * @param attackRange    distance in pixels at which the enemy begins attacking
-     * @param preferredRange ideal distance the enemy tries to maintain (ranged > melee)
-     */
     public void initAI(Vector2D patrolStart, Vector2D patrolEnd,
                        float attackRange, float preferredRange) {
         this.aiController = new AIController(
             this, patrolStart, patrolEnd, attackRange, preferredRange);
     }
 
-    /**
-     * Sets the resolver used to prevent the enemy from walking through walls.
-     *
-     * @param resolver pre-built resolver backed by the current map's hitboxes
-     */
     public void setMovementResolver(MovementResolver resolver) {
         this.movementResolver = resolver;
     }
 
     // -------------------------------------------------------------------------
-    //  Pohyb
+    //  Movement
     // -------------------------------------------------------------------------
 
     @Override
@@ -123,21 +91,19 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     }
 
     // -------------------------------------------------------------------------
-    //  Útok
+    //  Attack
     // -------------------------------------------------------------------------
 
     @Override
     public void performAttack(PlayerCharacter player) {
         if (attackCooldown > 0 || isAttacking || attack == null) return;
 
-        attackCooldown    = ATTACK_COOLDOWN_MAX;
-        isAttacking       = true;
-        damageDealt       = false;
-        pendingTarget     = player;
+        attackCooldown = ATTACK_COOLDOWN_MAX;
+        isAttacking    = true;
+        damageDealt    = false;
 
         AnimationManager am = getAnimationManager();
-        attackAnimDuration  = attack.getAnimationDuration(am);
-        attackAnimTimer     = attackAnimDuration;
+        attackAnimTimer = attack.getAnimationDuration(am);
 
         if (am != null) am.play(attack.getAnimationName());
 
@@ -147,14 +113,9 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     protected String getAttackAnimationName() { return "attack"; }
 
     // -------------------------------------------------------------------------
-    //  Updatable – hlavná update metóda
+    //  Update
     // -------------------------------------------------------------------------
 
-    /**
-     * Všetky potrebné dáta sú v {@code ctx}.
-     * Nepriateľ si zoberie {@code ctx.platforms} pre gravitáciu,
-     * {@code ctx.level} pre útok a {@code ctx.player} pre AI.
-     */
     @Override
     public void update(UpdateContext ctx) {
         if (!isAlive()) {
@@ -172,7 +133,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
             if (!damageDealt && attack != null) {
                 AnimationManager am = getAnimationManager();
                 float frameDuration = attack.getFrameDuration(am);
-                if (attackAnimTimer <= frameDuration * 2) {   // ← predposledný frame
+                if (attackAnimTimer <= frameDuration * 2) {
                     if (ctx.level != null) {
                         attack.execute(this, ctx.level);
                     }
@@ -181,12 +142,12 @@ public abstract class EnemyCharacter extends Character implements AIControllable
             }
 
             if (attackAnimTimer <= 0f) {
-                isAttacking   = false;
-                pendingTarget = null;
+                isAttacking = false;
             }
         }
 
         applyGravity(ctx.deltaTime, ctx.platforms);
+        tickEffects(ctx.deltaTime);
 
         if (aiController != null && ctx.player != null) {
             aiController.update(ctx.deltaTime, ctx.player);
@@ -195,7 +156,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     }
 
     // -------------------------------------------------------------------------
-    //  Animácia
+    //  Animation
     // -------------------------------------------------------------------------
 
     @Override
