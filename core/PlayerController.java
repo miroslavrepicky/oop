@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.util.Vector2D;
@@ -138,6 +139,7 @@ public class PlayerController {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) inventory.switchCharacter(2);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) inventory.switchCharacter(3);
 
-        player.updateAnimation(deltaTime);
+        UpdateContext ctx = new UpdateContext(deltaTime, platforms, level, player, inventory);
+        player.updateAnimation(ctx);
     }
 }

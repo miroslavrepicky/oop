@@ -2,6 +2,7 @@ package sk.stuba.fiit.core.engine;
 
 import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.world.Level;
 
 import java.util.Collections;
@@ -40,6 +41,8 @@ public final class UpdateContext {
      */
     public final PlayerCharacter player;
 
+    public final Inventory inventory;
+
     // -------------------------------------------------------------------------
     //  Konštruktory
     // -------------------------------------------------------------------------
@@ -47,20 +50,22 @@ public final class UpdateContext {
     public UpdateContext(float deltaTime,
                          List<Rectangle> platforms,
                          Level level,
-                         PlayerCharacter player) {
+                         PlayerCharacter player,
+                         Inventory inventory) {
         this.deltaTime = deltaTime;
         this.platforms = (platforms != null) ? platforms : Collections.emptyList();
         this.level     = level;
         this.player    = player;
+        this.inventory = inventory;
     }
 
     /** Skrátený konštruktor – len čas a platformy (napr. pre projektily). */
     public UpdateContext(float deltaTime, List<Rectangle> platforms) {
-        this(deltaTime, platforms, null, null);
+        this(deltaTime, platforms, null, null, null);
     }
 
     /** Minimálny konštruktor – len čas (napr. pre UI elementy). */
     public UpdateContext(float deltaTime) {
-        this(deltaTime, Collections.emptyList(), null, null);
+        this(deltaTime, Collections.emptyList(), null, null, null);
     }
 }

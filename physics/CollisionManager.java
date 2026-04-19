@@ -9,10 +9,7 @@ import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.items.Item;
-import sk.stuba.fiit.projectiles.AoeProjectile;
-import sk.stuba.fiit.projectiles.EggProjectile;
-import sk.stuba.fiit.projectiles.Projectile;
-import sk.stuba.fiit.projectiles.ProjectileOwner;
+import sk.stuba.fiit.projectiles.*;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -127,6 +124,7 @@ public class CollisionManager {
             if (hitTarget instanceof EnemyCharacter) {
                 EnemyCharacter directHit = (EnemyCharacter) hitTarget;
                 directHit.takeDamage(aoe.getDamage());
+                applyStatusEffect(projectile, directHit, level);
                 applyAoeExcluding(
                     projectile.getPosition().getX(),
                     projectile.getPosition().getY(),
@@ -274,6 +272,12 @@ public class CollisionManager {
             if (projectile.getHitbox().overlaps(wall)) return true;
         }
         return false;
+    }
+
+    private void applyStatusEffect(Projectile projectile, EnemyCharacter target, Level level) {
+        StatusEffectFactory factory = projectile.getEffectFactory();
+        if (factory == null) return;
+        level.addStatusEffect(factory.create(target));
     }
 
     public Item getNearbyItem() { return nearbyItem; }

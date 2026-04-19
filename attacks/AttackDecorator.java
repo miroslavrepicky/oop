@@ -3,6 +3,7 @@ package sk.stuba.fiit.attacks;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.exceptions.InvalidAttackException;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
 
 /**
@@ -45,8 +46,8 @@ public abstract class AttackDecorator implements Attack {
     }
 
     @Override
-    public void execute(Character attacker, Level level) {
-        wrapped.execute(attacker, level);
+    public Projectile execute(Character attacker, Level level) {
+        return wrapped.execute(attacker, level);
     }
 
     @Override

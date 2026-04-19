@@ -1,5 +1,7 @@
 package sk.stuba.fiit.projectiles;
 
+import sk.stuba.fiit.attacks.StatusEffect;
+import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.core.engine.UpdateContext;
@@ -64,6 +66,7 @@ public class MagicSpell extends Projectile implements AoeProjectile, Renderable,
         hitbox.setPosition(position.getX(), position.getY());
         hitbox.setSize(RENDER_W, RENDER_H);
         animationManager.play("fly");
+        this.setEffectFactory(null);
     }
 
     @Override

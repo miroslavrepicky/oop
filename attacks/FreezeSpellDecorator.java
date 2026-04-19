@@ -6,7 +6,10 @@ import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
+
+import java.util.List;
 
 /**
  * Decorator that adds a slow/freeze status effect on top of a base spell attack.
@@ -39,14 +42,12 @@ public class FreezeSpellDecorator extends AttackDecorator {
     }
 
     @Override
-    public void execute(Character attacker, Level level) {
-        // 1. Pôvodný SpellAttack vypustí projektil
-        wrapped.execute(attacker, level);
-
-        // 2. Freeze efekt na prvého nepriateľa v smere útoku
-        if (attacker instanceof PlayerCharacter) {
-            applyFreezeToNearestEnemy((PlayerCharacter) attacker, level);
+    public Projectile execute(Character attacker, Level level) {
+        Projectile p = wrapped.execute(attacker, level);
+        if (p != null) {
+            p.setEffectFactory(target -> new FreezeEffect(target, FREEZE_DURATION, SLOW_FACTOR));
         }
+        return p;
     }
 
     private void applyFreezeToNearestEnemy(PlayerCharacter attacker, Level level) {
@@ -108,13 +109,13 @@ public class FreezeSpellDecorator extends AttackDecorator {
      */
     public static class FreezeEffect implements StatusEffect {
 
-        private final EnemyCharacter target;
+        private final                Character target;
         private final float          originalSpeed;
         private final float          slowFactor;
         private float                remainingTime;
         private boolean              applied = false;
 
-        public FreezeEffect(EnemyCharacter target, float duration, float slowFactor) {
+        public FreezeEffect(Character target, float duration, float slowFactor) {
             this.target        = target;
             this.slowFactor    = slowFactor;
             this.remainingTime = duration;
@@ -160,6 +161,6 @@ public class FreezeSpellDecorator extends AttackDecorator {
             return remainingTime <= 0f || !target.isAlive();
         }
 
-        public EnemyCharacter getTarget() { return target; }
+        public Character getTarget() { return target; }
     }
 }

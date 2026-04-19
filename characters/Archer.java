@@ -6,6 +6,7 @@ import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
+import sk.stuba.fiit.world.Level;
 
 
 public class Archer extends PlayerCharacter {

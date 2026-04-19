@@ -1,6 +1,6 @@
 package sk.stuba.fiit.attacks;
 
-import sk.stuba.fiit.characters.EnemyCharacter;
+import sk.stuba.fiit.characters.Character;
 
 /**
  * Contract for time-based status effects applied to enemy characters.
@@ -30,7 +30,7 @@ public interface StatusEffect {
     /**
      * Returns the enemy character this effect is applied to.
      *
-     * @return the affected {@link EnemyCharacter}
+     * @return the affected {@link Character}
      */
-    EnemyCharacter getTarget();
+    Character getTarget();
 }

@@ -1,9 +1,9 @@
 package sk.stuba.fiit.characters;
 
 import sk.stuba.fiit.attacks.Attack;
-import sk.stuba.fiit.attacks.SpellAttack;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameManager;
+import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -57,11 +57,9 @@ public abstract class PlayerCharacter extends Character {
             return;
         }
 
-        if (attack instanceof SpellAttack) {
-            SpellAttack spell = (SpellAttack) attack;
-            if (getMana() < spell.getManaCost()) return;
-            spendMana(spell.getManaCost());
-        }
+        int cost = attack.getManaCost();
+        if (getMana() < cost) return;
+        spendMana(cost);
 
         Level level = GameManager.getInstance().getCurrentLevel();
         if (level == null) return;
@@ -85,21 +83,17 @@ public abstract class PlayerCharacter extends Character {
      * Drives the attack animation: spawns the projectile at the correct frame,
      * manages the animation timer, and switches to the appropriate locomotion
      * animation (idle / walk / jump) when the attack ends.
-     *
-     * @param deltaTime time elapsed since the last frame in seconds
      */
-    @Override
-    public void updateAnimation(float deltaTime) {
+    public void updateAnimation(UpdateContext ctx) {
         if (getAnimationManager() == null) return;
 
         if (!isAlive()) {
             startDeathAnimation();
-            updateDeathTimer(deltaTime);
-            getAnimationManager().update(deltaTime);
+            updateDeathTimer(ctx.deltaTime);
+            getAnimationManager().update(ctx.deltaTime);
 
             if (isDeathAnimationDone()) {
-                Inventory inv = GameManager.getInstance().getInventory();
-                if (inv.getActive() == this && !inv.switchToNextAlive()) {
+                if (ctx.inventory.getActive() == this && !ctx.inventory.switchToNextAlive()) {
                     // žiadna živá postava – party je porazená, nič nerob,
                     // PlayingState.update() zachytí isPartyDefeated() a prepne stav
                 }
@@ -111,14 +105,13 @@ public abstract class PlayerCharacter extends Character {
         if (!projectileSpawned && currentAttack != null) {
             float frameDuration = currentAttack.getFrameDuration(getAnimationManager());
             if (attackAnimTimer <= frameDuration * 3) {
-                Level level = GameManager.getInstance().getCurrentLevel();
-                if (level != null) currentAttack.execute(this, level);
+                currentAttack.execute(this, ctx.level);
                 projectileSpawned = true;
             }
         }
 
         if (isAttacking) {
-            attackAnimTimer -= deltaTime;
+            attackAnimTimer -= ctx.deltaTime;
             if (attackAnimTimer <= 0f) isAttacking = false;
         }
 
@@ -134,7 +127,7 @@ public abstract class PlayerCharacter extends Character {
         }
 
         getAnimationManager().play(anim);
-        getAnimationManager().update(deltaTime);
+        getAnimationManager().update(ctx.deltaTime);
     }
 
     protected boolean hasAnimation(String name) {

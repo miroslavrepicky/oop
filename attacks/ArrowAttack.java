@@ -6,6 +6,7 @@ import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.projectiles.Arrow;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
@@ -32,7 +33,7 @@ public class ArrowAttack implements Attack {
     }
 
     @Override
-    public void execute(Character attacker, Level level) {
+    public Projectile execute(Character attacker, Level level) {
         boolean facingRight = attacker.isFacingRight();
         float dirX = facingRight ? 1f : -1f;
 
@@ -59,6 +60,7 @@ public class ArrowAttack implements Attack {
                 String.format("%.1f", spawnPos.getX()),
                 String.format("%.1f", spawnPos.getY()));
         }
+        return arrow;
     }
 
     @Override

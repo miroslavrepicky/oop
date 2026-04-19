@@ -132,7 +132,7 @@ public class Level implements Updatable {
 
         // Kontext sa vytvorí raz a predá všetkým – žiadna trieda
         // nevolá GameManager na získanie levelu, hráča alebo platforiem.
-        UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, player);
+        UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, player, null);
 
         returnInactiveProjectilesToPool();
         // --- projektily ---

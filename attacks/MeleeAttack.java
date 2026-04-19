@@ -8,6 +8,7 @@ import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
 
 
@@ -30,7 +31,7 @@ public class MeleeAttack implements Attack {
     }
 
     @Override
-    public void execute(Character attacker, Level level) {
+    public Projectile execute(Character attacker, Level level) {
         float reach = rangeTiles * 52f;
 
         if (attacker instanceof PlayerCharacter) {
@@ -51,7 +52,7 @@ public class MeleeAttack implements Attack {
                             attacker.getAttackPower());
                     }
                     enemy.takeDamage(attacker.getAttackPower());
-                    return;
+                    return null;
                 }
             }
             for (Duck duck : level.getDucks()) {
@@ -73,14 +74,14 @@ public class MeleeAttack implements Attack {
                             String.format("%.1f", duck.getPosition().getY()));
                     }
                     level.addItem(result);
-                    return;
+                    return null;
                 }
             }
 
         } else if (attacker instanceof EnemyCharacter) {
             // nepriatel trafi aktivneho hraca ak je v dosahu
             PlayerCharacter player = level.getActivePlayer();
-            if (player == null || !player.isAlive()) return;
+            if (player == null || !player.isAlive()) return null;
 
             double dist = attacker.getPosition().distanceTo(player.getPosition());
             if (dist <= reach) {
@@ -100,6 +101,7 @@ public class MeleeAttack implements Attack {
                 }
             }
         }
+        return null;
     }
 
     @Override

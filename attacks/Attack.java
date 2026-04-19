@@ -2,6 +2,7 @@ package sk.stuba.fiit.attacks;
 
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
 
 
@@ -25,7 +26,7 @@ public interface Attack {
      * @param attacker the character performing the attack
      * @param level    the current game level providing access to enemies and projectile lists
      */
-    void execute(Character attacker, Level level);
+    Projectile execute(Character attacker, Level level);
 
     /**
      * Returns the animation name that the attacker should play when this attack fires

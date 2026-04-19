@@ -6,7 +6,11 @@ import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
+import sk.stuba.fiit.projectiles.MagicSpell;
+import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
+
+import java.util.List;
 
 /**
  * Decorator that adds a Damage-over-Time burn effect on top of a base spell attack.
@@ -41,15 +45,12 @@ public class FireSpellDecorator extends AttackDecorator {
     // -------------------------------------------------------------------------
 
     @Override
-    public void execute(Character attacker, Level level) {
-        // 1. Pôvodný SpellAttack vypustí MagicSpell projektil
-        wrapped.execute(attacker, level);
-
-        // 2. Burn efekt na prvého nepriateľa v dosahu
-        //    (pre zjednodušenie hľadáme najbližšieho živého)
-        if (attacker instanceof PlayerCharacter) {
-            applyBurnToNearestEnemy((PlayerCharacter) attacker, level);
+    public Projectile execute(Character attacker, Level level) {
+        Projectile p = wrapped.execute(attacker, level);
+        if (p != null) {
+            p.setEffectFactory(target -> new BurnEffect(target, BURN_TICKS, BURN_DPS));
         }
+        return p;
     }
 
     private void applyBurnToNearestEnemy(PlayerCharacter attacker, Level level) {
@@ -116,12 +117,12 @@ public class FireSpellDecorator extends AttackDecorator {
      */
     public static class BurnEffect implements StatusEffect {
 
-        private final EnemyCharacter target;
+        private final Character target;
         private final int            dps;
         private float                remainingTime;
         private float                damageAccumulator = 0f;
 
-        public BurnEffect(EnemyCharacter target, float duration, int dps) {
+        public BurnEffect(Character target, float duration, int dps) {
             this.target        = target;
             this.dps           = dps;
             this.remainingTime = duration;
@@ -153,6 +154,6 @@ public class FireSpellDecorator extends AttackDecorator {
             return remainingTime <= 0f || !target.isAlive();
         }
 
-        public EnemyCharacter getTarget() { return target; }
+        public Character getTarget() { return target; }
     }
 }

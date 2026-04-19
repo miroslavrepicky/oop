@@ -32,6 +32,7 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
     protected Vector2D direction;
     protected boolean  active;
     protected Rectangle hitbox;
+    private StatusEffectFactory effectFactory = null;
 
     /**
      * Gravitačná stratégia. Predvolene {@link NoGravity} – projektily
@@ -102,6 +103,14 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
         if (other instanceof Character) {
             onHit((Character) other);
         }
+    }
+
+    public void setEffectFactory(StatusEffectFactory factory) {
+        this.effectFactory = factory;
+    }
+
+    public StatusEffectFactory getEffectFactory() {
+        return effectFactory;
     }
 
     // -------------------------------------------------------------------------
