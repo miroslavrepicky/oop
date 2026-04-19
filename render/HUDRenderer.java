@@ -11,7 +11,9 @@ import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Item;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Kreslí HUD (HP, zbroj, inventár, pick-up hint).
@@ -30,6 +32,7 @@ public class HUDRenderer {
     private final BitmapFont         font;
     private final ShapeRenderer      shapeRenderer;
     private final OrthographicCamera hudCamera;
+    private final Map<String, Texture> iconCache = new HashMap<>();
 
     private static final int   SLOT_COUNT    = 10;
     private static final float SLOT_SIZE     = 40f;
@@ -101,10 +104,10 @@ public class HUDRenderer {
         for (int i = 0; i < items.size() && i < SLOT_COUNT; i++) {
             float x = START_X + i * (SLOT_SIZE + SLOT_PAD);
             String iconPath = items.get(i).getIconPath();
-            if (iconPath != null && !iconPath.isEmpty()) {
-                Texture tex = new Texture(iconPath);
-                batch.draw(tex, x + 4, SLOT_Y + 4, SLOT_SIZE - 8, SLOT_SIZE - 8);
-            }
+            if (iconPath == null || iconPath.isEmpty()) continue;
+
+            Texture tex = iconCache.computeIfAbsent(iconPath, Texture::new); // opravené
+            batch.draw(tex, x + 4, SLOT_Y + 4, SLOT_SIZE - 8, SLOT_SIZE - 8);
         }
     }
 
@@ -142,5 +145,6 @@ public class HUDRenderer {
     public void dispose() {
         font.dispose();
         shapeRenderer.dispose();
+        iconCache.values().forEach(Texture::dispose);
     }
 }

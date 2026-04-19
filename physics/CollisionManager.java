@@ -58,11 +58,17 @@ public class CollisionManager {
             log.debug("pickupNearbyItem called but no nearby item");
             return;
         }
-        log.info("Item picked up: item={}, player={}",
-            nearbyItem.getClass().getSimpleName(), player.getName());
-        nearbyItem.onPickup(player);
-        level.getItems().remove(nearbyItem);
-        nearbyItem = null;
+        boolean picked = nearbyItem.onPickup(player);
+        if (picked) {
+            log.info("Item picked up: item={}, player={}",
+                nearbyItem.getClass().getSimpleName(), player.getName());
+            level.getItems().remove(nearbyItem);
+            nearbyItem = null;
+        } else {
+            log.warn("Item pickup failed – inventory full: item={}, player={}",
+                nearbyItem.getClass().getSimpleName(), player.getName());
+            // item zostáva v leveli
+        }
     }
 
     // -------------------------------------------------------------------------

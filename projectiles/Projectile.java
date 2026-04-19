@@ -1,13 +1,13 @@
 package sk.stuba.fiit.projectiles;
 
 import com.badlogic.gdx.math.Rectangle;
+import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.engine.Collidable;
-import sk.stuba.fiit.physics.GravityStrategy;
-import sk.stuba.fiit.physics.NoGravity;
 import sk.stuba.fiit.core.engine.Physicable;
 import sk.stuba.fiit.core.engine.Updatable;
 import sk.stuba.fiit.core.engine.UpdateContext;
-import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.physics.GravityStrategy;
+import sk.stuba.fiit.physics.NoGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 /**

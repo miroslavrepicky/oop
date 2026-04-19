@@ -11,9 +11,9 @@ import sk.stuba.fiit.characters.PlayerCharacter;
 public interface Pickable {
     /**
      * Handles the pick-up action for the given player character.
-     * Typically, adds the item to the player's inventory.
      *
      * @param character the player who picked up this object
+     * @return true if the item was successfully picked up, false if inventory is full
      */
-    void onPickup(PlayerCharacter character);
+    boolean onPickup(PlayerCharacter character);
 }

@@ -51,8 +51,8 @@ public abstract class Item implements Pickable, Updatable {
     public abstract String getIconPath();
 
     @Override
-    public void onPickup(PlayerCharacter character) {
-        character.getInventory().addItem(this);
+    public boolean onPickup(PlayerCharacter character) {
+        return character.getInventory().addItem(this);
     }
 
     @Override

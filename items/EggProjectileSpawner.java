@@ -35,7 +35,7 @@ public class EggProjectileSpawner extends Item {
     public String getIconPath() { return null; }
 
     @Override
-    public void onPickup(PlayerCharacter character) {
-        // nic
+    public boolean onPickup(PlayerCharacter character) {
+        return false;
     }
 }

@@ -37,14 +37,15 @@ public class GameOverDelayState implements IGameState {
 
     @Override
     public void update(float deltaTime) {
+        UpdateContext ctx = new UpdateContext(deltaTime);
         Level level = gameManager.getCurrentLevel();
         if (level != null) {
-            level.update(new UpdateContext(deltaTime));
+            level.update(ctx);
         }
 
         PlayerCharacter player = gameManager.getInventory().getActive();
         if (player != null) {
-            player.updateAnimation(deltaTime);
+            player.updateAnimation(ctx);
         }
 
         timer -= deltaTime;
