@@ -1,18 +1,23 @@
 package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Magický projektil s plošným poškodením (AOE).
+ * AOE magic projectile fired by spell attacks.
  *
- * Implementuje {@link AoeProjectile} – CollisionManager automaticky
- * spracuje AOE dopad bez instanceof checkov na túto triedu.
+ * <p>Implements {@link AoeProjectile} so {@code CollisionManager} applies
+ * area damage automatically without type-specific branches.
  *
- * Implementuje {@link Renderable} – GameRenderer nemusí poznať tento
- * konkrétny typ; zoberie vizuálne parametre priamo z objektu.
+ * <p>Implements {@link Renderable} so {@code GameRenderer} can obtain visual
+ * parameters without knowing this concrete type.
+ *
+ * <p>Implements {@link Poolable} and is managed by {@link ProjectilePool}.
+ * After obtaining from the pool, callers must immediately call
+ * {@link #reset(int, float, Vector2D, Vector2D, float)} to set the real values.
  */
 public class MagicSpell extends Projectile implements AoeProjectile, Renderable, Poolable {
 

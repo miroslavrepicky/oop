@@ -12,14 +12,18 @@ import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Základná trieda pre všetky projektily.
+ * Base class for all projectiles in the game.
  *
- * Implementuje {@link Physicable} – vďaka tomu môže voliteľne využívať
- * {@link GravityStrategy} (napr. parabolický let šípu) bez dedičnosti od
- * {@code Character}. Predvolená stratégia je {@link NoGravity}.
+ * <p>Implements {@link Physicable} so that a {@link GravityStrategy} can be
+ * applied optionally (e.g. a parabolic arrow) without inheriting from
+ * {@code Character}. The default strategy is {@link NoGravity}.
  *
- * Implementuje {@link Updatable} cez {@link #update(UpdateContext)} –
- * rovnaký kontrakt ako ostatné objekty v hernej slučke.
+ * <p>Implements {@link Updatable} via {@link #update(UpdateContext)} –
+ * the same contract used by all other objects in the game loop.
+ *
+ * <p>Owner tracking via {@link ProjectileOwner} lets {@code CollisionManager}
+ * distinguish player and enemy projectiles without {@code instanceof} checks
+ * on the attacker type.
  */
 public abstract class Projectile implements Updatable, Collidable, Physicable {
     protected int      damage;

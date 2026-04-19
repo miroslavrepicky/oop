@@ -10,11 +10,23 @@ import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Základná trieda pre všetkých nepriateľov.
+ * Base class for all AI-controlled enemy characters.
  *
- * Update logika prešla na {@link #update(UpdateContext)} –
- * všetky kontextové dáta (platformy, level, hráč) sú v {@code ctx}.
- * Trieda nemusí volať {@code GameManager} vôbec.
+ * <p>Implements {@link AIControllable} so that {@link AIController} can drive
+ * the enemy without knowing the concrete type. All update data (platforms, level,
+ * player) arrives via {@link UpdateContext} – no call to {@code GameManager}.
+ *
+ * <p>Attack lifecycle:
+ * <ol>
+ *   <li>{@code AIController} calls {@link #performAttack(PlayerCharacter)} when in range.</li>
+ *   <li>The method starts the animation timer and sets {@code isAttacking = true}.</li>
+ *   <li>During {@link #update(UpdateContext)}, at the second-to-last animation frame,
+ *       {@code attack.execute()} is called and damage is dealt.</li>
+ *   <li>When the timer expires, {@code isAttacking} is reset.</li>
+ * </ol>
+ *
+ * <p>Movement: {@link MovementResolver} checks horizontal wall collisions before
+ * applying the displacement, and the result is exposed via {@link #wasLastMoveBlocked()}.
  */
 public abstract class EnemyCharacter extends Character implements AIControllable {
     protected float patrolRange;
@@ -65,16 +77,25 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     @Override
     public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
 
-    // -------------------------------------------------------------------------
-    //  AI inicializácia
-    // -------------------------------------------------------------------------
-
+    /**
+     * Initialises the AI controller with patrol waypoints and combat ranges.
+     *
+     * @param patrolStart    left boundary of the patrol route
+     * @param patrolEnd      right boundary of the patrol route
+     * @param attackRange    distance in pixels at which the enemy begins attacking
+     * @param preferredRange ideal distance the enemy tries to maintain (ranged > melee)
+     */
     public void initAI(Vector2D patrolStart, Vector2D patrolEnd,
                        float attackRange, float preferredRange) {
         this.aiController = new AIController(
             this, patrolStart, patrolEnd, attackRange, preferredRange);
     }
 
+    /**
+     * Sets the resolver used to prevent the enemy from walking through walls.
+     *
+     * @param resolver pre-built resolver backed by the current map's hitboxes
+     */
     public void setMovementResolver(MovementResolver resolver) {
         this.movementResolver = resolver;
     }

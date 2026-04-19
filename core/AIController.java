@@ -6,12 +6,23 @@ import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Riadi AI logiku (PATROL → CHASE → ATTACK) pre ľubovoľnú postavu
- * implementujúcu {@link AIControllable}.
+ * Controls AI behaviour (PATROL → CHASE → ATTACK) for any character
+ * implementing {@link AIControllable}.
  *
- * Controller nepozná {@code EnemyCharacter} – všetka komunikácia
- * prebieha cez interface. Vďaka tomu je možné pridať nové typy
- * nepriateľov alebo dokonca NPC bez zmeny tejto triedy.
+ * <p>The controller has no knowledge of {@code EnemyCharacter}; all
+ * communication is through the interface. This allows new enemy types
+ * or even friendly NPCs to use the same AI without modifying this class.
+ *
+ * <p>State machine:
+ * <ul>
+ *   <li>{@code PATROL} – walks between {@code patrolStart} and {@code patrolEnd}.
+ *       Detects wall blocks and attempts a jump after a threshold; reverses direction
+ *       if still blocked.</li>
+ *   <li>{@code CHASE}  – moves toward the player until within {@code preferredRange}
+ *       or until the player leaves {@code detectionRange}.</li>
+ *   <li>{@code ATTACK} – faces the player and calls {@code performAttack()} each
+ *       time the enemy is not already attacking.</li>
+ * </ul>
  */
 public class AIController {
     private final AIControllable enemy;
@@ -46,6 +57,13 @@ public class AIController {
             DEFAULT_ATTACK_RANGE, DEFAULT_PREFERRED_RANGE);
     }
 
+    /**
+     * @param enemy          the AI-controlled entity
+     * @param patrolStart    left boundary of the patrol route
+     * @param patrolEnd      right boundary of the patrol route
+     * @param attackRange    distance at which the enemy begins attacking
+     * @param preferredRange ideal combat distance (ranged enemies stay at this distance)
+     */
     public AIController(AIControllable enemy,
                         Vector2D patrolStart, Vector2D patrolEnd,
                         float attackRange, float preferredRange) {
@@ -58,10 +76,12 @@ public class AIController {
         this.preferredRange = preferredRange;
     }
 
-    // -------------------------------------------------------------------------
-    //  Hlavný update
-    // -------------------------------------------------------------------------
-
+    /**
+     * Updates the AI state machine for one frame.
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
+     * @param player    the active player character used for detection and targeting
+     */
     public void update(float deltaTime, PlayerCharacter player) {
         switch (state) {
             case PATROL: handlePatrol(deltaTime, player); break;

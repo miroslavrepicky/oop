@@ -6,11 +6,22 @@ import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
+
+/**
+ * Consumable item that restores HP to the using character.
+ *
+ * <p>Has no effect if the character is already at full HP (logs a warning).
+ * Removes itself from the inventory after use.
+ * Costs 2 inventory slots.
+ */
 public class HealingPotion extends Item {
     private final int healAmount;
     private static final Logger log = GameLogger.get(HealingPotion.class);
 
-
+    /**
+     * @param healAmount HP restored when the potion is used
+     * @param position   initial world position (used for the hitbox on the ground)
+     */
     public HealingPotion(int healAmount, Vector2D position) {
         super(2, position);
         this.healAmount = healAmount;

@@ -11,6 +11,17 @@ import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
+/**
+ * Ranged attack that spawns an {@link Arrow} projectile from the {@link ProjectilePool}.
+ *
+ * <p>Arrow direction matches the attacker's facing direction.
+ * The {@code piercing} flag is passed to the arrow on reset; when {@code true}
+ * the arrow can pass through multiple targets (currently not enforced in
+ * collision logic – see TODO in {@link Arrow}).
+ *
+ * <p>Owner is set automatically: player attacker → {@code PLAYER},
+ * enemy attacker → {@code ENEMY}.
+ */
 public class ArrowAttack implements Attack {
     private final boolean piercing;
 

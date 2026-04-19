@@ -5,16 +5,15 @@ import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Kontrakt ktorý musí implementovať každá postava ovládaná AI.
+ * Contract that must be implemented by every character controlled by AI.
  *
- * {@link AIController} závisí výlučne od tohto interface –
- * nepozná {@code EnemyCharacter} ani žiadnu inú konkrétnu triedu.
- * Vďaka tomu je možné AI použiť aj pre iné typy postáv bez zmeny
- * logiky controllera.
+ * <p>{@link AIController} depends exclusively on this interface and has no
+ * knowledge of {@code EnemyCharacter} or any other concrete class. This makes
+ * it possible to add new enemy types or NPCs without modifying the controller.
  */
 public interface AIControllable {
 
-    // --- poloha a pohyb ---
+    // position and movement
     Vector2D getPosition();
     void     move(Vector2D direction);
     void     jump(float force);
@@ -22,19 +21,33 @@ public interface AIControllable {
     boolean  wasLastMoveBlocked();
     float    getSpeed();
 
-    // --- orientácia ---
+    // orientation
     void    setFacingRight(boolean right);
     boolean isFacingRight();
 
-    // --- velocity (synchronizácia s fyzikou) ---
+    // velocity (synchronisation with physics)
     void setVelocityX(float vx);
 
-    // --- detekovanie hráča ---
+    /**
+     * Returns {@code true} if the player character is within detection range.
+     *
+     * @param player the active player character
+     * @return {@code true} if the player is detected
+     */
     boolean detectPlayer(PlayerCharacter player);
 
-    // --- útok ---
+    /**
+     * Triggers an attack aimed at the specified player.
+     * Respects attack cooldowns and animation state internally.
+     *
+     * @param target the player to attack
+     */
     void performAttack(PlayerCharacter target);
 
-    /** Vráti true ak nepriateľ práve prehráva útočnú animáciu. */
+    /**
+     * Returns {@code true} if the enemy is currently playing an attack animation.
+     *
+     * @return {@code true} while the attack animation timer is active
+     */
     boolean isAttacking();
 }

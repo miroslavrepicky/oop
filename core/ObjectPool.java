@@ -7,22 +7,18 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Generický object pool pre recykláciu herných objektov.
+ * Generic object pool for recycling frequently created game objects.
  *
- * <p>Problém ktorý rieši: Projektily (Arrow, MagicSpell, TurdflyProjectile)
- * sa vytvárajú a zahadzujú každú sekundu – {@code new Arrow(...)} pri každom
- * výstrele = tlak na garbage collector. Object Pool recykluje inštancie
- * namiesto vytvárania nových.
+ * <p>Projectiles ({@code Arrow}, {@code MagicSpell}, {@code TurdflyProjectile})
+ * are created and discarded every second – {@code new Arrow(...)} on every shot
+ * puts pressure on the garbage collector. The pool recycles instances instead
+ * of allocating new ones.
  *
- * <p>Prečo je generickosť zmysluplná: máme {@code ObjectPool<Arrow>},
- * {@code ObjectPool<MagicSpell>}, {@code ObjectPool<TurdflyProjectile>} –
- * tri rôzne inštancie s rôznymi typmi a rôznymi factory/reset funkciami.
+ * <p>Why generics are meaningful here: we have {@code ObjectPool<Arrow>},
+ * {@code ObjectPool<MagicSpell>}, and {@code ObjectPool<TurdflyProjectile>} –
+ * three distinct instances with different types, factory functions and reset actions.
  *
- * <p>Prečo ho nemožno nahradiť z JDK: {@code ArrayDeque<T>} nepozná ako
- * vytvoriť nové objekty, ako ich resetovať pred opätovným použitím,
- * ani nemonitoruje využitie poolu.
- *
- * @param <T> typ objektu v poole – musí byť resetovateľný cez resetAction
+ * @param <T> the pooled object type; must be resettable via the {@code resetAction}
  */
 public class ObjectPool<T> {
 
@@ -37,9 +33,9 @@ public class ObjectPool<T> {
     private static final Logger log = GameLogger.get(ObjectPool.class);
 
     /**
-     * @param factory     funkcia ktorá vytvorí novú inštanciu keď je pool prázdny
-     * @param resetAction funkcia ktorá objekt "vyčistí" pred opätovným použitím
-     * @param maxSize     maximálny počet objektov držaných v poole
+     * @param factory     supplier that creates a new instance when the pool is empty
+     * @param resetAction consumer that cleans the object before reuse
+     * @param maxSize     maximum number of objects kept in the pool
      */
     public ObjectPool(Supplier<T> factory, Consumer<T> resetAction, int maxSize) {
         this.factory     = factory;
@@ -49,10 +45,12 @@ public class ObjectPool<T> {
     }
 
     /**
-     * Vráti objekt z poolu alebo vytvorí nový ak je pool prázdny.
-     * Pred vrátením sa na objekt zavolá {@code resetAction}.
+     * Returns an object from the pool, or creates a new one if the pool is empty.
+     * The {@code resetAction} is applied before the object is returned.
      *
-     * <p>Volanie je O(1).
+     * <p>Time complexity: O(1).
+     *
+     * @return a ready-to-use pooled object
      */
     public T obtain() {
         if (pool.isEmpty()) {
@@ -75,13 +73,14 @@ public class ObjectPool<T> {
     }
 
     /**
-     * Vracia objekt späť do poolu na ďalšie použitie.
-     * Ak je pool plný (size >= maxSize), objekt sa zahodí (GC ho zoberie).
+     * Returns an object to the pool for future reuse.
+     * If the pool is already at {@code maxSize}, the object is discarded (GC).
      *
-     * <p>Volanie je O(1).
+     * <p>The caller must not use the object after this call.
      *
-     * @param object objekt ktorý sa vracia – po tomto volaní ho volajúci
-     *               nesmie používať (môže byť okamžite recyklovaný)
+     * <p>Time complexity: O(1).
+     *
+     * @param object the object to return; {@code null} is silently ignored
      */
     public void free(T object) {
         if (object == null) return;
@@ -100,8 +99,8 @@ public class ObjectPool<T> {
     }
 
     /**
-     * Vyprázdni pool – zahodí všetky držané inštancie.
-     * Vhodné pri reset hry alebo zmene levelu.
+     * Clears all objects currently held in the pool.
+     * Should be called on game reset or level change.
      */
     public void clear() {
         int cleared = pool.size();

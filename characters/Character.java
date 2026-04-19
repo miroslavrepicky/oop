@@ -15,14 +15,19 @@ import sk.stuba.fiit.util.Vector2D;
 import java.util.List;
 
 /**
- * Základná trieda pre všetky postavy.
+ * Abstract base class for all characters (player and enemy alike).
  *
- * Implementuje {@link Physicable} – vďaka tomu môže {@link GravityStrategy}
- * pracovať s postavou bez toho, aby vedela, že ide o {@code Character}.
- * Tým sa gravitácia dá používať aj pre {@code Projectile} alebo iné objekty.
+ * <p>Implements {@link Physicable} so that {@link GravityStrategy} can operate
+ * on any character without knowing its concrete type. Gravity is decoupled from
+ * the character hierarchy and can therefore also be applied to
+ * {@link sk.stuba.fiit.projectiles.Projectile} instances.
  *
- * Implementuje {@link Updatable} cez {@link #update(UpdateContext)} –
- * zjednotený kontrakt pre všetky objekty v hernej slučke.
+ * <p>Damage model: {@link #takeDamage(int)} first drains armour, then HP.
+ * A negative damage value heals the character up to {@code maxHp}.
+ *
+ * <p>Death: when HP reaches zero {@link #isAlive()} returns {@code false}.
+ * The death animation plays via {@link #startDeathAnimation()} and
+ * {@link #isDeathAnimationDone()} signals when the character can be removed.
  */
 public abstract class Character implements Updatable, Movable, Collidable, Physicable {
     protected String name;
@@ -83,9 +88,11 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     // -------------------------------------------------------------------------
 
     /**
-     * Aplikuje gravitáciu. Platformy sa predávajú zvonku.
-     * {@link GravityStrategy} pracuje cez {@link Physicable} –
-     * nemusí vedieť nič o {@code Character}.
+     * Applies gravity using the configured {@link GravityStrategy}.
+     * Platforms are passed in to avoid fetching them from {@code GameManager}.
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
+     * @param platforms collision rectangles from the map
      */
     public void applyGravity(float deltaTime, List<Rectangle> platforms) {
         if (gravityStrategy != null) {
@@ -105,10 +112,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     @Override
     public abstract void update(UpdateContext ctx);
 
-    // -------------------------------------------------------------------------
-    //  Animácia / smrť
-    // -------------------------------------------------------------------------
-
+    /**
+     * Initiates the death animation. Has no effect if already started.
+     * Sets the death timer to the duration of the "death" animation clip.
+     */
     public void startDeathAnimation() {
         if (deathTimer != -1f) return;
         AnimationManager am = getAnimationManager();
@@ -125,6 +132,13 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Returns {@code true} when the character is dead and the death animation
+     * has fully played out. Used by {@code Level.update()} to decide when to
+     * remove the character from the scene.
+     *
+     * @return {@code true} if the death animation is complete
+     */
     public boolean isDeathAnimationDone() {
         return !isAlive() && deathTimer == 0f;
     }
@@ -136,6 +150,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Restores the character to full HP and resets velocity and death state.
+     * Called by {@code GameManager.reviveParty()} on game-over retry.
+     */
     public void revive() {
         this.hp         = this.maxHp;
         this.velocityY  = 0f;
@@ -144,8 +162,12 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     }
 
     /**
-     * Aplikuje poškodenie s odpočítaním brnenia.
-     * Záporný dmg = liečenie; brnenie sa vtedy neaplikuje.
+     * Applies damage with armour absorption. Negative {@code dmg} heals instead.
+     *
+     * <p>Damage flow: {@code armorAbsorb = min(armor, dmg)}, then
+     * {@code hp -= max(0, dmg - armorAbsorb)}.
+     *
+     * @param dmg raw damage to apply; negative values heal
      */
     public void takeDamage(int dmg) {
         if (dmg > 0) {
@@ -178,6 +200,11 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Increases the character's current armour by {@code amount}, capped at {@code maxArmor}.
+     *
+     * @param amount armour points to add
+     */
     public void addArmor(int amount) {
         armor = Math.min(maxArmor, armor + amount);
     }

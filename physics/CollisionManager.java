@@ -17,12 +17,20 @@ import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Riadi všetky kolízie v aktuálnom leveli.
+ * Manages all collision detection and response for the active level.
  *
- * Zmeny oproti pôvodnému kódu:
- *  - {@code isPlayerProjectile()} používa {@link ProjectileOwner} enum
- *    namiesto {@code instanceof EnemyCharacter}
- *  - Žiadna iná logická zmena – len čistejšia implementácia.
+ * <p>Responsibilities per frame (called from {@code PlayingState.update()}):
+ * <ol>
+ *   <li>Item proximity detection – stores the nearest item for the pick-up hint.</li>
+ *   <li>Player projectile vs. enemies/ducks/walls.</li>
+ *   <li>Enemy projectile vs. player/walls.</li>
+ *   <li>Egg explosion AOE damage.</li>
+ *   <li>Player–enemy body push to prevent overlap.</li>
+ * </ol>
+ *
+ * <p>{@link ProjectileOwner} is used instead of {@code instanceof EnemyCharacter}
+ * to distinguish attacker types, keeping the collision logic decoupled from the
+ * character hierarchy.
  */
 public class CollisionManager {
 

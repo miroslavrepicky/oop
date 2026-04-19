@@ -9,20 +9,17 @@ import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Dekorátor: ohnivé kúzlo.
+ * Decorator that adds a Damage-over-Time burn effect on top of a base spell attack.
  *
- * Čo pridáva oproti wrapped SpellAttack:
- *  - vlastná animácia "cast_fire" (iná ako štandardné "cast")
- *  - DoT (Damage over Time) efekt – zasiahnutý nepriateľ horí
- *    {@link #BURN_TICKS} sekúnd a stráca {@link #BURN_DPS} HP/s
- *  - zvýšený mana cost
+ * <p>Added behaviour compared to the wrapped {@link SpellAttack}:
+ * <ul>
+ *   <li>Custom animation: {@code "cast_fire"}</li>
+ *   <li>Applies a {@link BurnEffect} to the nearest living enemy in the attack direction.</li>
+ *   <li>Increases mana cost by {@value #EXTRA_MANA}.</li>
+ * </ul>
  *
- * Čo nemeníme (delegate na wrapped):
- *  - logika spawnovania projektilu (SpellAttack.execute)
- *  - animácia trvanie (závisí od atlasu)
- *
- * Burn efekt: Level.update() zavolá BurnEffect.tick() každý frame.
- * BurnEffect je vnorená trieda – nepotrebuje vlastný súbor.
+ * <p>The burn effect is ticked every frame by {@code Level.update()} and
+ * removed automatically once expired.
  */
 public class FireSpellDecorator extends AttackDecorator {
 

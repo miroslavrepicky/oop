@@ -13,12 +13,18 @@ import sk.stuba.fiit.core.PlayerController;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Stav: hra beží – hráč sa pohybuje, AI útočí, kolízie sa riešia.
+ * Active gameplay state: player moves, AI attacks, collisions are resolved.
  *
- * ZMENA: render() zostavuje RenderSnapshot cez SnapshotBuilder
- * namiesto priameho predávania model objektov.
- * PlayingState stále smie importovať model (je Controller) –
- * ale GameRenderer ich cez snapshot nedostane.
+ * <p>Rendering uses the {@link SnapshotBuilder} to build a {@link RenderSnapshot}
+ * DTO from live model objects. {@link GameRenderer} never receives model classes directly.
+ *
+ * <p>Transition triggers:
+ * <ul>
+ *   <li>P key → {@link PausedState}</li>
+ *   <li>All party members dead → {@link GameOverDelayState}</li>
+ *   <li>Level completed, more levels remain → {@link LevelCompleteState}</li>
+ *   <li>Level completed, no more levels → {@link WinState}</li>
+ * </ul>
  */
 public class PlayingState implements IGameState {
 

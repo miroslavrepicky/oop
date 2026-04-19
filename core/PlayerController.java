@@ -13,13 +13,23 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Spracúva vstup od hráča a aplikuje ho na aktívnu postavu.
+ * Processes player input and applies it to the active character each frame.
  *
- * Zmeny oproti pôvodnému kódu:
- *  - {@code applyGravity()} dostáva platformy priamo z mapy
- *  - {@code inventory.useSelected()} dostáva Level ako parameter
- *  - Žiadne volanie {@code GameManager} okrem získania inventory/level
- *    na začiatku update() – to je akceptovateľné (controller je high-level)
+ * <p>Input mappings:
+ * <ul>
+ *   <li>LEFT / RIGHT – horizontal movement</li>
+ *   <li>UP – jump</li>
+ *   <li>SPACE – primary attack</li>
+ *   <li>V – secondary attack</li>
+ *   <li>E – pick up nearby item</li>
+ *   <li>Q – use selected inventory item</li>
+ *   <li>A / D – cycle inventory slot selection</li>
+ *   <li>1 / 2 / 3 – switch active party character</li>
+ * </ul>
+ *
+ * <p>Platform data is retrieved once per frame from the map and passed directly
+ * to gravity and collision methods, avoiding calls to {@code GameManager} for
+ * physics data.
  */
 public class PlayerController {
     private final Inventory inventory;
@@ -30,6 +40,12 @@ public class PlayerController {
         this.collisionManager = collisionManager;
     }
 
+    /**
+     * Updates player input, applies gravity, resolves horizontal collisions,
+     * handles jump/attack/item actions, and drives the character animation.
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
+     */
     public void update(float deltaTime) {
         PlayerCharacter player = inventory.getActive();
         if (player == null) return;

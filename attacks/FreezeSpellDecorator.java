@@ -9,16 +9,19 @@ import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Dekorátor: mrazivé kúzlo.
+ * Decorator that adds a slow/freeze status effect on top of a base spell attack.
  *
- * Čo pridáva oproti wrapped SpellAttack:
- *  - vlastná animácia "cast_freeze"
- *  - Slow efekt – zasiahnutý nepriateľ má znížené speed o {@link #SLOW_FACTOR}
- *    po dobu {@link #FREEZE_DURATION} sekúnd
- *  - mierne znížený mana cost (freeze je menej ničivé ako fire)
+ * <p>Added behavior compared to the wrapped {@link SpellAttack}:
+ * <ul>
+ *   <li>Custom animation: {@code "cast_freeze"}</li>
+ *   <li>Applies a {@link FreezeEffect} that reduces the nearest enemy's speed
+ *       to {@value #SLOW_FACTOR} × original for {@value #FREEZE_DURATION} seconds.</li>
+ *   <li>Reduces mana cost by {@value #DISCOUNT_MANA} compared to the wrapped attack.</li>
+ * </ul>
  *
- * FreezeEffect ukladá pôvodnú rýchlosť a po expirácii ju obnoví –
- * funguje správne aj pri stacking (druhý freeze predĺži efekt).
+ * <p>Stacking: if a freeze is applied to an already-frozen target, the existing
+ * effect is replaced (handled in {@code Level.addStatusEffect()}) to avoid
+ * double speed restoration.
  */
 public class FreezeSpellDecorator extends AttackDecorator {
 

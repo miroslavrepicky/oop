@@ -9,13 +9,19 @@ import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Základná trieda pre všetky hráčom ovládané postavy.
+ * Base class for all player-controlled characters.
  *
- * Zmeny oproti pôvodnému kódu:
- *  - Gravitáciu riadi {@link sk.stuba.fiit.core.PlayerController}
- *    (predáva platformy priamo). PlayerCharacter samotný gravitáciu
- *    nevolá – to by vyžadovalo prístup k platformám cez GameManager.
- *  - Žiadne iné logické zmeny.
+ * <p>Manages the primary and secondary attack lifecycle:
+ * an attack is initiated via {@link #executeAttack(Attack)}, which starts an animation
+ * timer and records the attack. The actual projectile/hit is spawned in
+ * {@link #updateAnimation(float)} at the appropriate animation frame (near the end).
+ *
+ * <p>Mana management uses a template method: the base implementation treats mana
+ * as unlimited ({@code Integer.MAX_VALUE}). {@code Wizzard} overrides
+ * {@link #getMana()} and {@link #spendMana(int)} to use real mana values.
+ *
+ * <p>Gravity is applied by {@code PlayerController}, which passes the platform list
+ * directly – the character does not need to call {@code GameManager} for physics data.
  */
 public abstract class PlayerCharacter extends Character {
     protected Attack primaryAttack;
@@ -39,10 +45,13 @@ public abstract class PlayerCharacter extends Character {
     protected int  getMana()             { return Integer.MAX_VALUE; }
     protected void spendMana(int amount) { }
 
-    // -------------------------------------------------------------------------
-    //  Útok
-    // -------------------------------------------------------------------------
-
+    /**
+     * Attempts to execute an attack. Checks mana cost for spell attacks and
+     * starts the attack animation timer.
+     * Has no effect if another attack is already in progress.
+     *
+     * @param attack the attack strategy to execute; {@code null} is silently ignored
+     */
     protected void executeAttack(Attack attack) {
         if (attack == null || isAttacking) {
             return;
@@ -72,10 +81,13 @@ public abstract class PlayerCharacter extends Character {
     @Override
     public void performAttack() { performPrimaryAttack(); }
 
-    // -------------------------------------------------------------------------
-    //  Animácia
-    // -------------------------------------------------------------------------
-
+    /**
+     * Drives the attack animation: spawns the projectile at the correct frame,
+     * manages the animation timer, and switches to the appropriate locomotion
+     * animation (idle / walk / jump) when the attack ends.
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
+     */
     @Override
     public void updateAnimation(float deltaTime) {
         if (getAnimationManager() == null) return;

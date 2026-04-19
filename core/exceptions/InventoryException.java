@@ -1,5 +1,9 @@
 package sk.stuba.fiit.core.exceptions;
 
+
+/**
+ * Thrown when an inventory operation fails due to insufficient slots.
+ */
 public class InventoryException extends ShadowQuestException {
     private final int usedSlots;
     private final int totalSlots;

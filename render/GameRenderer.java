@@ -10,23 +10,19 @@ import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.AnimationManager;
 
 /**
- * Riadi vykresľovanie celej hernej scény.
+ * Renders the complete game scene from a {@link RenderSnapshot} DTO.
  *
- * ZMENY po refaktore na čistý MVC:
- *
- * 1. NULA importov z model balíkov (characters, items, projectiles, world, inventory).
- *    Renderer pracuje výlučne s RenderSnapshot a EntityRenderData DTO.
- *
- * 2. Mapa sa kreslí cez MapRenderData.renderCallback – lambda predaná
- *    z PlayingState. GameRenderer nepozná MapManager.
- *
- * 3. Itemy sa kreslia cez ItemRenderData.iconPath (String primitív),
- *    nie cez Item.getIconPath(). ItemIconRenderer dostáva len iconPath + pozíciu.
- *
- * 4. Projektily sa kreslia cez EntityRenderData (FIXED_RECT type) –
- *    žiadne instanceof, žiadne Renderable interface importy.
- *
- * 5. HP/Armor bary sú v EntityRenderData ako int primitívy.
+ * <p>Key architectural constraints after the clean-MVC refactor:
+ * <ol>
+ *   <li>Zero imports from model packages ({@code characters}, {@code items},
+ *       {@code projectiles}, {@code world}, {@code inventory}).</li>
+ *   <li>Map rendered via {@code MapRenderData.renderCallback} – a lambda supplied
+ *       by the controller. The renderer has no knowledge of {@code MapManager}.</li>
+ *   <li>Items rendered via {@code ItemRenderData.iconPath} (a String primitive).</li>
+ *   <li>Projectiles rendered via {@code EntityRenderData} ({@code FIXED_RECT} type)
+ *       – no {@code instanceof} checks, no {@code Renderable} imports.</li>
+ *   <li>HP/Armor bars driven by {@code int} primitives in {@code EntityRenderData}.</li>
+ * </ol>
  */
 public class GameRenderer {
 

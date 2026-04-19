@@ -13,30 +13,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Zostavuje RenderSnapshot zo živých model objektov.
+ * Converts live model objects into a {@link RenderSnapshot} DTO for the renderer.
  *
- * Toto je CONTROLLER trieda – jediné miesto kde sa model
- * konvertuje na DTO pre view. Patrí do Controller vrstvy
- * (mohla by byť v balíku sk.stuba.fiit.core alebo sk.stuba.fiit.render).
+ * <p>This is the Controller layer between the game model and the View ({@link GameRenderer}).
+ * It is the single place where model classes are translated into render DTOs.
  *
- * Prečo samostatná trieda a nie kód priamo v PlayingState?
- *  - PlayingState má dosť zodpovedností (stavový automat)
- *  - SnapshotBuilder sa dá testovať izolovane
- *  - GameOverDelayState potrebuje rovnakú logiku →
- *    namiesto duplikácie obaja zavolajú SnapshotBuilder.build()
+ * <p>Why a separate class instead of inline code in {@code PlayingState}?
+ * <ul>
+ *   <li>{@code PlayingState} already has enough responsibilities (state machine).</li>
+ *   <li>The builder can be tested in isolation.</li>
+ *   <li>{@code GameOverDelayState} needs the same logic – both call
+ *       {@code SnapshotBuilder.build()} instead of duplicating conversion code.</li>
+ * </ul>
  *
- * Pravidlo: táto trieda SMIE importovať model triedy.
- * GameRenderer už NIE.
+ * <p>Rule: this class MAY import model classes.
+ * {@link GameRenderer} must NOT import model classes.
  */
 public class SnapshotBuilder {
 
     /**
-     * Zostaví RenderSnapshot z aktuálneho stavu levelu.
+     * Builds a complete render snapshot from the current level state.
      *
-     * @param player          aktívna hráčska postava (môže byť null)
-     * @param level           aktuálny level (môže byť null)
-     * @param debugHitboxes   F1 flag
-     * @param nearbyItem      true = hint "[E] PICK-UP"
+     * @param player        the active player character; may be {@code null}
+     * @param level         the current level; may be {@code null}
+     * @param debugHitboxes {@code true} if hitbox outlines should be drawn (F1 toggle)
+     * @param nearbyItem    {@code true} if the pick-up hint should be shown in the HUD
+     * @return an immutable {@link RenderSnapshot} ready for the renderer
      */
     public static RenderSnapshot build(PlayerCharacter player,
                                        Level level,

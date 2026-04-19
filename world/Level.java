@@ -13,7 +13,7 @@ import sk.stuba.fiit.items.EggProjectileSpawner;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.EggProjectile;
-import sk.stuba.fiit.projectiles.Poolable;
+import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.attacks.FreezeSpellDecorator.FreezeEffect;
@@ -24,6 +24,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * Represents a single game level containing all active game objects.
+ *
+ * <p>Manages enemies, items, ducks, projectiles and status effects.
+ * The {@link #update(UpdateContext)} method builds a shared context once
+ * and distributes it to all sub-systems so no class needs to call
+ * {@code GameManager} to obtain the level, player or platforms.
+ *
+ * <p>Level completion is detected when all spawned enemies have been killed.
+ * The flag is set once and read by {@code PlayingState}.
+ */
 public class Level implements Updatable {
     private int levelNumber;
     private List<EnemyCharacter> enemies;
@@ -42,8 +54,22 @@ public class Level implements Updatable {
         this.isCompleted = false;
     }
 
+    /**
+     * Adds a projectile to the level's active projectile list.
+     * Called by attack implementations ({@code ArrowAttack}, {@code SpellAttack}, etc.).
+     *
+     * @param projectile the projectile to add; must not be {@code null}
+     */
     public void addProjectile(Projectile projectile) { projectiles.add(projectile); }
 
+    /**
+     * Loads the Tiled map and spawns all entities defined in its "entities" layer.
+     * Supported entity types: {@code player}, {@code enemy_knight}, {@code enemy_archer},
+     * {@code enemy_wizzard}, {@code dark_knight}, {@code duck}, {@code healing_potion},
+     * {@code armour}.
+     *
+     * @param mapPath relative path to the {@code .tmx} Tiled map file
+     */
     public void load(String mapPath) {
         mapManager = new MapManager(mapPath);
         for (Map<String, Object> entity : mapManager.getEntities()) {
@@ -156,9 +182,10 @@ public class Level implements Updatable {
 
 
     /**
-     * Pridá status efekt do levelu.
-     * Akceptuje BurnEffect alebo FreezeEffect (pomocou Object pre
-     * jednoduchosť – alternatívne môžeš zaviesť interface StatusEffect).
+     * Adds a status effect and removes any existing effect of the same type
+     * targeting the same enemy (prevents double speed restoration for freeze).
+     *
+     * @param effect the effect to add
      */
     public void addStatusEffect(StatusEffect effect) {
         if (effect instanceof FreezeEffect) {

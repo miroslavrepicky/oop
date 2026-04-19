@@ -6,15 +6,18 @@ import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Vajce ktoré sa spawnuje priamo na zemi po zabití kačky.
- * Odpočítava (BOMB animácia) a potom vybuchne (BLAST animácia).
+ * A stationary bomb-style projectile spawned when a duck is killed (50 % chance).
  *
- * Životný cyklus:
- *   TICKING  → BOMB animácia (BOMB_DURATION sekúnd)
- *   BLASTING → BLAST animácia, potom active = false
+ * <p>Lifecycle:
+ * <ol>
+ *   <li>{@link EggState#TICKING} – plays the BOMB animation for {@value #BOMB_DURATION} seconds.</li>
+ *   <li>{@link EggState#BLASTING} – plays the BLAST animation; {@code CollisionManager}
+ *       applies AOE damage exactly once (guarded by {@link #isDamageDealt()}).</li>
+ *   <li>After the blast animation ends, {@code active} is set to {@code false}.</li>
+ * </ol>
  *
- * Implementuje {@link Renderable} – vizuálne parametre (veľkosť, offset)
- * sa menia podľa aktuálneho stavu; GameRenderer o tom nemusí vedieť.
+ * <p>Implements {@link Renderable}: render dimensions and offsets change depending
+ * on the current state so {@code GameRenderer} does not need to know the state.
  */
 public class EggProjectile extends Projectile implements AoeProjectile, Renderable {
 

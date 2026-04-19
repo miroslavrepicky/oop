@@ -6,6 +6,13 @@ import sk.stuba.fiit.core.engine.Physicable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Reduced-gravity implementation used by the {@link sk.stuba.fiit.characters.Duck}.
+ *
+ * <p>Applies a gentle downward pull ({@value #GRAVITY} units/s²), giving the
+ * duck a floating, hovering movement feel. Platform collision resolution is
+ * identical to {@link NormalGravity}.
+ */
 public class FloatingGravity implements GravityStrategy {
     private static final float GRAVITY = -50f;
 

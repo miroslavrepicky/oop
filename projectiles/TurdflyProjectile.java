@@ -1,14 +1,19 @@
 package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Projektil vystrelený keď hráč použije FriendlyDuck z inventára.
+ * Projectile fired when the player uses a {@link sk.stuba.fiit.items.FriendlyDuck} item.
  *
- * Implementuje {@link Renderable} – GameRenderer nemusí poznať tento typ.
+ * <p>Pooled via {@link ProjectilePool}. After {@code obtainTurdfly()}, callers
+ * must call {@link #reset(Vector2D, Vector2D)} to configure position and direction.
+ *
+ * <p>Implements {@link Renderable} so {@code GameRenderer} does not need to know
+ * this concrete type.
  */
 public class TurdflyProjectile extends Projectile implements Renderable, Poolable {
 

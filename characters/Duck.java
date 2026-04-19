@@ -12,6 +12,17 @@ import sk.stuba.fiit.util.Vector2D;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Non-combat ambient character that walks back and forth and can drop items when killed.
+ *
+ * <p>Movement pattern: alternates between walking ({@value #WALK_DURATION} s) and
+ * idling ({@value #IDLE_DURATION} s), reversing direction each cycle.
+ * Uses {@link sk.stuba.fiit.physics.FloatingGravity} for a gentle hover effect.
+ *
+ * <p>Drop on death: {@link #onKilled()} randomly returns either a
+ * {@link sk.stuba.fiit.items.FriendlyDuck} (50 %) or an
+ * {@link sk.stuba.fiit.items.EggProjectileSpawner} (50 %).
+ */
 public class Duck extends Character {
     private static final int   DUCK_HP     = 20;
     private static final int   DUCK_DAMAGE = 10;
@@ -86,6 +97,13 @@ public class Duck extends Character {
     @Override
     public void onCollision(Object other) { }
 
+    /**
+     * Called by the collision system when the duck's HP reaches zero.
+     * Randomly selects and returns a drop item.
+     *
+     * @return a {@link sk.stuba.fiit.items.FriendlyDuck} or
+     *         an {@link sk.stuba.fiit.items.EggProjectileSpawner}
+     */
     public Item onKilled() {
         Random random = new Random();
         if (random.nextBoolean()) {

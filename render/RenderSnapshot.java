@@ -3,15 +3,15 @@ package sk.stuba.fiit.render;
 import java.util.List;
 
 /**
- * Nemodifikovateľný dátový objekt popisujúci stav scény v jednom snímku.
- *   - EntityRenderData DTO pre každý vizuálny objekt
- *   - primitívne hodnoty (boolean, float)
- *   - MapRenderData pre mapu (obaluje renderer bez závislosti na MapManager)
- *  GameRenderer teraz importuje iba triedy z balíka sk.stuba.fiit.render.
- *  Nula importov z characters, items, projectiles, world.
+ * Immutable data transfer object describing the complete visual state of the
+ * game scene for a single frame.
  *
- *  Kto zostavuje snapshot: PlayingState (Controller vrstva).
- *  Controller smie poznať model – zostavuje DTO a predá view.
+ * <p>After refactoring to clean MVC, {@link GameRenderer} imports ONLY classes
+ * from the {@code render} package. No model classes ({@code characters},
+ * {@code items}, {@code projectiles}, {@code world}) are referenced by the renderer.
+ *
+ * <p>Who builds the snapshot: {@link SnapshotBuilder} (Controller layer).
+ * The controller may know the model; the View ({@code GameRenderer}) may not.
  */
 public final class RenderSnapshot {
 

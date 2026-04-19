@@ -5,30 +5,27 @@ import sk.stuba.fiit.physics.GravityStrategy;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Kontrakt pre objekty, na ktoré môže pôsobiť {@link GravityStrategy}.
+ * Contract for objects on which a {@link GravityStrategy} can act.
  *
- * Dôvod existencie: {@link GravityStrategy} pôvodne závisela na {@code Character},
- * čo znemožňovalo gravitáciu pre projektily alebo iné objekty bez zbytočnej
- * dedičnosti. Tento interface exponuje len to, čo gravitácia skutočne potrebuje:
- * pozíciu, rýchlosť, hitbox a príznak onGround.
+ * <p>Originally {@code GravityStrategy} depended on {@code Character}, which
+ * made it impossible to apply gravity to projectiles or other objects without
+ * unnecessary inheritance. This interface exposes only what gravity truly needs:
+ * position, vertical velocity, hitbox, and the on-ground flag.
  *
- * Implementujú: {@code Character} a voliteľne {@code Projectile} alebo iné objekty.
+ * <p>Implemented by: {@code Character} and optionally {@code Projectile} and
+ * other physical objects.
  */
 public interface Physicable {
 
-    // --- pozícia ---
     Vector2D getPosition();
     void     setPosition(Vector2D position);
 
-    // --- rýchlosť ---
     float getVelocityY();
     void  setVelocityY(float vy);
 
-    // --- hitbox (gravitácia ho potrebuje na kolízie) ---
     Rectangle getHitbox();
     void      updateHitbox();
 
-    // --- stav na zemi ---
     boolean isOnGround();
     void    setOnGround(boolean onGround);
 }

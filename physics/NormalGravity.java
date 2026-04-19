@@ -6,6 +6,18 @@ import sk.stuba.fiit.core.engine.Physicable;
 import java.util.Collections;
 import java.util.List;
 
+
+/**
+ * Standard gravity implementation used by most characters and some projectiles.
+ *
+ * <p>Applies a downward acceleration of {@value #GRAVITY} units/s² and resolves
+ * vertical collisions against platform rectangles. Horizontal collisions are
+ * NOT handled here – see {@link MovementResolver}.
+ *
+ * <p>Collision resolution prefers vertical correction when the vertical overlap
+ * is smaller than the horizontal overlap (i.e. the body hit a floor/ceiling,
+ * not a wall).
+ */
 public class NormalGravity implements GravityStrategy {
     private static final float GRAVITY = -500f;
 

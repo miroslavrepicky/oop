@@ -6,41 +6,43 @@ import sk.stuba.fiit.core.exceptions.InvalidAttackException;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Abstraktný dekorátor pre {@link Attack}.
+ * Abstract base class for attack decorators following the Decorator pattern.
  *
- * Vzor Decorator: obaľuje existujúci Attack a pridáva správanie
- * bez zmeny pôvodnej triedy. Každý konkrétny dekorátor override-ne
- * len to čo mení – zvyšok deleguje na wrapped.
+ * <p>Wraps an existing {@link Attack} and adds behaviour without modifying
+ * the original class. Each concrete decorator overrides only what it changes;
+ * everything else is delegated to the wrapped attack.
  *
- * Príklad použitia:
+ * <p>Example usage:
  * <pre>
- *   Attack base   = new SpellAttack(6.0f, 100f, 20);
- *   Attack fire   = new FireSpellDecorator(base);
+ *   Attack base = new SpellAttack(6.0f, 100f, 20);
+ *   Attack fire = new FireSpellDecorator(base);
  *   Attack frozen = new FreezeSpellDecorator(base);
  *
- *   // Stacking (fire + freeze = chaos):
- *   Attack both   = new FreezeSpellDecorator(new FireSpellDecorator(base));
+ *   // Stacking decorators:
+ *   Attack both = new FreezeSpellDecorator(new FireSpellDecorator(base));
  * </pre>
  *
- * Prečo abstract a nie interface default?
- * Dekorátor musí uložiť referenciu na wrapped – to vyžaduje pole
- * a konštruktor, čo interface nevie elegantne vyjadriť.
+ * <p>An abstract class is used instead of an interface default method because
+ * the decorator must store a reference to the wrapped instance, which requires
+ * a field and a constructor.
  */
 public abstract class AttackDecorator implements Attack {
 
-    /** Zabalená implementácia – voláme ju pre všetko čo nemeníme. */
+    /** The wrapped attack implementation – delegated to for all unchanged behaviour. */
     protected final Attack wrapped;
 
+    /**
+     * Constructs a decorator around the given attack.
+     *
+     * @param wrapped the attack to wrap; must not be {@code null}
+     * @throws InvalidAttackException if {@code wrapped} is {@code null}
+     */
     protected AttackDecorator(Attack wrapped) {
         if (wrapped == null) {
             throw new InvalidAttackException("unknown", "wrapped Attack nesmie byt null");
         }
         this.wrapped = wrapped;
     }
-
-    // -------------------------------------------------------------------------
-    //  Predvolené delegovanie – podtriedy override-nú len to čo menia
-    // -------------------------------------------------------------------------
 
     @Override
     public void execute(Character attacker, Level level) {

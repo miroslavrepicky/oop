@@ -1,6 +1,5 @@
 package sk.stuba.fiit.core;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
@@ -12,15 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Spravuje stav animácií pre jednu postavu/objekt.
+ * Manages animation state for a single character or game object.
  *
- * Zodpovednosť tejto triedy je výlučne MODEL a CONTROLLER:
- *  - načítanie animácií z atlasu
- *  - sledovanie aktuálnej animácie a jej časovača
- *  - poskytovanie aktuálneho framu volajúcemu
+ * <p>Responsibilities (Model + Controller):
+ * <ul>
+ *   <li>Loads animations from a texture atlas (via {@link AtlasCache}).</li>
+ *   <li>Tracks the current animation name and its elapsed time.</li>
+ *   <li>Provides the current frame to {@link sk.stuba.fiit.render.AnimationRenderer}.</li>
+ * </ul>
  *
- * Kreslenie na obrazovku je VÝLUČNE zodpovednosťou {@link sk.stuba.fiit.render.AnimationRenderer}.
- * Táto trieda neimportuje SpriteBatch ani žiadne rendering API.
+ * <p>Rendering is exclusively the responsibility of {@link sk.stuba.fiit.render.AnimationRenderer}.
+ * This class does not import {@code SpriteBatch} or any rendering API.
+ *
+ * <p>Atlas instances are shared via {@link AtlasCache} (Flyweight pattern) –
+ * two {@code EnemyKnight} instances share one atlas in GPU memory.
  */
 public class AnimationManager {
     private TextureAtlas atlas;
@@ -30,6 +34,13 @@ public class AnimationManager {
     private float stateTime;
     private static final Logger log = GameLogger.get(AnimationManager.class);
 
+    /**
+     * Creates a manager backed by the atlas at the given path.
+     * The atlas is obtained from {@link AtlasCache} and shared with other managers
+     * using the same path.
+     *
+     * @param atlasPath relative path to the {@code .atlas} file
+     */
     public AnimationManager(String atlasPath) {
         atlas = AtlasCache.getInstance().get(atlasPath);
         animations = new HashMap<>();
@@ -37,14 +48,25 @@ public class AnimationManager {
         stateTime = 0f;
     }
 
-    // -------------------------------------------------------------------------
-    //  Registrácia animácií
-    // -------------------------------------------------------------------------
-
+    /**
+     * Registers a looping animation.
+     *
+     * @param name           internal key used to reference this animation
+     * @param regionName     region prefix in the texture atlas
+     * @param frameDuration  duration of each frame in seconds
+     */
     public void addAnimation(String name, String regionName, float frameDuration) {
         addAnimation(name, regionName, frameDuration, Animation.PlayMode.LOOP);
     }
 
+    /**
+     * Registers an animation with an explicit play mode.
+     *
+     * @param name           internal key
+     * @param regionName     region prefix in the texture atlas
+     * @param frameDuration  per-frame duration in seconds
+     * @param playMode       e.g. {@code Animation.PlayMode.NORMAL} for one-shot animations
+     */
     public void addAnimation(String name, String regionName, float frameDuration,
                              Animation.PlayMode playMode) {
         Array<TextureAtlas.AtlasRegion> regions = atlas.findRegions(regionName);
@@ -63,11 +85,13 @@ public class AnimationManager {
         }
     }
 
-    // -------------------------------------------------------------------------
-    //  Riadenie prehrávania
-    // -------------------------------------------------------------------------
-
-    /** Spustí animáciu (resetuje časovač ak sa animácia zmenila). */
+    /**
+     * Switches to the named animation, resetting the timer if the animation changed.
+     * Has no effect if the requested animation is already playing.
+     *
+     * @param name the animation key to play
+     * @throws AssetLoadException if no animation with the given name was registered
+     */
     public void play(String name) {
         if (!name.equals(currentAnimation)) {
             if (!animations.containsKey(name)) {
@@ -82,7 +106,11 @@ public class AnimationManager {
         }
     }
 
-    /** Posúva časovač animácie. Volá sa každý frame. */
+    /**
+     * Advances the animation timer. Must be called once per frame.
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
+     */
     public void update(float deltaTime) {
         stateTime += deltaTime;
     }
@@ -92,8 +120,10 @@ public class AnimationManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Vráti aktuálny frame aktívnej animácie, alebo {@code null} ak žiadna nie je aktívna.
-     * {@link sk.stuba.fiit.render.AnimationRenderer} tento frame nakreslí.
+     * Returns the current frame of the active animation, or {@code null} if none is active.
+     * Used by {@link sk.stuba.fiit.render.AnimationRenderer} to draw the sprite.
+     *
+     * @return the current {@link TextureAtlas.AtlasRegion}, or {@code null}
      */
     public TextureAtlas.AtlasRegion getCurrentFrame() {
         if (currentAnimation == null) return null;
@@ -102,21 +132,6 @@ public class AnimationManager {
         boolean looping = anim.getPlayMode() != Animation.PlayMode.NORMAL;
         return anim.getKeyFrame(stateTime, looping);
     }
-
-    /**
-     * Vráti konkrétny frame zadanej animácie podľa časovača.
-     * Používa sa keď renderer potrebuje frame inej animácie ako aktuálnej.
-     */
-    public TextureAtlas.AtlasRegion getFrame(String animationName, float time) {
-        Animation<TextureAtlas.AtlasRegion> anim = animations.get(animationName);
-        if (anim == null) return null;
-        boolean looping = anim.getPlayMode() != Animation.PlayMode.NORMAL;
-        return anim.getKeyFrame(time, looping);
-    }
-
-    // -------------------------------------------------------------------------
-    //  Metadáta o animáciách – používajú Character, Attack, AnimationRenderer
-    // -------------------------------------------------------------------------
 
     /**
      * Vráti veľkosť prvého framu danej animácie (packedWidth × packedHeight).

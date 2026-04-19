@@ -11,12 +11,28 @@ import sk.stuba.fiit.projectiles.ProjectilePool;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
+
+/**
+ * Ranged spell attack that spawns a {@link MagicSpell} AOE projectile.
+ *
+ * <p>Obtains a spell from {@link ProjectilePool} and resets it with the
+ * configured speed, AOE radius and damage before adding it to the level.
+ * Mana cost is checked and deducted by {@code PlayerCharacter.executeAttack()}.
+ *
+ * @see FireSpellDecorator
+ * @see FreezeSpellDecorator
+ */
 public class SpellAttack implements Attack {
     private final float aoeRadius;
     private final float projectileSpeed;
     private final int   manaCost;
     private static final Logger log = GameLogger.get(ArrowAttack.class);
 
+    /**
+     * @param projectileSpeed travel speed of the spawned spell projectile
+     * @param aoeRadius       explosion radius in world units
+     * @param manaCost        mana points consumed per cast; {@code 0} for enemies
+     */
     public SpellAttack(float projectileSpeed, float aoeRadius, int manaCost) {
         this.projectileSpeed = projectileSpeed;
         this.aoeRadius       = aoeRadius;

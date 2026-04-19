@@ -5,13 +5,17 @@ import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Marker item vytvoreny ked kacka padne a vylosuje sa vajce (50 %).
- * Tento item sa NEDa zobrat do inventara (onPickup nic nerobi).
- * Level.update() ho zachyti cez instanceof check, vytvori EggProjectile
- * na jeho pozicii a tento item okamzite odstrani zo sceny.
- * Preco marker a nie priamy spawn?
- *   Duck.onKilled() vracia Item – aby sme nemuseli menit signaturu a CollisionManager.
- *   Level si potom sam rozhodne co s markerom spravit.
+ * Marker item created when a duck is killed and the "egg" outcome (50 %) is rolled.
+ *
+ * <p>This item cannot be picked up into the inventory ({@link #onPickup} is a no-op).
+ * Instead, {@code Level.update()} detects it via {@code instanceof} check, spawns
+ * an {@link sk.stuba.fiit.projectiles.EggProjectile} at its position, and immediately
+ * removes it from the scene.
+ *
+ * <p>Why a marker item instead of a direct spawn?
+ * {@code Duck.onKilled()} returns an {@code Item} – using a marker avoids
+ * changing that method's signature and the {@code CollisionManager} logic.
+ * The level decides what to do with the marker on its own.
  */
 public class EggProjectileSpawner extends Item {
 

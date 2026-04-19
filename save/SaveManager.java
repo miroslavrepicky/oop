@@ -26,31 +26,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Singleton zodpovedný za ukladanie a načítavanie {@link SaveData} na disk.
+ * Singleton responsible for saving and loading {@link SaveData} to and from disk.
  *
- * <p>Serializačná stratégia: Java {@link ObjectOutputStream} /
- * {@link ObjectInputStream} so súborom {@value #SAVE_FILE}.
- * {@link SaveData} je čistý DTO (iba primitívy + Stringy) –
- * žiadne LibGDX ani OpenGL závislosti.
+ * <p>Serialisation strategy: Java {@link ObjectOutputStream}/{@link ObjectInputStream}
+ * writing to {@value #SAVE_FILE}. {@link SaveData} is a pure DTO (only primitives
+ * and Strings) – no LibGDX or OpenGL dependencies.
  *
- * <p>Ochrana pred nekompatibilnými súbormi: pri načítaní sa porovnáva
- * {@link SaveData#saveVersion} s {@link SaveData#SAVE_VERSION}.
- * Ak sa líšia, súbor sa ignoruje a vráti sa {@code null}.
+ * <p>Compatibility guard: on load, {@link SaveData#saveVersion} is compared to
+ * {@link SaveData#SAVE_VERSION}. A mismatch causes the file to be ignored and
+ * {@code -1} to be returned.
  *
- * <p>Postup uloženia (save):
+ * <p>Save procedure:
  * <ol>
- *   <li>Prečíta aktuálny {@link Inventory} z {@link GameManager}.
- *   <li>Konvertuje každú postavu na {@link SaveData.CharacterData}.
- *   <li>Konvertuje itemy na {@link SaveData.ItemData} (skupinované).
- *   <li>Serializuje {@link SaveData} cez {@link ObjectOutputStream}.
+ *   <li>Reads the current {@link Inventory} from {@link GameManager}.</li>
+ *   <li>Converts each character to {@link SaveData.CharacterData}.</li>
+ *   <li>Groups items by class and converts them to {@link SaveData.ItemData}.</li>
+ *   <li>Serialises the {@link SaveData} object.</li>
  * </ol>
  *
- * <p>Postup načítania (load):
+ * <p>Load procedure:
  * <ol>
- *   <li>Deserializuje {@link SaveData} zo súboru.
- *   <li>Resetuje {@link GameManager}.
- *   <li>Rekonštruuje postavy a itemy do nového {@link Inventory}.
- *   <li>Vráti číslo levelu na ktorý má {@link GameManager} prejsť.
+ *   <li>Deserialises {@link SaveData}.</li>
+ *   <li>Resets {@link GameManager}.</li>
+ *   <li>Reconstructs characters and items into a new {@link Inventory}.</li>
+ *   <li>Returns the saved level number for {@link GameManager} to start.</li>
  * </ol>
  */
 public final class SaveManager {
@@ -74,10 +73,10 @@ public final class SaveManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Uloží aktuálny stav hry do súboru.
+     * Saves the current game state to disk.
      *
-     * @param currentLevelNumber číslo levelu kde hráč práve je (1-based)
-     * @throws SaveException ak zápis zlyhá
+     * @param currentLevelNumber the level currently active (1-based)
+     * @throws SaveException if the write fails
      */
     public void save(int currentLevelNumber) {
         SaveData data = buildSaveData(currentLevelNumber);
@@ -136,15 +135,11 @@ public final class SaveManager {
         }
     }
 
-    // -------------------------------------------------------------------------
-    //  Načítanie
-    // -------------------------------------------------------------------------
-
     /**
-     * Načíta uloženú hru a rekonštruuje stav GameManager + Inventory.
+     * Loads a saved game and reconstructs {@code GameManager} + {@code Inventory} state.
      *
-     * @return číslo levelu kde hráč bol (na predanie do {@code startLevel()}),
-     *         alebo {@code -1} ak súbor neexistuje alebo je nekompatibilný
+     * @return the saved level number to pass to {@code startLevel()},
+     *         or {@code -1} if no save file exists or the version is incompatible
      */
     public int load() {
         File file = new File(SAVE_FILE);
@@ -276,12 +271,12 @@ public final class SaveManager {
     //  Pomocné verejné metódy
     // -------------------------------------------------------------------------
 
-    /** Vráti true ak existuje uložená hra. */
+    /** @return {@code true} if a save file exists on disk */
     public boolean hasSave() {
         return new File(SAVE_FILE).exists();
     }
 
-    /** Vymaže uložený súbor (napr. pri New Game). */
+    /** Deletes the save file from the disk (e.g., when starting a new game). */
     public void deleteSave() {
         File file = new File(SAVE_FILE);
         if (file.delete()) {

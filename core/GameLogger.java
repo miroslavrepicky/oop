@@ -5,25 +5,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Centrálny logger wrapper.
+ * Centralized logger wrapper providing SLF4J loggers and structured logging helpers.
  *
- * Poskytuje:
- *  - štandardné SLF4J loggery cez get()
- *  - helper metódy pre štruktúrované (strojovo spracovateľné) logy
- *  - guard-check pattern pre hot path
+ * <p>Features:
+ * <ul>
+ *   <li>Standard SLF4J loggers via {@link #get(Class)}.</li>
+ *   <li>Structured (machine-readable) key-value log entries via {@link #structured}.</li>
+ *   <li>Guard-check pattern for hot-path logging (check {@code isDebugEnabled()} first).</li>
+ * </ul>
  */
 public final class GameLogger {
 
     private GameLogger() {}
 
+    /**
+     * Returns an SLF4J {@link Logger} for the given class.
+     *
+     * @param clazz the class requesting a logger
+     * @return SLF4J logger instance
+     */
     public static Logger get(Class<?> clazz) {
         return LoggerFactory.getLogger(clazz);
     }
 
     /**
-     * Štruktúrovaný log – vypíše kľúč-hodnota páry do JSON poľa.
-     * Výsledok v JSON súbore:
-     * { "message": "Enemy spawned", "enemy": "EnemyKnight", "x": 120.0, "y": 64.0 }
+     * Logs a structured INFO message with key-value pairs as separate JSON fields.
+     * Example output: {@code { "message": "Enemy spawned", "enemy": "EnemyKnight", "x": 120.0 }}
+     *
+     * @param logger    the logger to write to
+     * @param message   the human-readable log message
+     * @param keyValues alternating key/value pairs (must be an even count)
      */
     public static void structured(Logger logger, String message, Object... keyValues) {
         if (!logger.isInfoEnabled()) return;

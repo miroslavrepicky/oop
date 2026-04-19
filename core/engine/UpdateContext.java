@@ -8,36 +8,35 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Kontextový objekt predávaný do {@link Updatable#update(UpdateContext)}.
+ * Immutable context object passed to {@link Updatable#update(UpdateContext)}.
  *
- * Dôvod existencie: jednotlivé typy objektov (postava, projektil, nepriateľ)
- * potrebujú pri update rôzne kombinácie vstupných dát. Namiesto viacerých
- * preťažených metód alebo rozpadajúceho sa kontraktu interfacu zabalíme
- * všetko do jedného objektu – každý si zoberie čo potrebuje a zvyšok ignoruje.
+ * <p>Different object types (character, projectile, enemy) need different
+ * combinations of input data during their update. Instead of multiple overloaded
+ * methods or a deteriorating interface contract, all data is bundled here –
+ * each implementor takes what it needs and ignores the rest.
  *
- * Žiadna z tried, ktoré tento objekt dostanú, nemusí importovať GameManager.
+ * <p>No class receiving this object needs to import {@code GameManager}.
  */
 public final class UpdateContext {
 
-    /** Čas od posledného snímka v sekundách. */
+    /** Time elapsed since the last frame in seconds. */
     public final float deltaTime;
 
     /**
-     * Kolízne obdĺžniky z mapy – platformy, steny.
-     * Nikdy nie {@code null}; ak mapa nie je načítaná, je to prázdny zoznam.
+     * Collision rectangles from the map (platforms, walls).
+     * Never {@code null}; an empty list is used when no map is loaded.
      */
     public final List<Rectangle> platforms;
 
     /**
-     * Aktuálny level. Môže byť {@code null} pred načítaním levelu
-     * (napr. na obrazovke inventára). Každý objekt si sám rozhodne,
-     * či level potrebuje, a prípadne null-check vykoná.
+     * The current level. May be {@code null} before the level is loaded
+     * (e.g., on the inventory screen). Each object performs its own null-check.
      */
     public final Level level;
 
     /**
-     * Aktívna hráčska postava. Môže byť {@code null} ak party bola porazená
-     * alebo ešte nebola inicializovaná. AI a projektily si null-check vykonajú.
+     * The active player character. May be {@code null} if the party has been
+     * defeated or not yet initialised. AI and projectiles null-check before use.
      */
     public final PlayerCharacter player;
 

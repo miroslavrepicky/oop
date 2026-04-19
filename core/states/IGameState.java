@@ -1,37 +1,43 @@
 package sk.stuba.fiit.core.states;
 
 /**
- * Kontrakt pre každý herný stav v rámci State vzoru.
+ * Contract for each game state in the State pattern.
  *
- * Dôvod existencie: logika pre PLAYING, PAUSED, GAME_OVER_DELAY
- * bola rozhádzaná v if/switch blokoch cez GameScreen.render()
- * a GameManager.update(). Každý stav teraz zapuzdrí svoju vlastnú
- * logiku a vie, na ktorý stav má prejsť.
+ * <p>Motivation: the logic for PLAYING, PAUSED, GAME_OVER_DELAY was spread
+ * across {@code if/switch} blocks inside {@code GameScreen.render()} and
+ * {@code GameManager.update()}. Each state now encapsulates its own logic
+ * and knows which state to transition to next.
  *
- * Tok:
- *   GameScreen drží currentState : IGameState
- *   každý frame volá currentState.update() a currentState.render()
- *   ak currentState.next() != null, prepne stav
+ * <p>Flow:
+ * <pre>
+ *   GameScreen holds currentState : IGameState
+ *   each frame: currentState.update(dt) → currentState.render(dt)
+ *   if currentState.next() != null → transition to new state
+ * </pre>
  */
 public interface IGameState {
 
     /**
-     * Herná logika pre tento stav (pohyb, AI, kolízie...).
-     * @param deltaTime čas od posledného snímka
+     * Game logic for this state (movement, AI, collisions...).
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
      */
     void update(float deltaTime);
 
     /**
-     * Vykresľovanie špecifické pre tento stav (napr. overlay, fade...).
-     * Základné vykresľovanie levelu rieši GameRenderer – stav ho môže
-     * doplniť (pauza = stmavenie, game over = červený tint...).
+     * State-specific rendering (e.g. overlay, fade, pause tint...).
+     * Base level rendering is handled by {@code GameRenderer}; the state
+     * may augment it (pause = darkening, game-over = red tint...).
+     *
+     * @param deltaTime time elapsed since the last frame in seconds
      */
     void render(float deltaTime);
 
     /**
-     * Vráti nasledujúci stav alebo null ak sa zostáva v aktuálnom.
-     * GameScreen toto kontroluje po každom update() a ak dostane
-     * non-null hodnotu, vykoná prechod.
+     * Returns the next state to transition to, or {@code null} to remain in
+     * the current state. Checked by {@code GameScreen} after every {@code update()}.
+     *
+     * @return the next {@link IGameState}, or {@code null}
      */
     IGameState next();
 }

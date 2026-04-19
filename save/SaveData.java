@@ -7,26 +7,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Serializovateľný DTO popisujúci celý stav uloženej hry.
+ * Serialisable DTO that captures the complete state of a saved game.
  *
- * <p>Prečo vlastný DTO a nie priama serializácia herných tried:
+ * <p>Why a dedicated DTO instead of serialising game classes directly:
  * <ul>
- *   <li>Herné triedy závisia od LibGDX objektov (TextureAtlas, Rectangle...)
- *       ktoré nie sú serializovateľné a patria iba do runtime.
- *   <li>SaveData obsahuje iba primitívy a String-y – dá sa uložiť,
- *       načítať a validovať bez LibGDX kontextu (napr. v unit testoch).
- *   <li>Verzia formátu {@link #SAVE_VERSION} chráni pred načítaním
- *       zastaraných súborov.
+ *   <li>Game classes depend on LibGDX objects ({@code TextureAtlas}, {@code Rectangle}…)
+ *       which are not serialisable and belong only to the runtime.</li>
+ *   <li>{@code SaveData} contains only primitives and Strings – it can be saved,
+ *       loaded and validated without a LibGDX context (e.g. in unit tests).</li>
+ *   <li>The format version {@link #SAVE_VERSION} protects against loading stale files.</li>
  * </ul>
  *
- * <p>Štruktúra:
+ * <p>Structure:
  * <pre>
  *   SaveData
- *   ├── saveVersion     – ochrana pred starými súbormi
- *   ├── savedAt         – čas uloženia (pre UI)
- *   ├── currentLevel    – číslo levelu kde hráč bol
- *   ├── characters[]    – zoznam postáv s HP, armor, typ
- *   └── inventoryItems[]– zoznam itemov s typom a množstvom
+ *   ├── saveVersion     – guards against incompatible old files
+ *   ├── savedAt         – ISO timestamp for the UI
+ *   ├── currentLevel    – 1-based level number where the player saved
+ *   ├── characters[]    – party snapshot (type, HP, armor, base flag, active flag)
+ *   └── inventoryItems[]– item snapshot (type + count, grouped by class)
  * </pre>
  */
 public final class SaveData implements Serializable {

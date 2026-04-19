@@ -17,6 +17,21 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Loads and manages a Tiled map ({@code .tmx}) for a single level.
+ *
+ * <p>Responsibilities:
+ * <ul>
+ *   <li>Loads the map via {@link TmxMapLoader} and wraps it in an
+ *       {@link OrthogonalTiledMapRenderer}.</li>
+ *   <li>Extracts collision rectangles from the {@code "hitbox"} layer.</li>
+ *   <li>Extracts entity spawn data from the {@code "entities"} layer.</li>
+ * </ul>
+ *
+ * <p>The {@code "hitbox"} layer is mandatory; a missing layer throws
+ * {@link GameStateException} during construction.
+ */
 public class MapManager {
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
@@ -24,6 +39,11 @@ public class MapManager {
     private List<Map<String, Object>> entities = new ArrayList<>();
     private static final Logger log = GameLogger.get(MapManager.class);
 
+    /**
+     * @param mapPath relative path to the {@code .tmx} file
+     * @throws AssetLoadException  if the map file cannot be loaded
+     * @throws GameStateException  if the required {@code "hitbox"} layer is absent
+     */
     public MapManager(String mapPath) {
         try {
             map = new TmxMapLoader().load(mapPath);
@@ -64,6 +84,12 @@ public class MapManager {
         }
     }
 
+    /**
+     * Renders the map using the given camera's view matrix.
+     * Should be called once per frame inside the render pass.
+     *
+     * @param camera the active orthographic camera
+     */
     public void render(com.badlogic.gdx.graphics.OrthographicCamera camera) {
         renderer.setView(camera);
         renderer.render();

@@ -9,6 +9,20 @@ import sk.stuba.fiit.world.Level;
 
 import com.badlogic.gdx.math.Rectangle;
 
+
+/**
+ * Base class for all inventory and world items.
+ *
+ * <p>Items exist in two contexts:
+ * <ol>
+ *   <li><b>World</b> – lying on the ground with a hitbox; the player walks over them
+ *       and presses E to pick up.</li>
+ *   <li><b>Inventory</b> – stored in an inventory slot; the player selects and uses them.</li>
+ * </ol>
+ *
+ * <p>The {@code level} parameter in {@link #use(PlayerCharacter, Level)} lets the item
+ * interact with the game world (e.g. spawn projectiles) without calling {@code GameManager}.
+ */
 public abstract class Item implements Pickable, Updatable {
     protected int slotCost;
     protected Vector2D position;
@@ -21,17 +35,18 @@ public abstract class Item implements Pickable, Updatable {
     }
 
     /**
-     * Použije item. Level sa predáva ako parameter – item nemusí
-     * siahať na GameManager len kvôli prístupu k levelu.
+     * Uses the item, applying its effect to the character.
      *
-     * @param character hráč ktorý item používa
-     * @param level     aktuálny level (môže byť null ak item level nepotrebuje)
+     * @param character the player using the item
+     * @param level     the current level; may be {@code null} if the item does not need it
      */
     public abstract void use(PlayerCharacter character, Level level);
 
     /**
-     * Vráti cestu k ikone itemu (napr. „icons/duck.png").
-     * Vráť null ak item nemá ikonu.
+     * Returns the path to the item's inventory icon, e.g. {@code "icons/potion.png"}.
+     * Return {@code null} if the item has no icon.
+     *
+     * @return icon path or {@code null}
      */
     public abstract String getIconPath();
 

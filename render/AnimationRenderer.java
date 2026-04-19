@@ -5,24 +5,19 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import sk.stuba.fiit.core.AnimationManager;
 
 /**
- * Kreslí animované sprite-y na obrazovku.
+ * Stateless utility for drawing animated sprites to the screen.
  *
- * Zodpovednosť tejto triedy je výlučne VIEW:
- *  - zoberie aktuálny frame z {@link AnimationManager}
- *  - nakreslí ho na správnu pozíciu cez {@link SpriteBatch}
+ * <p>Sole responsibility is View rendering:
+ * <ol>
+ *   <li>Retrieves the current frame from an {@link AnimationManager}.</li>
+ *   <li>Draws it at the correct position via {@link SpriteBatch}.</li>
+ * </ol>
  *
- * Trieda neobsahuje žiadnu herná logiku ani stav animácie –
- * to je výlučne zodpovednosť {@link AnimationManager}.
+ * <p>No game logic or animation state lives here –
+ * that is exclusively the responsibility of {@link AnimationManager}.
  *
- * Použitie:
- * <pre>
- *   // v GameRenderer (jeden zdieľaný renderer pre všetky objekty):
- *   AnimationRenderer.render(batch, enemy.getAnimationManager(), x, y, w, h, flipX);
- *   AnimationRenderer.renderActualSize(batch, player.getAnimationManager(), x, y, hitboxW, flipX);
- * </pre>
- *
- * Všetky metódy sú statické – renderer nemá žiadny vlastný stav,
- * čo zabraňuje neúmyselnému zdieľaniu stavu medzi objektmi.
+ * <p>All methods are static: the renderer has no instance state,
+ * preventing accidental state sharing between objects.
  */
 public final class AnimationRenderer {
 
@@ -30,23 +25,17 @@ public final class AnimationRenderer {
         // utility trieda – žiadne inštancie
     }
 
-    // -------------------------------------------------------------------------
-    //  Render do pevne zadaného obdĺžnika
-    // -------------------------------------------------------------------------
-
     /**
-     * Nakreslí aktuálny frame animácie do pevne zadaného obdĺžnika (x, y, width, height).
-     * Frame sa roztiahne/zmenší tak, aby obdĺžnik vyplnil.
+     * Draws the current animation frame stretched to fill the given rectangle.
+     * Suitable for projectiles and objects with a fixed visual size.
      *
-     * Vhodné pre projektily a objekty s konštantnou vizuálnou veľkosťou.
-     *
-     * @param batch  aktívny SpriteBatch (musí byť medzi begin()/end())
-     * @param am     AnimationManager objektu
-     * @param x      ľavý okraj v herných súradniciach
-     * @param y      spodný okraj v herných súradniciach
-     * @param width  šírka výsledného sprite-u
-     * @param height výška výsledného sprite-u
-     * @param flipX  true = zrkadlovo otočiť horizontálne (postava ide doľava)
+     * @param batch  active {@link SpriteBatch} (must be between {@code begin()}/{@code end()})
+     * @param am     the object's {@link AnimationManager}
+     * @param x      left edge in world coordinates
+     * @param y      bottom edge in world coordinates
+     * @param width  rendered sprite width
+     * @param height rendered sprite height
+     * @param flipX  {@code true} to mirror horizontally (character moving left)
      */
     public static void render(SpriteBatch batch, AnimationManager am,
                               float x, float y, float width, float height,
@@ -63,24 +52,20 @@ public final class AnimationRenderer {
         );
     }
 
-    // -------------------------------------------------------------------------
-    //  Render v skutočnej veľkosti framu, ukotvený na spodný stred hitboxu
-    // -------------------------------------------------------------------------
-
     /**
-     * Nakreslí aktuálny frame v SKUTOČNEJ veľkosti tohto konkrétneho framu
-     * (packedWidth / packedHeight), ukotvený na spodný stred hitboxu.
+     * Draws the current frame at its ACTUAL packed size, anchored to the
+     * bottom-centre of the hitbox.
      *
-     * Každý frame má svoju prirodzenú veľkosť → animácia sa neroztahuje
-     * do pevného obdĺžnika. Vlniaci sa plášť, pohyb hore-dole atď. vyzerajú
-     * správne, pretože sprite jednoducho „vyčnieva" mimo hitbox podľa potreby.
+     * <p>Because each frame has its natural size, the animation does not stretch
+     * into a fixed rectangle. A billowing cloak or up-and-down motion looks
+     * correct because the sprite simply extends beyond the hitbox as needed.
      *
-     * @param batch   aktívny SpriteBatch
-     * @param am      AnimationManager objektu
-     * @param x       ľavý okraj hitboxu vo svete
-     * @param y       spodný okraj hitboxu vo svete
-     * @param hitboxW šírka hitboxu – použitá na horizontálne centrovanie sprite-u
-     * @param flipX   true = zrkadlovo otočiť horizontálne
+     * @param batch   active {@link SpriteBatch}
+     * @param am      the object's {@link AnimationManager}
+     * @param x       hitbox left edge in world coordinates
+     * @param y       hitbox bottom edge in world coordinates
+     * @param hitboxW hitbox width used for horizontal centering of the sprite
+     * @param flipX   {@code true} to mirror horizontally
      */
     public static void renderActualSize(SpriteBatch batch, AnimationManager am,
                                         float x, float y, float hitboxW,

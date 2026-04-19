@@ -6,21 +6,20 @@ import sk.stuba.fiit.core.engine.Physicable;
 import java.util.List;
 
 /**
- * Stratégia gravitácie pre ľubovoľný objekt implementujúci {@link Physicable}.
+ * Strategy interface for applying gravity to any {@link Physicable} object.
  *
- * Zmena oproti pôvodnému kódu: parameter je {@link Physicable} namiesto
- * {@code Character}. Tým sa gravitácia odviazala od hierarchie postáv –
- * je možné ju aplikovať aj na {@code Projectile} alebo iný objekt
- * bez akejkoľvek zmeny implementácií (NormalGravity, FloatingGravity, NoGravity).
+ * <p>Decouples gravity logic from the character hierarchy: the same strategy
+ * implementations ({@link NormalGravity}, {@link FloatingGravity}, {@link NoGravity})
+ * work transparently for {@code Character} subclasses as well as {@code Projectile}
+ * instances, without any changes to the strategy code.
  */
 public interface GravityStrategy {
-
     /**
-     * Aplikuje gravitáciu na fyzikálny objekt.
+     * Applies gravity to the given physical body for one frame.
      *
-     * @param body      objekt, na ktorý sa gravitácia aplikuje
-     * @param deltaTime čas od posledného snímka
-     * @param platforms kolízne obdĺžniky mapy; {@code null} alebo prázdny = žiadne platformy
+     * @param body      the object to apply gravity to
+     * @param deltaTime time elapsed since the last frame in seconds
+     * @param platforms collision rectangles from the map; {@code null} or empty means no platforms
      */
     void apply(Physicable body, float deltaTime, List<Rectangle> platforms);
 }

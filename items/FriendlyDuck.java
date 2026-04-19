@@ -10,11 +10,14 @@ import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Pickable item získaný zabitím kačky (50 % šanca).
+ * Consumable item obtained by killing a duck (50 % drop chance).
  *
- * Keď hráč použije tento item, vystrelí {@link TurdflyProjectile}
- * v smere ktorým hráč práve stojí.
- * Item sa po použití spotrebuje.
+ * <p>When used, fires a {@link TurdflyProjectile} in the direction the player
+ * is currently facing. Gets the projectile from {@link ProjectilePool} and
+ * resets it before adding it to the level. Removes itself from the inventory
+ * after a single use.
+ *
+ * <p>The level is passed as a parameter so this item does not depend on {@code GameManager}.
  */
 public class FriendlyDuck extends Item {
 

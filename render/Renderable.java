@@ -3,43 +3,44 @@ package sk.stuba.fiit.render;
 import sk.stuba.fiit.core.AnimationManager;
 
 /**
- * Kontrakt pre objekty, ktoré vedia samy opísať ako sa majú nakresliť.
+ * Contract for objects that can describe their own rendering parameters.
  *
- * Dôvod existencie: GameRenderer obsahoval sériu instanceof checkov
- * (MagicSpell, Arrow, EggProjectile...) a pre každý typ nastavoval
- * iné rozmery a offsety. Každý nový projektil = zmena v rendereri.
+ * <p>Motivation: {@code GameRenderer} previously contained a chain of
+ * {@code instanceof} checks (MagicSpell, Arrow, EggProjectile…) and set
+ * different dimensions and offsets for each type. Every new projectile type
+ * required a change to the renderer.
  *
- * Po refaktore: každý projektil implementuje Renderable a sám vie
- * svoje vizuálne parametre. GameRenderer robí len:
+ * <p>After refactoring: each projectile implements {@code Renderable} and
+ * knows its own visual parameters. {@code GameRenderer} calls only:
+ * <pre>
  *   AnimationRenderer.render(batch, r.getAnimationManager(), ...)
- * bez akejkoľvek znalosti konkrétneho typu.
+ * </pre>
+ * with no knowledge of the concrete type.
  *
- * Implementujú: MagicSpell, Arrow, EggProjectile, TurdflyProjectile
- * Volá: GameRenderer (projektily), prípadne aj EnemyCharacter/Duck ak treba
+ * <p>Implemented by: {@code MagicSpell}, {@code Arrow}, {@code EggProjectile},
+ * {@code TurdflyProjectile}.
  */
 public interface Renderable {
 
-    /** AnimationManager s aktuálnym framom. Null = objekt sa nekreslí. */
+    /** @return the animation manager holding the current frame; {@code null} = not drawn */
     AnimationManager getAnimationManager();
 
-    /** True = sprite sa zrkadlovo otočí horizontálne (objekt ide doľava). */
+    /** @return {@code true} if the sprite should be flipped horizontally */
     boolean isFlippedX();
 
-    /** Šírka vykresleného sprite-u v herných súradniciach. */
+    /** @return rendered sprite width in world units */
     float getRenderWidth();
-
-    /** Výška vykresleného sprite-u v herných súradniciach. */
+    /** @return rendered sprite height in world units */
     float getRenderHeight();
 
     /**
-     * Horizontálny offset od pozície objektu.
-     * Väčšina objektov vracia 0f; EggProjectile vracia -16f pri výbuchu.
+     * @return horizontal offset from the object's position (default {@code 0f});
+     *         {@code EggProjectile} returns {@code -16f} during the blast phase
      */
     default float getRenderOffsetX() { return 0f; }
 
     /**
-     * Vertikálny offset od pozície objektu.
-     * Väčšina objektov vracia 0f; EggProjectile vracia -16f pri výbuchu.
+     * @return vertical offset from the object's position (default {@code 0f})
      */
     default float getRenderOffsetY() { return 0f; }
 }

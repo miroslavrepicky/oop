@@ -9,10 +9,14 @@ import sk.stuba.fiit.render.SnapshotBuilder;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Stav: krátkodobý prechod po smrti party.
+ * Transitional state shown briefly after the party is defeated.
  *
- * ZMENA: render() tiež používa SnapshotBuilder – žiadna duplikácia
- * konverznej logiky medzi PlayingState a GameOverDelayState.
+ * <p>The level continues to update (enemies animate, projectiles move) so the
+ * death animation plays out naturally. After {@link #DELAY} seconds (or the
+ * length of the player's death animation), transitions to {@link GameOverState}.
+ *
+ * <p>Rendering delegates to {@link SnapshotBuilder} – no duplication of
+ * snapshot-building logic between this state and {@link PlayingState}.
  */
 public class GameOverDelayState implements IGameState {
 

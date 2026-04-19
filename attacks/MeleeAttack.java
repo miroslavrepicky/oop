@@ -10,8 +10,19 @@ import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.world.Level;
 
+
+/**
+ * Melee attack that damages the nearest target within a tile-based reach.
+ *
+ * <p>When executed by a {@code PlayerCharacter}, hits the closest living enemy
+ * or duck in the direction the player is facing. When executed by an
+ * {@code EnemyCharacter}, hits the active player if they are within range.
+ *
+ * <p>Range is expressed in tiles: {@code reach = rangeTiles * 52f} pixels.
+ */
 public class MeleeAttack implements Attack {
-    private final int rangeTiles; // pocet dlazdic dosahu (1 = blizky melee)
+    /** Number of tiles that define the attack reach. */
+    private final int rangeTiles;
     private static final Logger log = GameLogger.get(MeleeAttack.class);
 
     public MeleeAttack(int rangeTiles) {

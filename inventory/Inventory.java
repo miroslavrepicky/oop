@@ -12,6 +12,20 @@ import sk.stuba.fiit.world.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages the player party and item slots using a shared slot budget.
+ *
+ * <p>Slot budget: the inventory has {@code totalSlots} slots total.
+ * Each non-base character costs 3 slots; the base ({@code Knight}) is free.
+ * Items cost their {@link sk.stuba.fiit.items.Item#getSlotsRequired()} value.
+ *
+ * <p>Active character: only one character is active at a time. On death the
+ * controller calls {@link #switchToNextAlive()} to swap automatically.
+ * When no living character remains, {@link #isPartyDefeated()} returns {@code true}.
+ *
+ * <p>Item selection: a cursor ({@code selectedSlot}) cycles through the item list.
+ * Items are used via {@link #useSelected(PlayerCharacter, Level)}.
+ */
 public class Inventory {
     private int totalSlots;
     private int usedSlots;
@@ -33,6 +47,14 @@ public class Inventory {
         this(10);
     }
 
+    /**
+     * Adds a character to the party.
+     * The {@code Knight} base character is always accepted without slot cost.
+     * All other characters cost 3 slots.
+     *
+     * @param character the character to add
+     * @return {@code true} if added successfully, {@code false} if not enough slots
+     */
     public boolean addCharacter(PlayerCharacter character) {
         if (character instanceof Knight) {
             baseCharacter = character;
@@ -55,6 +77,12 @@ public class Inventory {
         return true;
     }
 
+    /**
+     * Removes a non-base character from the party, freeing 3 slots.
+     *
+     * @param character the character to remove
+     * @return {@code false} if the character is the base character or not in the party
+     */
     public boolean removeCharacter(PlayerCharacter character) {
         if (character == baseCharacter) {
             log.warn("Cannot remove base character: name={}", character.getName());
@@ -118,11 +146,11 @@ public class Inventory {
     }
 
     /**
-     * Použije aktuálne vybraný item.
-     * Level sa predáva zvonku – Inventory nemusí volať GameManager.
+     * Uses the currently selected item on {@code character} within the given {@code level}.
+     * The level is passed as a parameter so this method does not need to call {@code GameManager}.
      *
-     * @param character aktívna postava
-     * @param level     aktuálny level (predaný z PlayerController)
+     * @param character the active player character
+     * @param level     the current level (passed from {@code PlayerController})
      */
     public void useSelected(PlayerCharacter character, Level level) {
         if (items.isEmpty() || selectedSlot >= items.size()) return;
@@ -150,6 +178,11 @@ public class Inventory {
         }
     }
 
+    /**
+     * Switches to the next living character in the party, preserving position and facing.
+     *
+     * @return {@code true} if a living character was found and activated
+     */
     public boolean switchToNextAlive() {
         Vector2D currentPosition = activeCharacter.getPosition();
         boolean  currentFacing   = activeCharacter.isFacingRight();
@@ -168,6 +201,11 @@ public class Inventory {
         return false;
     }
 
+    /**
+     * Returns {@code true} when all party members have zero HP.
+     *
+     * @return {@code true} if the party is fully defeated
+     */
     public boolean isPartyDefeated() {
         return characters.stream().noneMatch(Character::isAlive);
     }

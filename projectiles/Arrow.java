@@ -1,12 +1,24 @@
 package sk.stuba.fiit.projectiles;
 
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
 // TODO: consider removing piercing – currently not used anywhere
 
+/**
+ * Arrow projectile fired by archer characters.
+ *
+ * <p>Pooled via {@link ProjectilePool}. After {@code obtainArrow()}, callers
+ * must call {@link #reset(int, float, Vector2D, Vector2D, boolean)} immediately
+ * to configure the real game values for this use.
+ *
+ * <p>The {@code AnimationManager} is NOT reset between uses because the atlas
+ * is shared via {@link sk.stuba.fiit.core.AtlasCache} and the "fly" animation
+ * is always the same.
+ */
 public class Arrow extends Projectile implements Renderable, Poolable {
 
     private static final float RENDER_W = 32f;

@@ -8,18 +8,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Flyweight Factory pre TextureAtlas objekty.
+ * Flyweight factory for {@link TextureAtlas} instances.
  *
- * Problém: AnimationManager pôvodne volal new TextureAtlas(path) pri každej
- * inštancii – dva EnemyKnight znamenali dva identické atlasy v GPU pamäti.
+ * <p>Problem: {@code AnimationManager} originally called {@code new TextureAtlas(path)}
+ * per instance – two {@code EnemyKnight} characters meant two identical atlases in
+ * GPU memory.
  *
- * Riešenie: AtlasCache drží jednu inštanciu atlasu per cesta a zdieľa ju
- * medzi všetkými AnimationManager klientmi. Intrinsic state (pixely atlasu)
- * je zdieľaný; extrinsic state (stateTime, currentAnimation) zostáva
- * v AnimationManager.
+ * <p>Solution: {@code AtlasCache} keeps one atlas instance per path and shares it
+ * across all {@code AnimationManager} clients. The intrinsic state (pixel data) is
+ * shared; the extrinsic state ({@code stateTime}, {@code currentAnimation}) remains
+ * in each {@code AnimationManager}.
  *
- * Životný cyklus: dispose() zavolá GameManager.resetGame() alebo
- * ApplicationAdapter.dispose() – nie AnimationManager.
+ * <p>Lifecycle: {@link #dispose()} is called by {@code GameManager.resetGame()} or
+ * {@code ApplicationAdapter.dispose()} – never by {@code AnimationManager}.
  */
 public final class AtlasCache {
 
@@ -39,11 +40,10 @@ public final class AtlasCache {
     }
 
     /**
-     * Vráti zdieľaný atlas pre danú cestu.
-     * Ak atlas ešte nie je načítaný, načíta ho práve raz.
+     * Returns the shared atlas for the given path, loading it from disk on first access.
      *
-     * @param path relatívna cesta k .atlas súboru (napr. "atlas/knight/knight.atlas")
-     * @return zdieľaná inštancia TextureAtlas
+     * @param path relative path to the {@code .atlas} file
+     * @return shared {@link TextureAtlas} instance
      */
     public TextureAtlas get(String path) {
         if (cache.containsKey(path)) {
@@ -59,9 +59,9 @@ public final class AtlasCache {
     }
 
     /**
-     * Uvoľní všetky atlasy z GPU pamäte.
-     * Volať len pri ukončení hry alebo pri plnom reštarte (resetGame).
-     * NIKDY nevolať počas levelu – zrušilo by to textúry živých postáv.
+     * Releases all atlases from GPU memory and clears the cache.
+     * Must NOT be called during an active level – it would invalidate textures
+     * used by live characters.
      */
     public void dispose() {
         cache.values().forEach(TextureAtlas::dispose);
