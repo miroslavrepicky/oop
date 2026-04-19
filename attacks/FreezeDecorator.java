@@ -21,36 +21,20 @@ public class FreezeDecorator extends AttackDecorator {
 
     private static final float SLOW_MULTIPLIER = 0.3f;
     private static final float SLOW_DURATION   = 2.5f;
-    private static final int   DISCOUNT_MANA   = 5;
+    private static final int   EXTRA_MANA      = 10; // opravené z DISCOUNT na EXTRA
 
-    public FreezeDecorator(Attack wrapped) {
-        super(wrapped);
-    }
+    public FreezeDecorator(Attack wrapped) { super(wrapped); }
 
     @Override
     public Projectile execute(Character attacker, Level level) {
-        Projectile projectile = wrapped.execute(attacker, level);
-        if (projectile != null) {
-            projectile.setSlowEffect(SLOW_MULTIPLIER, SLOW_DURATION);
+        Projectile p = wrapped.execute(attacker, level);
+        if (p != null) {
+            p.setSlowEffect(SLOW_MULTIPLIER, SLOW_DURATION);
+            p.setTint(0.3f, 0.7f, 1f);
         }
-        return projectile;
+        return p;
     }
 
     @Override
-    public String getAnimationName() {
-        return "cast_freeze";
-    }
-
-    @Override
-    public float getAnimationDuration(AnimationManager am) {
-        if (am != null && am.hasAnimation("cast_freeze")) {
-            return am.getAnimationDuration("cast_freeze");
-        }
-        return wrapped.getAnimationDuration(am);
-    }
-
-    @Override
-    public int getManaCost() {
-        return Math.max(0, wrapped.getManaCost() - DISCOUNT_MANA);
-    }
+    public int getManaCost() { return wrapped.getManaCost() + EXTRA_MANA; }
 }

@@ -153,6 +153,8 @@ public class GameRenderer {
 
     private void renderProjectile(EntityRenderData proj) {
         if (proj.animationManager == null) return;
+
+        batch.setColor(proj.tintR, proj.tintG, proj.tintB, 1f); // nové
         AnimationRenderer.render(
             batch, proj.animationManager,
             proj.x + proj.renderOffsetX,
@@ -161,6 +163,7 @@ public class GameRenderer {
             proj.renderHeight,
             proj.flipX
         );
+        batch.setColor(1f, 1f, 1f, 1f); // reset aby ostatné sprite-y neboli ovplyvnené
     }
 
     // -------------------------------------------------------------------------

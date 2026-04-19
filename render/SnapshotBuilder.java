@@ -128,7 +128,6 @@ public class SnapshotBuilder {
 
     private static EntityRenderData buildProjectile(Projectile p) {
         if (!(p instanceof Renderable)) {
-            // Fallback: projektil bez animácie – vrátime prázdny DTO
             return EntityRenderData
                 .builder(p.getPosition().getX(), p.getPosition().getY(), null)
                 .renderType(EntityRenderData.RenderType.FIXED_RECT)
@@ -143,6 +142,7 @@ public class SnapshotBuilder {
             .renderSize(r.getRenderWidth(), r.getRenderHeight())
             .renderOffset(r.getRenderOffsetX(), r.getRenderOffsetY())
             .flipX(r.isFlippedX())
+            .tint(p.getTintR(), p.getTintG(), p.getTintB())
             .build();
     }
 }

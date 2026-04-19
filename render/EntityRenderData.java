@@ -58,6 +58,10 @@ public final class EntityRenderData {
     public final int  armor;
     public final int  maxArmor;
 
+    public final float tintR;
+    public final float tintG;
+    public final float tintB;
+
     private EntityRenderData(Builder b) {
         this.x               = b.x;
         this.y               = b.y;
@@ -75,9 +79,13 @@ public final class EntityRenderData {
         this.maxHp           = b.maxHp;
         this.armor           = b.armor;
         this.maxArmor        = b.maxArmor;
+        this.tintR = b.tintR;
+        this.tintG = b.tintG;
+        this.tintB = b.tintB;
     }
 
     public static Builder builder(float x, float y, AnimationManager am) {
+
         return new Builder(x, y, am);
     }
 
@@ -97,6 +105,10 @@ public final class EntityRenderData {
         private int     maxHp   = 0;
         private int     armor   = 0;
         private int     maxArmor = 0;
+        private float tintR = 1f;
+        private float tintG = 1f;
+        private float tintB = 1f;
+
 
         private Builder(float x, float y, AnimationManager am) {
             this.x = x;
@@ -113,6 +125,10 @@ public final class EntityRenderData {
         public Builder bars(int hp, int maxHp, int armor, int maxArmor) {
             this.hp = hp; this.maxHp = maxHp;
             this.armor = armor; this.maxArmor = maxArmor;
+            return this;
+        }
+        public Builder tint(float r, float g, float b) {
+            tintR = r; tintG = g; tintB = b;
             return this;
         }
 

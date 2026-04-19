@@ -23,34 +23,18 @@ public class FireDecorator extends AttackDecorator {
     private static final float BURN_DURATION = 3.0f;
     private static final int   EXTRA_MANA    = 15;
 
-    public FireDecorator(Attack wrapped) {
-        super(wrapped);
-    }
+    public FireDecorator(Attack wrapped) { super(wrapped); }
 
     @Override
     public Projectile execute(Character attacker, Level level) {
-        Projectile projectile = wrapped.execute(attacker, level);
-        if (projectile != null) {
-            projectile.setDotEffect(BURN_DPS, BURN_DURATION);
+        Projectile p = wrapped.execute(attacker, level);
+        if (p != null) {
+            p.setDotEffect(BURN_DPS, BURN_DURATION);
+            p.setTint(1f, 0.3f, 0f);
         }
-        return projectile;
+        return p;
     }
 
     @Override
-    public String getAnimationName() {
-        return "cast_fire";
-    }
-
-    @Override
-    public float getAnimationDuration(AnimationManager am) {
-        if (am != null && am.hasAnimation("cast_fire")) {
-            return am.getAnimationDuration("cast_fire");
-        }
-        return wrapped.getAnimationDuration(am);
-    }
-
-    @Override
-    public int getManaCost() {
-        return wrapped.getManaCost() + EXTRA_MANA;
-    }
+    public int getManaCost() { return wrapped.getManaCost() + EXTRA_MANA; }
 }

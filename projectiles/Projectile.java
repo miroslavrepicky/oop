@@ -40,6 +40,10 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
     private boolean onGround  = false;
     private ProjectileOwner owner = ProjectileOwner.PLAYER;
 
+    private float tintR = 1f;
+    private float tintG = 1f;
+    private float tintB = 1f;
+
     public Projectile(int damage, float speed, Vector2D position, Vector2D direction) {
         this.damage    = damage;
         this.speed     = speed;
@@ -47,6 +51,12 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
         this.direction = direction;
         this.active    = true;
         this.hitbox    = new Rectangle(position.getX(), position.getY(), 16, 8);
+    }
+
+    public void setTint(float r, float g, float b) {
+        this.tintR = r;
+        this.tintG = g;
+        this.tintB = b;
     }
 
     // -------------------------------------------------------------------------
@@ -69,6 +79,9 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
     public float   getDotDuration()    { return dotDuration; }
     public float   getSlowMultiplier() { return slowMultiplier; }
     public float   getSlowDuration()   { return slowDuration; }
+    public float getTintR() { return tintR; }
+    public float getTintG() { return tintG; }
+    public float getTintB() { return tintB; }
 
     /**
      * Clears all on-hit effects. Must be called from subclass {@code reset()}
@@ -79,6 +92,9 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
         dotDuration   = 0f;
         slowMultiplier = 0f;
         slowDuration   = 0f;
+        tintR = 1f;
+        tintG = 1f;
+        tintB = 1f;
     }
 
     // -------------------------------------------------------------------------
