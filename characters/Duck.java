@@ -25,7 +25,6 @@ import java.util.Random;
  */
 public class Duck extends Character {
     private static final int   DUCK_HP     = 20;
-    private static final int   DUCK_DAMAGE = 10;
 
     private float walkTimer  = 0f;
     private float idleTimer  = 0f;
@@ -107,7 +106,7 @@ public class Duck extends Character {
     public Item onKilled() {
         Random random = new Random();
         if (random.nextBoolean()) {
-            return new FriendlyDuck(DUCK_DAMAGE, new Vector2D(position.getX(), position.getY()));
+            return new FriendlyDuck(new Vector2D(position.getX(), position.getY()));
         } else {
             return new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
         }

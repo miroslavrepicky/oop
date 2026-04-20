@@ -31,8 +31,6 @@ public class Knight extends PlayerCharacter {
         animationManager.addAnimation("attack", "ATTACK/ATTACK", 0.07f);
     }
 
-    private void handleInput() {}
-
     @Override
     public void update(UpdateContext ctx) {
 

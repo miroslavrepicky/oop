@@ -42,8 +42,6 @@ public class Archer extends PlayerCharacter {
         super.performPrimaryAttack();
     }
 
-    private void handleInput() {}
-
     @Override
     public void update(UpdateContext ctx) {
 

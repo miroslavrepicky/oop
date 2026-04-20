@@ -128,9 +128,9 @@ public final class ProjectilePool {
     // -------------------------------------------------------------------------
 
     public void logStats() {
-        log.info("ProjectilePool stats: arrows=[created={}, reused={}, ratio={:.2f}]"
-                + " spells=[created={}, reused={}, ratio={:.2f}]"
-                + " turdflyies=[created={}, reused={}, ratio={:.2f}]",
+        log.info("ProjectilePool stats: arrows=[created={}, reused={}, ratio={}]"
+                + " spells=[created={}, reused={}, ratio={}]"
+                + " turdflyies=[created={}, reused={}, ratio={}]",
             arrowPool.getTotalCreated(), arrowPool.getTotalReused(), arrowPool.getReuseRatio(),
             spellPool.getTotalCreated(), spellPool.getTotalReused(), spellPool.getReuseRatio(),
             turdflyPool.getTotalCreated(), turdflyPool.getTotalReused(), turdflyPool.getReuseRatio()

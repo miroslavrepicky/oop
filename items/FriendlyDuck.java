@@ -20,13 +20,11 @@ import sk.stuba.fiit.world.Level;
  * <p>The level is passed as a parameter so this item does not depend on {@code GameManager}.
  */
 public class FriendlyDuck extends Item {
-
-    private final int damage;
     private AnimationManager animationManager;
 
-    public FriendlyDuck(int damage, Vector2D position) {
+    public FriendlyDuck(Vector2D position) {
         super(1, position);
-        this.damage = damage;
+
         initAnimations();
     }
 
@@ -68,6 +66,5 @@ public class FriendlyDuck extends Item {
     @Override
     public String getIconPath() { return "icons/duck.png"; }
 
-    public int             getDamage()            { return damage; }
     public AnimationManager getAnimationManager() { return animationManager; }
 }
