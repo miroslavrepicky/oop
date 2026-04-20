@@ -32,9 +32,10 @@ public class EnemyArcher extends EnemyCharacter {
     }
 
     @Override
-    public void performAttack() {
-        if (arrowCount > 0) arrowCount--;
-        // samotny projektil spawnuje ArrowAttack.execute()
+    public void triggerAttack() {
+        if (arrowCount <= 0) return;
+        arrowCount--;
+        super.triggerAttack();
     }
 
     @Override

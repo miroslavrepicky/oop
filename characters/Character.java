@@ -246,8 +246,6 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
 
     public boolean isAlive() { return hp > 0; }
 
-    public abstract void performAttack();
-
     public void updateAnimation(float deltaTime) { }
 
     public String    getName()             { return name; }

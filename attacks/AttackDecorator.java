@@ -19,8 +19,8 @@ import sk.stuba.fiit.world.Level;
  *
  * <p>Example usage:
  * <pre>
- *   Attack base   = new SpellAttack(6.0f, 100f, 20);
- *   Attack fire   = new FireDecorator(base);
+ *   Attack base = new SpellAttack(6.0f, 100f, 20);
+ *   Attack fire = new FireDecorator(base);
  *   Attack freeze = new FreezeDecorator(base);
  *
  *   // Stacking decorators:

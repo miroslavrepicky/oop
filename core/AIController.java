@@ -177,7 +177,7 @@ public class AIController {
         enemy.setFacingRight(playerPos.getX() > enemyPos.getX());
         enemy.setVelocityX(0);
         if (!enemy.isAttacking()) {
-            enemy.performAttack(player);
+            enemy.triggerAttack();
         }
 
         if (dist > attackRange) transitionTo(AIState.CHASE);

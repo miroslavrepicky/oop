@@ -30,11 +30,6 @@ public class EnemyKnight extends EnemyCharacter {
     }
 
     @Override
-    public void performAttack() {
-        // logika riesi MeleeAttack.execute() + EnemyCharacter.performAttack(player)
-    }
-
-    @Override
     public AnimationManager getAnimationManager() { return animationManager; }
 
 }

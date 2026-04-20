@@ -22,17 +22,6 @@ public class DarkKnight extends EnemyCharacter {
         this.gravityStrategy = new NormalGravity();
     }
 
-    @Override
-    public void performAttack() {
-        if (phase == 1) {
-            meleeAttack();
-        } else if (phase == 2) {
-            meleeAttack();
-            if (specialCooldown <= 0) castSpell();
-        } else {
-            castSpell();
-        }
-    }
 
     @Override
     public AnimationManager getAnimationManager() {
@@ -44,11 +33,7 @@ public class DarkKnight extends EnemyCharacter {
     }
 
     public MagicSpell castSpell() {
-        specialCooldown = COOLDOWN_MAX;
-        Vector2D direction = new Vector2D(-1, 0);
-        MagicSpell spell = new MagicSpell(attackPower * 2, 6.0f, position, direction, 100.0f);
-        spell.setOwner(ProjectileOwner.ENEMY);
-        return spell;
+        return null;
     }
 
     public void switchPhase() {

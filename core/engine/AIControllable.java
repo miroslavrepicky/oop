@@ -37,12 +37,15 @@ public interface AIControllable {
     boolean detectPlayer(PlayerCharacter player);
 
     /**
-     * Triggers an attack aimed at the specified player.
-     * Respects attack cooldowns and animation state internally.
+     * Triggers the enemy's attack sequence (cooldown check, animation start).
+     * Actual damage/projectile spawn happens later in {@code EnemyCharacter.update()}
+     * via {@code attack.execute()} – the AI trigger and the execution are intentionally
+     * separated so the attack animation plays before impact.
      *
-     * @param target the player to attack
+     * <p>No player reference is needed here: the target is resolved at execution time
+     * from the level context inside {@code Attack.execute(attacker, level)}.
      */
-    void performAttack(PlayerCharacter target);
+    void triggerAttack();
 
     /**
      * Returns {@code true} if the enemy is currently playing an attack animation.

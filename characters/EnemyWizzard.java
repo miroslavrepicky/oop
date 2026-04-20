@@ -30,11 +30,6 @@ public class EnemyWizzard extends EnemyCharacter {
     }
 
     @Override
-    public void performAttack() {
-        // SpellAttack.execute() spawnuje MagicSpell do levelu
-    }
-
-    @Override
     protected String getAttackAnimationName() {
         return "cast";
     }

@@ -50,7 +50,9 @@ public class Archer extends PlayerCharacter {
     public int getArrowCount() {
         return arrowCount;
     }
-    public int getMaxArrows()   { return MAX_ARROWS; }
+    public int getMaxArrows()   {
+        return MAX_ARROWS;
+    }
 
     @Override
     public AnimationManager getAnimationManager() {

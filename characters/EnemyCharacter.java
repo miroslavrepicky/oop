@@ -94,21 +94,31 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     //  Attack
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    //  Attack trigger – volaný z AIController, žiadny player parameter
+    // -------------------------------------------------------------------------
+
+    /**
+     * Naštartuje útočnú sekvenciu: cooldown, animácia, timer.
+     * Skutočné poškodenie/projektil vznikne neskôr v {@link #update(UpdateContext)}
+     * cez {@code attack.execute(this, level)}.
+     *
+     * <p>Podtriedy môžu override-núť pre typ-špecifickú logiku pred spustením
+     * (napr. {@code EnemyArcher} odpočítava šípy) a musia zavolať {@code super.triggerAttack()}.
+     */
     @Override
-    public void performAttack(PlayerCharacter player) {
+    public void triggerAttack() {
         if (attackCooldown > 0 || isAttacking || attack == null) return;
 
-        attackCooldown = ATTACK_COOLDOWN_MAX;
-        isAttacking    = true;
-        damageDealt    = false;
+        attackCooldown  = ATTACK_COOLDOWN_MAX;
+        isAttacking     = true;
+        damageDealt     = false;
 
         AnimationManager am = getAnimationManager();
         attackAnimTimer = attack.getAnimationDuration(am);
-
         if (am != null) am.play(attack.getAnimationName());
-
-        performAttack();
     }
+
 
     protected String getAttackAnimationName() { return "attack"; }
 

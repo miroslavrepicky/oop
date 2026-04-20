@@ -76,9 +76,6 @@ public abstract class PlayerCharacter extends Character {
     public void performPrimaryAttack()   { executeAttack(primaryAttack); }
     public void performSecondaryAttack() { executeAttack(secondaryAttack); }
 
-    @Override
-    public void performAttack() { performPrimaryAttack(); }
-
     /**
      * Drives the attack animation: spawns the projectile at the correct frame,
      * manages the animation timer, and switches to the appropriate locomotion

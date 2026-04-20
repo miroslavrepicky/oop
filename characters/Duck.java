@@ -50,9 +50,6 @@ public class Duck extends Character {
     }
 
     @Override
-    public void performAttack() { }
-
-    @Override
     public AnimationManager getAnimationManager() { return animationManager; }
 
     @Override
