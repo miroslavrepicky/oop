@@ -8,7 +8,6 @@ import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.GameLogger;
-import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.AoeProjectile;
 import sk.stuba.fiit.projectiles.EggProjectile;
@@ -28,8 +27,7 @@ public class CollisionManager {
     private Item nearbyItem = null;
     private static final Logger log = GameLogger.get(CollisionManager.class);
 
-    public void update(Level level) {
-        PlayerCharacter player = GameManager.getInstance().getInventory().getActive();
+    public void update(Level level, PlayerCharacter player) {
         if (player == null || level == null) return;
 
         checkNearbyItems(player, level);

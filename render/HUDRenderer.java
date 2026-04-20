@@ -6,10 +6,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import sk.stuba.fiit.characters.PlayerCharacter;
-import sk.stuba.fiit.core.GameManager;
-import sk.stuba.fiit.inventory.Inventory;
-import sk.stuba.fiit.items.Item;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +14,9 @@ import java.util.Map;
 /**
  * Kreslí HUD (HP, zbroj, inventár, pick-up hint).
  *
- * Zmena oproti pôvodnému kódu:
- *  - Závislosť na {@code CollisionManager} odstránená.
- *    Namiesto toho {@code render()} dostáva jednoduchý boolean
- *    {@code nearbyItemAvailable}. Kto volá render, ten vie či je
- *    item v blízkosti – HUDRenderer to nepotrebuje zisťovať sám.
- *  - Inventory sa stále číta z GameManager, čo je akceptovateľné
- *    pre high-level renderer (alternatíva: predať Inventory ako parameter).
+ * Po refaktore: žiadna závislosť na GameManager, Inventory, PlayerCharacter
+ * ani Item. Všetky dáta prídu cez {@link RenderSnapshot.HUDSnapshot} DTO,
+ * ktorý zostaví {@link SnapshotBuilder}.
  */
 public class HUDRenderer {
 
@@ -50,31 +42,32 @@ public class HUDRenderer {
     }
 
     /**
-     * @param nearbyItemAvailable true = v blízkosti je item → zobraz "[E] PICK-UP ITEM"
+     * Vykreslí celý HUD z predpripraveného snapshotu.
+     * Žiadne volania na GameManager ani Inventory.
+     *
+     * @param hud snapshot zostavený cez SnapshotBuilder; môže byť null
      */
-    public void render(boolean nearbyItemAvailable) {
-        Inventory inventory = GameManager.getInstance().getInventory();
-        PlayerCharacter active = inventory.getActive();
-        if (active == null) return;
+    public void render(RenderSnapshot.HUDSnapshot hud) {
+        if (hud == null || hud.characters.isEmpty()) return;
 
-        drawSlotFrames(inventory);
-        drawContent(inventory, active, nearbyItemAvailable);
+        drawSlotFrames(hud.selectedSlot);
+        drawContent(hud);
     }
 
     // -------------------------------------------------------------------------
     //  Súkromné – rámčeky slotov
     // -------------------------------------------------------------------------
 
-    private void drawSlotFrames(Inventory inventory) {
+    private void drawSlotFrames(int selectedSlot) {
         shapeRenderer.setProjectionMatrix(hudCamera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        int selectedSlot = inventory.getSelectedSlot();
         for (int i = 0; i < SLOT_COUNT; i++) {
             float x = START_X + i * (SLOT_SIZE + SLOT_PAD);
             shapeRenderer.setColor(i == selectedSlot ? Color.YELLOW : Color.WHITE);
             shapeRenderer.rect(x, SLOT_Y, SLOT_SIZE, SLOT_SIZE);
         }
+
         shapeRenderer.end();
     }
 
@@ -82,17 +75,16 @@ public class HUDRenderer {
     //  Súkromné – ikony, texty
     // -------------------------------------------------------------------------
 
-    private void drawContent(Inventory inventory, PlayerCharacter active,
-                             boolean nearbyItemAvailable) {
+    private void drawContent(RenderSnapshot.HUDSnapshot hud) {
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
 
-        drawItemIcons(inventory.getItems());
+        drawItemIcons(hud.itemSlots);
         drawSlotNumbers();
-        drawCharacterList(inventory, active);
-        drawSlotInfo(inventory);
+        drawCharacterList(hud.characters);
+        drawSlotInfo(hud.usedSlots, hud.totalSlots);
 
-        if (nearbyItemAvailable) {
+        if (hud.nearbyItemAvailable) {
             font.setColor(Color.CYAN);
             font.draw(batch, "[E] PICK-UP ITEM", 300, 60);
         }
@@ -100,13 +92,13 @@ public class HUDRenderer {
         batch.end();
     }
 
-    private void drawItemIcons(List<Item> items) {
-        for (int i = 0; i < items.size() && i < SLOT_COUNT; i++) {
-            float x = START_X + i * (SLOT_SIZE + SLOT_PAD);
-            String iconPath = items.get(i).getIconPath();
+    private void drawItemIcons(List<RenderSnapshot.HUDSnapshot.ItemSlotData> slots) {
+        for (int i = 0; i < slots.size() && i < SLOT_COUNT; i++) {
+            String iconPath = slots.get(i).iconPath;
             if (iconPath == null || iconPath.isEmpty()) continue;
 
-            Texture tex = iconCache.computeIfAbsent(iconPath, Texture::new); // opravené
+            float x = START_X + i * (SLOT_SIZE + SLOT_PAD);
+            Texture tex = iconCache.computeIfAbsent(iconPath, Texture::new);
             batch.draw(tex, x + 4, SLOT_Y + 4, SLOT_SIZE - 8, SLOT_SIZE - 8);
         }
     }
@@ -119,27 +111,33 @@ public class HUDRenderer {
         }
     }
 
-    private void drawCharacterList(Inventory inventory, PlayerCharacter active) {
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Active: " + active.getName(), 10, 470);
+    private void drawCharacterList(
+        List<RenderSnapshot.HUDSnapshot.CharacterHUDData> characters) {
+
+        // Nájdeme aktívnu postavu pre riadok "Active: ..."
+        for (RenderSnapshot.HUDSnapshot.CharacterHUDData c : characters) {
+            if (c.isActive) {
+                font.setColor(Color.WHITE);
+                font.draw(batch, "Active: " + c.name, 10, 470);
+                break;
+            }
+        }
 
         int y = 420;
-        for (int i = 0; i < inventory.getCharacters().size(); i++) {
-            PlayerCharacter c = inventory.getCharacters().get(i);
-            String hpText = (i + 1) + ". " + c.getName()
-                + "  HP: "  + c.getHp()    + "/" + c.getMaxHp()
-                + "  ARM: " + c.getArmor() + "/" + c.getMaxArmor();
-            font.setColor(c == active ? Color.GREEN : Color.WHITE);
+        for (int i = 0; i < characters.size(); i++) {
+            RenderSnapshot.HUDSnapshot.CharacterHUDData c = characters.get(i);
+            String hpText = (i + 1) + ". " + c.name
+                + "  HP: "  + c.hp    + "/" + c.maxHp
+                + "  ARM: " + c.armor + "/" + c.maxArmor;
+            font.setColor(c.isActive ? Color.GREEN : Color.WHITE);
             font.draw(batch, hpText, 10, y);
             y -= 20;
         }
     }
 
-    private void drawSlotInfo(Inventory inventory) {
+    private void drawSlotInfo(int usedSlots, int totalSlots) {
         font.setColor(Color.YELLOW);
-        font.draw(batch,
-            "Sloty: " + inventory.getUsedSlots() + "/" + inventory.getTotalSlots(),
-            10, 300);
+        font.draw(batch, "Sloty: " + usedSlots + "/" + totalSlots, 10, 300);
     }
 
     public void dispose() {

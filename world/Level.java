@@ -103,8 +103,7 @@ public class Level implements Updatable {
             ? mapManager.getHitboxes()
             : Collections.emptyList();
 
-        PlayerCharacter player = getActivePlayer();
-        UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, player, null);
+        UpdateContext ctx = new UpdateContext(deltaTime, platforms, this, upx.player, upx.inventory);
 
         returnInactiveProjectilesToPool();
         projectiles.removeIf(p -> !p.isActive());

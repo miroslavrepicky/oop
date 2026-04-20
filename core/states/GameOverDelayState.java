@@ -8,6 +8,7 @@ import sk.stuba.fiit.render.RenderSnapshot;
 import sk.stuba.fiit.render.SnapshotBuilder;
 import sk.stuba.fiit.world.Level;
 
+
 /**
  * Transitional state shown briefly after the party is defeated.
  *
@@ -37,17 +38,15 @@ public class GameOverDelayState implements IGameState {
 
     @Override
     public void update(float deltaTime) {
-        UpdateContext ctx = new UpdateContext(deltaTime);
+        PlayerCharacter player = gameManager.getInventory().getActive();
         Level level = gameManager.getCurrentLevel();
         if (level != null) {
+            UpdateContext ctx = new UpdateContext(deltaTime, null, level, player, gameManager.getInventory());
             level.update(ctx);
+            if (player != null) {
+                player.updateAnimation(ctx);
+            }
         }
-
-        PlayerCharacter player = gameManager.getInventory().getActive();
-        if (player != null) {
-            player.updateAnimation(ctx);
-        }
-
         timer -= deltaTime;
         if (timer <= 0f) {
             nextState = new GameOverState();
@@ -62,7 +61,7 @@ public class GameOverDelayState implements IGameState {
         PlayerCharacter player = gameManager.getInventory().getActive();
 
         RenderSnapshot snapshot = SnapshotBuilder.build(
-            player, level, gameRenderer.isDebugHitboxes(), false);
+            player, level, null, gameRenderer.isDebugHitboxes(), false);
 
         gameRenderer.render(snapshot, deltaTime);
     }

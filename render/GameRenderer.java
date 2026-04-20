@@ -75,7 +75,7 @@ public class GameRenderer {
             renderHitboxes(snapshot);
         }
 
-        hudRenderer.render(snapshot.nearbyItemAvailable);
+        hudRenderer.render(snapshot.hud);
     }
 
     // -------------------------------------------------------------------------

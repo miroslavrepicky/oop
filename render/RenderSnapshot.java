@@ -39,6 +39,8 @@ public final class RenderSnapshot {
     /** true = v blízkosti je item → HUD "[E] PICK-UP". */
     public final boolean nearbyItemAvailable;
 
+    public final HUDSnapshot            hud;
+
     public RenderSnapshot(
         EntityRenderData       player,
         List<EntityRenderData> enemies,
@@ -47,7 +49,8 @@ public final class RenderSnapshot {
         List<EntityRenderData> projectiles,
         MapRenderData          map,
         boolean                debugHitboxes,
-        boolean                nearbyItemAvailable) {
+        boolean                nearbyItemAvailable,
+        HUDSnapshot            hud) {
         this.player              = player;
         this.enemies             = enemies;
         this.ducks               = ducks;
@@ -56,7 +59,69 @@ public final class RenderSnapshot {
         this.map                 = map;
         this.debugHitboxes       = debugHitboxes;
         this.nearbyItemAvailable = nearbyItemAvailable;
+        this.hud                 = hud;
     }
+
+    // -------------------------------------------------------------------------
+    //  DTO pre HUD
+    // -------------------------------------------------------------------------
+
+    public static final class HUDSnapshot {
+        public final List<CharacterHUDData> characters;
+        public final int                    selectedSlot;
+        public final List<ItemSlotData>     itemSlots;
+        public final int                    usedSlots;
+        public final int                    totalSlots;
+        public final boolean                nearbyItemAvailable;
+
+        public HUDSnapshot(List<CharacterHUDData> characters,
+                           int                    selectedSlot,
+                           List<ItemSlotData>     itemSlots,
+                           int                    usedSlots,
+                           int                    totalSlots,
+                           boolean                nearbyItemAvailable) {
+            this.characters          = characters;
+            this.selectedSlot        = selectedSlot;
+            this.itemSlots           = itemSlots;
+            this.usedSlots           = usedSlots;
+            this.totalSlots          = totalSlots;
+            this.nearbyItemAvailable = nearbyItemAvailable;
+        }
+
+        public static final class CharacterHUDData {
+            public final String  name;
+            public final int     hp;
+            public final int     maxHp;
+            public final int     armor;
+            public final int     maxArmor;
+            public final boolean isActive;
+
+            public CharacterHUDData(String  name,
+                                    int     hp,
+                                    int     maxHp,
+                                    int     armor,
+                                    int     maxArmor,
+                                    boolean isActive) {
+                this.name     = name;
+                this.hp       = hp;
+                this.maxHp    = maxHp;
+                this.armor    = armor;
+                this.maxArmor = maxArmor;
+                this.isActive = isActive;
+            }
+        }
+
+        public static final class ItemSlotData {
+            public final String iconPath;
+            public final int    slotsRequired;
+
+            public ItemSlotData(String iconPath, int slotsRequired) {
+                this.iconPath      = iconPath;
+                this.slotsRequired = slotsRequired;
+            }
+        }
+    }
+
 
     // -------------------------------------------------------------------------
     //  Vnorené DTO pre itemy (ikonka + pozícia)

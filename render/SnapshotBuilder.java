@@ -4,6 +4,7 @@ import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.world.Level;
@@ -42,6 +43,7 @@ public class SnapshotBuilder {
      */
     public static RenderSnapshot build(PlayerCharacter player,
                                        Level level,
+                                       Inventory inventory,
                                        boolean debugHitboxes,
                                        boolean nearbyItem) {
         EntityRenderData playerData = player != null ? buildPlayer(player) : null;
@@ -75,9 +77,54 @@ public class SnapshotBuilder {
             }
         }
 
+        RenderSnapshot.HUDSnapshot hud = buildHUD(inventory, nearbyItem);
+
         return new RenderSnapshot(
             playerData, enemies, ducks, items, projectiles,
-            mapData, debugHitboxes, nearbyItem
+            mapData, debugHitboxes, nearbyItem, hud
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    //  HUD snapshot
+    // -------------------------------------------------------------------------
+
+    private static RenderSnapshot.HUDSnapshot buildHUD(Inventory inventory,
+                                                       boolean   nearbyItem) {
+        if (inventory == null) {
+            return new RenderSnapshot.HUDSnapshot(
+                new ArrayList<>(), 0, new ArrayList<>(), 0, 0, nearbyItem);
+        }
+
+        PlayerCharacter active = inventory.getActive();
+
+        List<RenderSnapshot.HUDSnapshot.CharacterHUDData> chars = new ArrayList<>();
+        for (PlayerCharacter c : inventory.getCharacters()) {
+            chars.add(new RenderSnapshot.HUDSnapshot.CharacterHUDData(
+                c.getName(),
+                c.getHp(),
+                c.getMaxHp(),
+                c.getArmor(),
+                c.getMaxArmor(),
+                c == active
+            ));
+        }
+
+        List<RenderSnapshot.HUDSnapshot.ItemSlotData> slots = new ArrayList<>();
+        for (Item item : inventory.getItems()) {
+            slots.add(new RenderSnapshot.HUDSnapshot.ItemSlotData(
+                item.getIconPath(),
+                item.getSlotsRequired()
+            ));
+        }
+
+        return new RenderSnapshot.HUDSnapshot(
+            chars,
+            inventory.getSelectedSlot(),
+            slots,
+            inventory.getUsedSlots(),
+            inventory.getTotalSlots(),
+            nearbyItem
         );
     }
 

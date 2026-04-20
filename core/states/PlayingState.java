@@ -2,8 +2,10 @@ package sk.stuba.fiit.core.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.engine.UpdateContext;
+import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.render.GameRenderer;
@@ -55,13 +57,17 @@ public class PlayingState implements IGameState {
         playerController.update(deltaTime);
 
         Level level = gameManager.getCurrentLevel();
+        PlayerCharacter player = gameManager.getInventory().getActive();
         if (level != null) {
-            level.update(new UpdateContext(deltaTime));
+            UpdateContext ctx = new UpdateContext(
+                deltaTime, null, level, player,
+                gameManager.getInventory());
+
+            level.update(ctx);
         }
-        collisionManager.update(level);
+        collisionManager.update(level, player);
 
         if (gameManager.getInventory().isPartyDefeated()) {
-            PlayerCharacter player = gameManager.getInventory().getActive();
             float deathDuration = GameOverDelayState.DELAY;
             if (player != null && player.getAnimationManager() != null
                 && player.getAnimationManager().hasAnimation("death")) {
@@ -81,15 +87,14 @@ public class PlayingState implements IGameState {
 
     @Override
     public void render(float deltaTime) {
-        Level level = gameManager.getCurrentLevel();
-        if (level == null) return;
-
-        PlayerCharacter player    = gameManager.getInventory().getActive();
-        boolean         nearbyItem = collisionManager.getNearbyItem() != null;
+        Level           level   = gameManager.getCurrentLevel();
+        Inventory inv     = gameManager.getInventory();
+        PlayerCharacter player  = inv.getActive();
+        boolean         nearby  = collisionManager.getNearbyItem() != null;
 
         // Controller zostaví DTO – GameRenderer model nevidí
         RenderSnapshot snapshot = SnapshotBuilder.build(
-            player, level, gameRenderer.isDebugHitboxes(), nearbyItem);
+            player, level, inv, gameRenderer.isDebugHitboxes(), nearby);
 
         gameRenderer.render(snapshot, deltaTime);
     }
