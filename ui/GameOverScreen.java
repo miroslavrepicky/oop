@@ -9,36 +9,42 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import sk.stuba.fiit.core.GameManager;
-import sk.stuba.fiit.core.ShadowQuest;
-
+import sk.stuba.fiit.core.AppController;
 
 /**
  * Screen displayed after the player's party is fully defeated.
  *
- * <p>Shows the number of the failed level and provides two actions:
+ * <h2>MVC placement</h2>
+ * <p>This class is a <b>View + input handler</b>. It renders the failure
+ * message and button layout, but performs no game-state mutations itself.
+ * All logic is delegated to the {@link AppController}.
+ *
+ * <h2>Actions</h2>
  * <ul>
- *   <li><b>Retry</b> – revives all party members via {@link GameManager#reviveParty()}
- *       and returns to {@link InventoryScreen} for the same level.</li>
- *   <li><b>Main Menu</b> – resets all game state and navigates to {@link MainMenuScreen}.</li>
+ *   <li><b>Retry</b> – calls {@link AppController#retryLevel(int)}, which
+ *       revives all party members and navigates to the inventory screen for
+ *       the same level.</li>
+ *   <li><b>Main Menu</b> – calls {@link AppController#goToMainMenu()}, which
+ *       resets all game state and navigates to the main menu.</li>
  * </ul>
  *
  * <p>Uses a fixed virtual resolution of {@value #W}×{@value #H} pixels mapped
- * through an {@link OrthographicCamera} so button hit-testing is resolution-independent.
+ * through an {@link OrthographicCamera} so button hit-testing is
+ * resolution-independent.
  */
 public class GameOverScreen implements Screen {
 
     private static final float W = 800f;
     private static final float H = 480f;
 
-    private final ShadowQuest game;
+    private final AppController      app;
 
     /** The 1-based level number in which the party was defeated. */
-    private final int failedLevel;
+    private final int                failedLevel;
     private final OrthographicCamera cam;
-    private final SpriteBatch batch;
-    private final ShapeRenderer shape;
-    private final BitmapFont font;
+    private final SpriteBatch        batch;
+    private final ShapeRenderer      shape;
+    private final BitmapFont         font;
 
     /** Hit-area for the "Try Again" button. */
     private final Rectangle btnRetry;
@@ -46,9 +52,13 @@ public class GameOverScreen implements Screen {
     /** Hit-area for the "Main Menu" button. */
     private final Rectangle btnMenu;
 
-    public GameOverScreen(ShadowQuest game, int failedLevel) {
-        this.game         = game;
-        this.failedLevel  = failedLevel;
+    /**
+     * @param app         the application controller used for navigation; must not be {@code null}
+     * @param failedLevel the 1-based level number that was just failed
+     */
+    public GameOverScreen(AppController app, int failedLevel) {
+        this.app         = app;
+        this.failedLevel = failedLevel;
 
         cam = new OrthographicCamera();
         cam.setToOrtho(false, W, H);
@@ -67,8 +77,8 @@ public class GameOverScreen implements Screen {
         Gdx.gl.glClearColor(0.1f, 0.05f, 0.05f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        float mx = Gdx.input.getX() * (W / Gdx.graphics.getWidth());
-        float my = H - Gdx.input.getY() * (H / Gdx.graphics.getHeight());
+        float   mx    = Gdx.input.getX() * (W / Gdx.graphics.getWidth());
+        float   my    = H - Gdx.input.getY() * (H / Gdx.graphics.getHeight());
         boolean click = Gdx.input.justTouched();
 
         if (click) handleClick(mx, my);
@@ -80,6 +90,10 @@ public class GameOverScreen implements Screen {
         drawText(mx, my);
     }
 
+    // -------------------------------------------------------------------------
+    //  Drawing
+    // -------------------------------------------------------------------------
+
     /**
      * Draws background rectangles for both buttons with hover highlighting.
      *
@@ -88,8 +102,8 @@ public class GameOverScreen implements Screen {
      */
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
-        drawButtonShape(btnRetry, mx, my, false);
-        drawButtonShape(btnMenu,  mx, my, false);
+        drawButtonShape(btnRetry, mx, my);
+        drawButtonShape(btnMenu,  mx, my);
         shape.end();
 
         shape.begin(ShapeRenderer.ShapeType.Line);
@@ -100,14 +114,14 @@ public class GameOverScreen implements Screen {
     }
 
     /**
-     * Fills a single button background, applying a green hover tint when the cursor is over it.
+     * Fills a single button background, applying a green hover tint when the
+     * cursor is over it.
      *
-     * @param btn     the button rectangle
-     * @param mx      virtual mouse X
-     * @param my      virtual mouse Y
-     * @param danger  reserved for future use (e.g. destructive action styling)
+     * @param btn the button rectangle
+     * @param mx  virtual mouse X
+     * @param my  virtual mouse Y
      */
-    private void drawButtonShape(Rectangle btn, float mx, float my, boolean danger) {
+    private void drawButtonShape(Rectangle btn, float mx, float my) {
         boolean hover = btn.contains(mx, my);
         shape.setColor(
             hover ? 0.25f : 0.15f,
@@ -118,7 +132,8 @@ public class GameOverScreen implements Screen {
     }
 
     /**
-     * Draws all text elements: the "YOU FAILED" heading, the level hint, and button labels.
+     * Draws all text elements: the "YOU FAILED" heading, the level hint, and
+     * button labels.
      *
      * @param mx virtual mouse X coordinate
      * @param my virtual mouse Y coordinate
@@ -132,14 +147,15 @@ public class GameOverScreen implements Screen {
         font.setColor(Color.LIGHT_GRAY);
         font.draw(batch, "Level " + failedLevel + " - skus to znova.", W / 2 - 145, 310f);
 
-        drawButtonLabel(btnRetry, "Skus znova", mx, my);
+        drawButtonLabel(btnRetry, "Skus znova",  mx, my);
         drawButtonLabel(btnMenu,  "Hlavne menu", mx, my);
 
         batch.end();
     }
 
     /**
-     * Draws a button label, brightening it when the cursor is hovering over the button.
+     * Draws a button label, brightening it when the cursor is hovering over
+     * the button.
      *
      * @param btn   the button rectangle
      * @param label text to display
@@ -147,31 +163,35 @@ public class GameOverScreen implements Screen {
      * @param my    virtual mouse Y
      */
     private void drawButtonLabel(Rectangle btn, String label, float mx, float my) {
-        boolean hover = btn.contains(mx, my);
-        font.setColor(hover ? Color.WHITE : Color.LIGHT_GRAY);
+        font.setColor(btn.contains(mx, my) ? Color.WHITE : Color.LIGHT_GRAY);
         font.draw(batch, label, btn.x + 10, btn.y + btn.height - 10);
     }
 
+    // -------------------------------------------------------------------------
+    //  Input handling – no business logic, only AppController calls
+    // -------------------------------------------------------------------------
+
     /**
-     * Handles a mouse click on either button.
+     * Routes button clicks to the appropriate {@link AppController} method.
      *
-     * <p>Retry: revives all party members and loads the inventory screen for the failed level.
-     * Main Menu: resets all game state and navigates to the main menu.
+     * <p>No game state is mutated here – reviving the party and resetting the
+     * game are handled inside {@link sk.stuba.fiit.core.ShadowQuest}.
      *
      * @param mx virtual mouse X coordinate
      * @param my virtual mouse Y coordinate
      */
     private void handleClick(float mx, float my) {
         if (btnRetry.contains(mx, my)) {
-            // revive postav - game over ich zabil
-            GameManager.getInstance().reviveParty();
-            game.setScreen(new InventoryScreen(game, failedLevel));
+            app.retryLevel(failedLevel);
         }
         if (btnMenu.contains(mx, my)) {
-            GameManager.getInstance().resetGame();
-            game.setScreen(new MainMenuScreen(game));
+            app.goToMainMenu();
         }
     }
+
+    // -------------------------------------------------------------------------
+    //  Screen lifecycle
+    // -------------------------------------------------------------------------
 
     @Override public void resize(int w, int h) { cam.setToOrtho(false, W, H); }
     @Override public void show()    {}

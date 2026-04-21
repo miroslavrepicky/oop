@@ -12,8 +12,8 @@ import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.characters.Archer;
 import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.characters.Wizzard;
+import sk.stuba.fiit.core.AppController;
 import sk.stuba.fiit.core.GameManager;
-import sk.stuba.fiit.core.ShadowQuest;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.HealingPotion;
@@ -23,79 +23,140 @@ import sk.stuba.fiit.util.Vector2D;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
+/**
+ * Pre-level inventory management screen.
+ *
+ * <h2>MVC placement</h2>
+ * <p>This class is a <b>View + input handler</b>. It reads the shared
+ * {@link Inventory} from {@link GameManager} to display available characters
+ * and items, and lets the player add or remove them before starting a level.
+ *
+ * <p>Reading the inventory for display purposes is acceptable View behaviour.
+ * The only write operations performed here are on the {@link Inventory} object
+ * itself (add/remove character, add/remove item), which is part of the model –
+ * these are inventory <em>management</em> actions, not game-flow actions, so
+ * they belong here rather than in {@link AppController}.
+ *
+ * <p>Navigation and level-start business logic are fully delegated to the
+ * {@link AppController}. The screen never calls
+ * {@link GameManager#startLevel(int)}.
+ *
+ * <h2>Save action</h2>
+ * <p>Saving is triggered directly via {@link SaveManager} because it is a
+ * pure persistence operation with no navigation side-effect.
+ */
 public class InventoryScreen implements Screen {
 
-    // rozlisenie "virtualneho" platna - musi sediet s OrthographicCamera
-    private static final float W   = 800f;
-    private static final float H   = 480f;
-    private static final float PAD = 20f;
+    // ── Layout constants ──────────────────────────────────────────────────────
 
-    // vyska jedneho riadku a rozmer tlacidiel
-    private static final float ROW_H  = 40f;
-    private static final float BTN_W  = 90f;
-    private static final float BTN_H  = 28f;
-    private static final float MID    = W / 2f; // 400 - stred obrazovky
+    private static final float W     = 800f;
+    private static final float H     = 480f;
+    private static final float PAD   = 20f;
+    private static final float ROW_H = 40f;
+    private static final float BTN_W = 90f;
+    private static final float BTN_H = 28f;
 
-    private final ShadowQuest game;
-    private final int levelToStart;
+    /** Horizontal centre of the virtual canvas. */
+    private static final float MID = W / 2f;
+
+    // ── Dependencies ──────────────────────────────────────────────────────────
+
+    private final AppController app;
+    private final int           levelToStart;
+
+    // ── LibGDX rendering objects ──────────────────────────────────────────────
 
     private final OrthographicCamera cam;
     private final SpriteBatch        batch;
     private final ShapeRenderer      shape;
     private final BitmapFont         font;
 
+    // ── Fixed buttons ─────────────────────────────────────────────────────────
+
     private final Rectangle btnStart;
     private final Rectangle btnSave;
 
+    // ── Data ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Characters that exist in the game's character pool but are not yet in
+     * the inventory. Rebuilds whenever the player adds or removes a character.
+     */
     private final List<PlayerCharacter> availableChars = new ArrayList<>();
+
+    /**
+     * Item templates that can be added to the inventory.
+     * Each offer carries a factory lambda so every "add" creates a fresh instance.
+     */
     private final List<ItemOffer> offers = new ArrayList<>();
 
-    // tlacidla - vzdy sa prepocitaju cez rebuildButtons()
+    // ── Dynamic button hit-boxes (rebuilt after every inventory change) ────────
+
     private final List<Rectangle> addCharBtns = new ArrayList<>();
     private final List<Rectangle> remCharBtns = new ArrayList<>();
     private final List<Rectangle> addItemBtns = new ArrayList<>();
     private final List<Rectangle> remItemBtns = new ArrayList<>();
 
+    /** One-line status message shown at the bottom of the screen. */
     private String feedback = "";
 
-    private static class ItemOffer {
-        final String label;
-        final int    slotCost;
-        final java.util.function.Supplier<Item> factory; // vyraba novu instanciu
-        int count; // kolkokrat ho hrac "objednal" (len pre info, nie limit)
+    // ── Inner helper ──────────────────────────────────────────────────────────
 
-        ItemOffer(String label, int slotCost, java.util.function.Supplier<Item> factory) {
+    /**
+     * Descriptor for a single item type available for purchase in this screen.
+     */
+    private static class ItemOffer {
+        final String           label;
+        final int              slotCost;
+        final Supplier<Item>   factory;
+
+        ItemOffer(String label, int slotCost, Supplier<Item> factory) {
             this.label    = label;
             this.slotCost = slotCost;
             this.factory  = factory;
         }
     }
 
-    public InventoryScreen(ShadowQuest game, int levelToStart) {
-        this.game         = game;
+    // ── Constructor ───────────────────────────────────────────────────────────
+
+    /**
+     * @param app          the application controller used for navigation;
+     *                     must not be {@code null}
+     * @param levelToStart the 1-based level that will be started when the
+     *                     player presses "Start"
+     */
+    public InventoryScreen(AppController app, int levelToStart) {
+        this.app          = app;
         this.levelToStart = levelToStart;
 
         cam = new OrthographicCamera();
-        cam.setToOrtho(false, W, H);   // (0,0) = lavy dolny roh
+        cam.setToOrtho(false, W, H);
 
         batch = new SpriteBatch();
         shape = new ShapeRenderer();
         font  = new BitmapFont();
         font.getData().setScale(1.1f);
 
-        // Start tlacidlo - vpravo dole
-        btnStart = new Rectangle(W - PAD - 180, PAD, 180, 36);
-        btnSave  = new Rectangle(W - PAD - 180, PAD + 46,     180, 36);
+        btnStart = new Rectangle(W - PAD - 180, PAD,      180, 36);
+        btnSave  = new Rectangle(W - PAD - 180, PAD + 46, 180, 36);
 
         offers.add(new ItemOffer("HealingPotion", 2,
             () -> new HealingPotion(50, new Vector2D(0, 0))));
         offers.add(new ItemOffer("Armour", 1,
             () -> new Armour(30, new Vector2D(0, 0))));
+
         buildAvailable();
         rebuildButtons();
     }
 
+    // ── Data helpers ──────────────────────────────────────────────────────────
+
+    /**
+     * Populates {@link #availableChars} with characters that are in the global
+     * character pool but not yet in the current inventory.
+     */
     private void buildAvailable() {
         Inventory inv = GameManager.getInstance().getInventory();
         availableChars.clear();
@@ -112,25 +173,25 @@ public class InventoryScreen implements Screen {
         }
     }
 
-
-    // -------------------------------------------------------------------------
-    //  Prepocitaj hitboxy tlacidiel podla aktualneho stavu inventara
-    //  POZOR: y rastie NAHOR - prvy riadok je hore (vysoke y), kazdy dalsi nizsie
-    // -------------------------------------------------------------------------
+    /**
+     * Recomputes all dynamic button hit-boxes based on the current inventory
+     * and available character/item lists. Must be called after every inventory
+     * change.
+     *
+     * <p>Coordinate note: {@code y} increases upward in LibGDX; the first row
+     * starts at a high {@code y} value and each subsequent row decreases it.
+     */
     private void rebuildButtons() {
         addCharBtns.clear();
         remCharBtns.clear();
         addItemBtns.clear();
         remItemBtns.clear();
 
-        // --- lavy panel: dostupne postavy, zacinaju na y=390 ---
         float y = 390f;
         for (int i = 0; i < availableChars.size(); i++, y -= ROW_H) {
-            // tlacidlo je napravo od textu postavy
             addCharBtns.add(new Rectangle(PAD + 220, y - BTN_H + 4, BTN_W, BTN_H));
         }
 
-        // --- lavy panel: dostupne itemy, zacinaju na y=230 ---
         y = 230f;
         for (int i = 0; i < offers.size(); i++, y -= ROW_H) {
             addItemBtns.add(new Rectangle(PAD + 220, y - BTN_H + 4, BTN_W, BTN_H));
@@ -138,35 +199,41 @@ public class InventoryScreen implements Screen {
 
         Inventory inv = GameManager.getInstance().getInventory();
 
-        // ---pravy panel: postavy v inventari---
         y = 390f;
         for (int i = 0; i < inv.getCharacters().size(); i++, y -= ROW_H) {
             remCharBtns.add(new Rectangle(MID + 320, y - BTN_H + 4, BTN_W, BTN_H));
         }
 
-        // --- pravy panel: itemy v inventari ---
         y = 230f;
+        java.util.LinkedHashMap<Class<?>, List<Item>> grouped = groupItems(inv);
+        for (int i = 0; i < grouped.size(); i++, y -= ROW_H) {
+            remItemBtns.add(new Rectangle(MID + 320, y - BTN_H + 4, BTN_W, BTN_H));
+        }
+    }
+
+    /**
+     * Groups the inventory items by class, preserving insertion order.
+     *
+     * @param inv the inventory to group
+     * @return a {@link java.util.LinkedHashMap} from item class to matching instances
+     */
+    private java.util.LinkedHashMap<Class<?>, List<Item>> groupItems(Inventory inv) {
         java.util.LinkedHashMap<Class<?>, List<Item>> grouped = new java.util.LinkedHashMap<>();
         for (Item item : inv.getItems()) {
             grouped.computeIfAbsent(item.getClass(), k -> new ArrayList<>()).add(item);
         }
-        for (java.util.Map.Entry<Class<?>, List<Item>> entry : grouped.entrySet()) {
-            remItemBtns.add(new Rectangle(MID + 320, y - BTN_H + 4, BTN_W, BTN_H));
-            y -= ROW_H;
-        }
+        return grouped;
     }
 
-    // -------------------------------------------------------------------------
-    //  render
-    // -------------------------------------------------------------------------
+    // ── LibGDX Screen ─────────────────────────────────────────────────────────
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.08f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // mys - prevedieme do virtualnych suradnic (y otocime)
-        float mx = Gdx.input.getX() * (W / Gdx.graphics.getWidth());
-        float my = H - Gdx.input.getY() * (H / Gdx.graphics.getHeight());
+        float   mx    = Gdx.input.getX() * (W / Gdx.graphics.getWidth());
+        float   my    = H - Gdx.input.getY() * (H / Gdx.graphics.getHeight());
         boolean click = Gdx.input.justTouched();
 
         if (click) handleClick(mx, my);
@@ -178,35 +245,26 @@ public class InventoryScreen implements Screen {
         drawText(mx, my);
     }
 
-    // -------------------------------------------------------------------------
-    //  Kreslenie ShapeRenderer - pozadia tlacidiel a deliace ciary
-    // -------------------------------------------------------------------------
+    // ── Drawing ───────────────────────────────────────────────────────────────
+
+    /**
+     * Draws all button backgrounds and the two panel dividers using
+     * {@link ShapeRenderer}.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
-        // deliaca ciara v strede
         shape.setColor(0.2f, 0.2f, 0.2f, 1f);
         shape.rect(MID - 1, 0, 2, H);
-
-        // deliaca ciara medzi postavami a itemami (oba panely)
-        shape.rect(PAD, 255f, MID - PAD * 2, 1f);
+        shape.rect(PAD,       255f, MID - PAD * 2, 1f);
         shape.rect(MID + PAD, 255f, MID - PAD * 2, 1f);
 
-        // nakresli vsetky tlacidla, ako filled rect + outline
-        drawAllButtons(mx, my);
-
+        drawAllButtonShapes(mx, my);
         shape.end();
-    }
 
-    private void drawAllButtons(float mx, float my) {
-        for (Rectangle btn : addCharBtns) drawButtonShape(btn, mx, my, false);
-        for (Rectangle btn : addItemBtns) drawButtonShape(btn, mx, my, false);
-        for (Rectangle btn : remCharBtns) drawButtonShape(btn, mx, my, true);
-        for (Rectangle btn : remItemBtns) drawButtonShape(btn, mx, my, true);
-        drawButtonShape(btnStart, mx, my, false);
-        drawButtonShape(btnSave,  mx, my, false);
-
-        shape.end();
         shape.begin(ShapeRenderer.ShapeType.Line);
         shape.setColor(Color.DARK_GRAY);
         for (Rectangle btn : addCharBtns) shape.rect(btn.x, btn.y, btn.width, btn.height);
@@ -215,13 +273,28 @@ public class InventoryScreen implements Screen {
         for (Rectangle btn : remItemBtns) shape.rect(btn.x, btn.y, btn.width, btn.height);
         shape.setColor(Color.GOLD);
         shape.rect(btnStart.x, btnStart.y, btnStart.width, btnStart.height);
-        shape.setColor(new Color(0.4f, 0.8f, 1f, 1f)); // cyan pre Save
-        shape.rect(btnSave.x, btnSave.y, btnSave.width, btnSave.height);
+        shape.setColor(new Color(0.4f, 0.8f, 1f, 1f));
+        shape.rect(btnSave.x,  btnSave.y,  btnSave.width,  btnSave.height);
         shape.end();
-        shape.begin(ShapeRenderer.ShapeType.Filled);
     }
 
-    /** Vyplni pozadie tlacidla-hover efekt. */
+    private void drawAllButtonShapes(float mx, float my) {
+        for (Rectangle btn : addCharBtns) drawButtonShape(btn, mx, my, false);
+        for (Rectangle btn : addItemBtns) drawButtonShape(btn, mx, my, false);
+        for (Rectangle btn : remCharBtns) drawButtonShape(btn, mx, my, true);
+        for (Rectangle btn : remItemBtns) drawButtonShape(btn, mx, my, true);
+        drawButtonShape(btnStart, mx, my, false);
+        drawButtonShape(btnSave,  mx, my, false);
+    }
+
+    /**
+     * Fills a single button with a hover-sensitive background colour.
+     *
+     * @param btn      the button rectangle
+     * @param mx       virtual mouse X
+     * @param my       virtual mouse Y
+     * @param isDanger {@code true} for destructive (remove) actions; renders red
+     */
     private void drawButtonShape(Rectangle btn, float mx, float my, boolean isDanger) {
         boolean hover = btn.contains(mx, my);
         if (isDanger) {
@@ -232,57 +305,83 @@ public class InventoryScreen implements Screen {
         shape.rect(btn.x, btn.y, btn.width, btn.height);
     }
 
-    // -------------------------------------------------------------------------
-    //  Kreslenie textu cez SpriteBatch
-    //  PRAVIDLO: font.draw(batch, text, x, y) - y je BASELINE (kresli od y nadol)
-    //            teda y = btn.y + btn.height - 6 umiestnuje text vnutri tlacidla
-    // -------------------------------------------------------------------------
+    /**
+     * Draws all text elements: headers, character/item rows, slot counter,
+     * feedback message, and button labels.
+     *
+     * <p>LibGDX {@code BitmapFont.draw()} places the baseline at the given
+     * {@code y}; text renders downward from there.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawText(float mx, float my) {
         Inventory inv = GameManager.getInstance().getInventory();
-
         batch.begin();
 
-        // --- Hlavicky ---
         font.setColor(Color.WHITE);
         font.draw(batch, "INVENTAR  -  Level " + levelToStart, PAD, H - PAD);
 
         font.setColor(new Color(0.4f, 0.8f, 1f, 1f));
-        font.draw(batch, "Dostupne postavy",     PAD,       430f);
-        font.draw(batch, "Dostupne itemy",        PAD,       265f);
-        font.draw(batch, "Inventar - postavy",   MID + PAD, 430f);
-        font.draw(batch, "Inventar - itemy",      MID + PAD, 265f);
+        font.draw(batch, "Dostupne postavy",   PAD,       430f);
+        font.draw(batch, "Dostupne itemy",      PAD,       265f);
+        font.draw(batch, "Inventar - postavy", MID + PAD, 430f);
+        font.draw(batch, "Inventar - itemy",    MID + PAD, 265f);
 
-        // --- Dostupne postavy (lavy panel, y=390 nadol) ---
+        drawAvailableChars();
+        drawAvailableItems();
+        drawInventoryChars(inv);
+        drawInventoryItems(inv);
+
+        font.setColor(Color.YELLOW);
+        font.draw(batch,
+            "Sloty: " + inv.getUsedSlots() + "/" + inv.getTotalSlots()
+                + "   volne: " + inv.getFreeSlots(),
+            PAD, 80f);
+
+        font.setColor(new Color(1f, 0.6f, 0.1f, 1f));
+        font.draw(batch, feedback, PAD, 55f);
+
+        font.setColor(Color.GOLD);
+        font.draw(batch, "Start  Level " + levelToStart,
+            btnStart.x + 10, btnStart.y + btnStart.height - 6);
+
+        boolean saveHover = btnSave.contains(mx, my);
+        font.setColor(saveHover ? Color.WHITE : new Color(0.4f, 0.8f, 1f, 1f));
+        font.draw(batch, "Ulozit hru", btnSave.x + 10, btnSave.y + btnSave.height - 6);
+
+        batch.end();
+    }
+
+    private void drawAvailableChars() {
         float y = 390f;
         for (int i = 0; i < availableChars.size(); i++, y -= ROW_H) {
-            PlayerCharacter c = availableChars.get(i);
             font.setColor(Color.WHITE);
-            font.draw(batch, c.getName() + "  (3 sloty)", PAD, y);
-            // text tlacidla-vycentrovany vertikalne v btn
+            font.draw(batch, availableChars.get(i).getName() + "  (3 sloty)", PAD, y);
             Rectangle btn = addCharBtns.get(i);
             font.setColor(Color.GREEN);
             font.draw(batch, "+ Pridaj", btn.x + 6, btn.y + btn.height - 6);
         }
+    }
 
-        // --- Dostupne itemy (lavy panel, y=230 nadol) ---
-        y = 230f;
+    private void drawAvailableItems() {
+        float y = 230f;
         for (int i = 0; i < offers.size(); i++, y -= ROW_H) {
             ItemOffer offer = offers.get(i);
             font.setColor(Color.WHITE);
-            font.draw(batch,
-                offer.label + "  (" + offer.slotCost + " slot)",
-                PAD, y);
+            font.draw(batch, offer.label + "  (" + offer.slotCost + " slot)", PAD, y);
             Rectangle btn = addItemBtns.get(i);
             font.setColor(Color.GREEN);
             font.draw(batch, "+ Pridaj", btn.x + 6, btn.y + btn.height - 6);
         }
+    }
 
-        // --- Inventar - postavy (pravy panel, y=390 nadol) ---
-        y = 390f;
+    private void drawInventoryChars(Inventory inv) {
+        float y = 390f;
         List<PlayerCharacter> chars = inv.getCharacters();
         for (int i = 0; i < chars.size(); i++, y -= ROW_H) {
-            PlayerCharacter c = chars.get(i);
-            boolean isBase = inv.isBaseCharacter(c);
+            PlayerCharacter c      = chars.get(i);
+            boolean         isBase = inv.isBaseCharacter(c);
             font.setColor(isBase ? Color.GOLD : Color.WHITE);
             font.draw(batch,
                 c.getName()
@@ -295,30 +394,21 @@ public class InventoryScreen implements Screen {
                 font.draw(batch, "- Odober", btn.x + 6, btn.y + btn.height - 6);
             }
         }
+    }
 
-        // --- Inventar - itemy (pravy panel, y=230 nadol) ---
-        y = 230f;
-        List<Item> items = inv.getItems();
-
-// zoskup podla triedy
-        java.util.LinkedHashMap<Class<?>, List<Item>> grouped = new java.util.LinkedHashMap<>();
-        for (Item item : items) {
-            grouped.computeIfAbsent(item.getClass(), k -> new ArrayList<>()).add(item);
-        }
-
+    private void drawInventoryItems(Inventory inv) {
+        float y = 230f;
+        java.util.LinkedHashMap<Class<?>, List<Item>> grouped = groupItems(inv);
         int btnIndex = 0;
         for (java.util.Map.Entry<Class<?>, List<Item>> entry : grouped.entrySet()) {
-            List<Item> group = entry.getValue();
-            Item sample = group.getFirst();
-            int count = group.size();
-
+            List<Item> group  = entry.getValue();
+            Item       sample = group.getFirst();
             font.setColor(Color.WHITE);
             font.draw(batch,
                 sample.getClass().getSimpleName()
                     + "  (" + sample.getSlotsRequired() + " slot)"
-                    + "   x" + count,   // pocet tu
+                    + "   x" + group.size(),
                 MID + PAD, y);
-
             if (btnIndex < remItemBtns.size()) {
                 Rectangle btn = remItemBtns.get(btnIndex);
                 font.setColor(new Color(1f, 0.4f, 0.4f, 1f));
@@ -327,36 +417,24 @@ public class InventoryScreen implements Screen {
             btnIndex++;
             y -= ROW_H;
         }
-
-        // --- Sloty + feedback ---
-        font.setColor(Color.YELLOW);
-        font.draw(batch,
-            "Sloty: " + inv.getUsedSlots() + "/" + inv.getTotalSlots()
-                + "   volne: " + inv.getFreeSlots(),
-            PAD, 80f);
-
-        font.setColor(new Color(1f, 0.6f, 0.1f, 1f));
-        font.draw(batch, feedback, PAD, 55f);
-
-        // --- Start tlacidlo ---
-        font.setColor(Color.GOLD);
-        font.draw(batch, "Start  Level " + levelToStart,
-            btnStart.x + 10, btnStart.y + btnStart.height - 6);
-
-        boolean saveHover = btnSave.contains(
-            Gdx.input.getX() * (W / Gdx.graphics.getWidth()),
-            H - Gdx.input.getY() * (H / Gdx.graphics.getHeight())
-        );
-        font.setColor(saveHover ? Color.WHITE : new Color(0.4f, 0.8f, 1f, 1f));
-        font.draw(batch, "Ulozit hru",
-            btnSave.x + 10, btnSave.y + btnSave.height - 6);
-
-        batch.end();
     }
 
-    // -------------------------------------------------------------------------
-    //  Logika kliknutia
-    // -------------------------------------------------------------------------
+    // ── Input handling ────────────────────────────────────────────────────────
+
+    /**
+     * Dispatches a mouse click to the appropriate handler.
+     *
+     * <p>Inventory mutations (add/remove character, add/remove item) are
+     * performed directly on the {@link Inventory} model – they are inventory
+     * management operations, not game-flow operations.
+     *
+     * <p>Navigation (Start, Save) is delegated to {@link AppController} or
+     * {@link SaveManager} as appropriate. This method never calls
+     * {@link GameManager#startLevel}.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void handleClick(float mx, float my) {
         Inventory inv = GameManager.getInstance().getInventory();
 
@@ -390,13 +468,11 @@ public class InventoryScreen implements Screen {
 
         for (int i = 0; i < addItemBtns.size(); i++) {
             if (addItemBtns.get(i).contains(mx, my)) {
-                ItemOffer offer = offers.get(i);
-                Item newItem = offer.factory.get(); // nova instancia zakazdym
-                if (inv.addItem(newItem)) {
-                    feedback = offer.label + " pridany.";
-                } else {
-                    feedback = "Nedostatok slotov!";
-                }
+                ItemOffer offer   = offers.get(i);
+                Item      newItem = offer.factory.get();
+                feedback = inv.addItem(newItem)
+                    ? offer.label + " pridany."
+                    : "Nedostatok slotov!";
                 rebuildButtons();
                 return;
             }
@@ -404,13 +480,9 @@ public class InventoryScreen implements Screen {
 
         for (int i = 0; i < remItemBtns.size(); i++) {
             if (remItemBtns.get(i).contains(mx, my)) {
-                // zober skupiny v rovnakom poradi ako rebuildButtons
-                java.util.LinkedHashMap<Class<?>, List<Item>> grouped = new java.util.LinkedHashMap<>();
-                for (Item item : inv.getItems()) {
-                    grouped.computeIfAbsent(item.getClass(), k -> new ArrayList<>()).add(item);
-                }
-                List<Item> group = new ArrayList<>(grouped.values()).get(i);
-                Item toRemove = group.getLast(); // posledna instancia
+                java.util.LinkedHashMap<Class<?>, List<Item>> grouped = groupItems(inv);
+                List<Item> group    = new ArrayList<>(grouped.values()).get(i);
+                Item       toRemove = group.getLast();
                 inv.removeItem(toRemove);
                 feedback = toRemove.getClass().getSimpleName() + " odstraneny.";
                 rebuildButtons();
@@ -418,7 +490,6 @@ public class InventoryScreen implements Screen {
             }
         }
 
-        // --- Uložiť hru ---
         if (btnSave.contains(mx, my)) {
             try {
                 SaveManager.getInstance().save(levelToStart);
@@ -430,18 +501,18 @@ public class InventoryScreen implements Screen {
         }
 
         if (btnStart.contains(mx, my)) {
-            GameManager.getInstance().startLevel(levelToStart);
-            game.setScreen(new GameScreen(game));
+            // Business logic (startLevel) runs inside AppController, not here.
+            app.startGame(levelToStart);
         }
     }
 
-    @Override public void resize(int w, int h) {
-        cam.setToOrtho(false, W, H);
-    }
-    @Override public void show()   {}
-    @Override public void hide()   {}
-    @Override public void pause()  {}
-    @Override public void resume() {}
+    // ── Screen lifecycle ──────────────────────────────────────────────────────
+
+    @Override public void resize(int w, int h) { cam.setToOrtho(false, W, H); }
+    @Override public void show()    {}
+    @Override public void hide()    {}
+    @Override public void pause()   {}
+    @Override public void resume()  {}
 
     @Override
     public void dispose() {
