@@ -2,94 +2,95 @@ package sk.stuba.fiit.attacks;
 
 import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.characters.Duck;
 import sk.stuba.fiit.characters.EnemyCharacter;
-import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
-import sk.stuba.fiit.items.Item;
+import sk.stuba.fiit.projectiles.MeleeHitbox;
 import sk.stuba.fiit.projectiles.Projectile;
+import sk.stuba.fiit.projectiles.ProjectileOwner;
+import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
 /**
- * Melee attack that damages the nearest target within a tile-based reach.
+ * Melee attack that spawns an invisible {@link MeleeHitbox} in the level.
  *
- * <p>Does not spawn a projectile – returns {@code null} from {@link #execute}.
- * Decorators that receive {@code null} skip effect attachment gracefully.
+ * <p>Previously this class resolved collisions and dealt damage directly in
+ * {@code execute()}, coupling attack logic to character lists. After refactoring:
+ * <ol>
+ *   <li>{@code execute()} computes the hit area in front of the attacker and
+ *       adds a {@link MeleeHitbox} to the level (same as any other projectile).</li>
+ *   <li>{@code CollisionManager} picks up the hitbox in the same frame and deals
+ *       damage to whatever it overlaps – enemies, ducks, or the player.</li>
+ *   <li>Because {@link MeleeHitbox#isSingleUse()} is {@code true}, the hitbox is
+ *       always deactivated by {@code CollisionManager} after one pass, whether it
+ *       hit something or not.</li>
+ * </ol>
+ *
+ * <p>Duck killing (with item drop) is now handled uniformly by
+ * {@code CollisionManager.applySingleHit()} – no special case needed here.
  */
 public class MeleeAttack implements Attack {
 
     private final int rangeTiles;
     private static final Logger log = GameLogger.get(MeleeAttack.class);
 
+    /**
+     * @param rangeTiles horizontal reach in tiles; one tile ≈ 52 px
+     */
     public MeleeAttack(int rangeTiles) {
         this.rangeTiles = rangeTiles;
     }
 
     /**
-     * Applies melee damage directly to the nearest valid target.
+     * Spawns a {@link MeleeHitbox} covering the melee reach in front of the attacker.
      *
-     * @return {@code null} – melee attacks do not spawn projectiles
+     * <p>Hit-area geometry:
+     * <ul>
+     *   <li><b>Width</b> – {@code rangeTiles * 52} px</li>
+     *   <li><b>Height</b> – matches the attacker's current hitbox height</li>
+     *   <li><b>X</b> – starts at the leading edge of the attacker's hitbox
+     *       (right when facing right, left-minus-reach when facing left)</li>
+     *   <li><b>Y</b> – aligned with the bottom of the attacker's hitbox</li>
+     * </ul>
+     *
+     * @return the spawned {@link MeleeHitbox} (never {@code null})
      */
     @Override
     public Projectile execute(Character attacker, Level level) {
         float reach = rangeTiles * 52f;
 
-        if (attacker instanceof PlayerCharacter) {
-            PlayerCharacter player = (PlayerCharacter) attacker;
-            float ax   = player.getPosition().getX();
-            float dirX = player.isFacingRight() ? 1f : -1f;
+        boolean facingRight = attacker.isFacingRight();
+        float   hitboxH     = attacker.getHitbox().height;
 
-            for (EnemyCharacter enemy : level.getEnemies()) {
-                if (!enemy.isAlive()) continue;
-                float dist = (enemy.getPosition().getX() - ax) * dirX;
-                if (dist >= 0 && dist <= reach) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Melee hit enemy: attacker={}, target={}, dist={}, dmg={}",
-                            attacker.getName(), enemy.getName(),
-                            String.format("%.1f", dist), attacker.getAttackPower());
-                    }
-                    enemy.takeDamage(attacker.getAttackPower());
-                    return null;
-                }
-            }
-            for (Duck duck : level.getDucks()) {
-                if (!duck.isAlive()) continue;
-                float dist = (duck.getPosition().getX() - ax) * dirX;
-                if (dist >= 0 && dist <= reach) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Melee hit duck: attacker={}, dist={}, dmg=instant kill",
-                            attacker.getName(), String.format("%.1f", dist));
-                    }
-                    duck.takeDamage(duck.getHp());
-                    Item result = duck.onKilled();
-                    if (result != null) {
-                        log.info("Duck killed – drop: item={}, pos=({},{})",
-                            result.getClass().getSimpleName(),
-                            String.format("%.1f", duck.getPosition().getX()),
-                            String.format("%.1f", duck.getPosition().getY()));
-                        level.addItem(result);
-                    }
-                    return null;
-                }
-            }
+        // Leading edge of the attacker's hitbox
+        float leadX = attacker.getHitbox().x
+            + (facingRight ? attacker.getHitbox().width : 0f);
 
-        } else if (attacker instanceof EnemyCharacter) {
-            PlayerCharacter player = level.getActivePlayer();
-            if (player == null || !player.isAlive()) return null;
+        float hitX = facingRight ? leadX : leadX - reach;
+        float hitY = attacker.getHitbox().y;
 
-            double dist = attacker.getPosition().distanceTo(player.getPosition());
-            if (dist <= reach) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Enemy melee hit player: attacker={}, target={}, dist={}, dmg={}",
-                        attacker.getName(), player.getName(),
-                        String.format("%.1f", dist), attacker.getAttackPower());
-                }
-                player.takeDamage(attacker.getAttackPower());
-            }
+        ProjectileOwner owner = (attacker instanceof EnemyCharacter)
+            ? ProjectileOwner.ENEMY
+            : ProjectileOwner.PLAYER;
+
+        MeleeHitbox box = new MeleeHitbox(
+            attacker.getAttackPower(),
+            new Vector2D(hitX, hitY),
+            reach, hitboxH,
+            owner
+        );
+
+        level.addProjectile(box);
+
+        if (log.isDebugEnabled()) {
+            log.debug("MeleeHitbox spawned: owner={}, reach={}, x={}, y={}, h={}",
+                owner, reach,
+                String.format("%.1f", hitX),
+                String.format("%.1f", hitY),
+                String.format("%.1f", hitboxH));
         }
 
-        return null;
+        return box;
     }
 
     @Override

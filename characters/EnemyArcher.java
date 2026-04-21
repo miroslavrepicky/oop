@@ -34,8 +34,11 @@ public class EnemyArcher extends EnemyCharacter {
     @Override
     public void triggerAttack() {
         if (arrowCount <= 0) return;
-        arrowCount--;
+        boolean wasAttacking = isAttacking;
         super.triggerAttack();
+        if (!wasAttacking && isAttacking) {
+            arrowCount--;
+        }
     }
 
     @Override

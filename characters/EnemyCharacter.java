@@ -14,6 +14,10 @@ import sk.stuba.fiit.util.Vector2D;
  *
  * <p>On-hit effects (DOT, slow) received from projectiles are ticked each frame
  * via {@link #tickEffects(float)} inherited from {@link Character}.
+ *
+ * <p>Attack timing hook: the single-hit damage logic is isolated in
+ * {@link #dealAttackDamage(UpdateContext)}, which subclasses can override to
+ * implement multi-hit or frame-specific attack timing (e.g. {@link DarkKnight}).
  */
 public abstract class EnemyCharacter extends Character implements AIControllable {
     protected float     patrolRange;
@@ -24,12 +28,17 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
     protected Attack attack;
 
-    private float   attackCooldown              = 0f;
+    // ── Attack state ─────────────────────────────────────────────────────────
+    // Fields are protected so subclasses (DarkKnight) can read/write them
+    // for multi-hit timing and early animation cancellation.
+    protected float   attackCooldown              = 0f;
     private static final float ATTACK_COOLDOWN_MAX = 1.5f;
 
     protected boolean isAttacking     = false;
-    private   float   attackAnimTimer = 0f;
-    private   boolean damageDealt     = false;
+    protected float   attackAnimTimer = 0f;
+    /** Set to {@code true} once damage has been dealt for this attack swing. */
+    protected boolean damageDealt     = false;
+
     private   boolean lastMoveBlocked = false;
 
     public EnemyCharacter(String name, int hp, int attackPower, float speed,
@@ -91,20 +100,15 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     }
 
     // -------------------------------------------------------------------------
-    //  Attack
-    // -------------------------------------------------------------------------
-
-    // -------------------------------------------------------------------------
-    //  Attack trigger – volaný z AIController, žiadny player parameter
+    //  Attack trigger
     // -------------------------------------------------------------------------
 
     /**
-     * Naštartuje útočnú sekvenciu: cooldown, animácia, timer.
-     * Skutočné poškodenie/projektil vznikne neskôr v {@link #update(UpdateContext)}
-     * cez {@code attack.execute(this, level)}.
+     * Starts an attack sequence: sets cooldown, marks {@code isAttacking},
+     * and plays the attack animation.
      *
-     * <p>Podtriedy môžu override-núť pre typ-špecifickú logiku pred spustením
-     * (napr. {@code EnemyArcher} odpočítava šípy) a musia zavolať {@code super.triggerAttack()}.
+     * <p>Subclasses must set {@link #attack} before calling {@code super.triggerAttack()}.
+     * The actual projectile / hit-box is spawned later in {@link #dealAttackDamage(UpdateContext)}.
      */
     @Override
     public void triggerAttack() {
@@ -119,8 +123,36 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         if (am != null) am.play(attack.getAnimationName());
     }
 
-
     protected String getAttackAnimationName() { return "attack"; }
+
+    // -------------------------------------------------------------------------
+    //  Damage-dealing hook
+    // -------------------------------------------------------------------------
+
+    /**
+     * Called every frame while {@link #isAttacking} is {@code true}.
+     * Default behaviour: execute the attack once, near the end of the animation
+     * (within the last two animation frames).
+     *
+     * <p>Subclasses may override this to implement:
+     * <ul>
+     *   <li>Multi-hit at specific frame numbers (see {@link DarkKnight}).</li>
+     *   <li>Early cancellation when the player leaves range mid-swing.</li>
+     * </ul>
+     *
+     * @param ctx current frame context (contains {@code level} for spawning hitboxes)
+     */
+    protected void dealAttackDamage(UpdateContext ctx) {
+        if (damageDealt || attack == null) return;
+        AnimationManager am = getAnimationManager();
+        float frameDuration = attack.getFrameDuration(am);
+        if (attackAnimTimer <= frameDuration * 2) {
+            if (ctx.level != null) {
+                attack.execute(this, ctx.level);
+            }
+            damageDealt = true;
+        }
+    }
 
     // -------------------------------------------------------------------------
     //  Update
@@ -139,18 +171,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
         if (isAttacking) {
             attackAnimTimer -= ctx.deltaTime;
-
-            if (!damageDealt && attack != null) {
-                AnimationManager am = getAnimationManager();
-                float frameDuration = attack.getFrameDuration(am);
-                if (attackAnimTimer <= frameDuration * 2) {
-                    if (ctx.level != null) {
-                        attack.execute(this, ctx.level);
-                    }
-                    damageDealt = true;
-                }
-            }
-
+            dealAttackDamage(ctx);          // polymorphic – DarkKnight overrides this
             if (attackAnimTimer <= 0f) {
                 isAttacking = false;
             }

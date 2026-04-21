@@ -88,6 +88,9 @@ public class CollisionManager {
                         projectile.getPosition().getY());
                 }
                 triggerImpact(projectile, hitTarget, level);
+            } else if (projectile.isSingleUse()) {
+                // Single-use projectile missed everything (e.g. MeleeHitbox) – deactivate.
+                projectile.setActive(false);
             }
         }
     }
@@ -206,6 +209,12 @@ public class CollisionManager {
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
                 projectile.onCollision(player);
             } else if (hitsWall(projectile, level)) {
+                projectile.setActive(false);
+            }
+
+            // Single-use projectile (e.g. enemy MeleeHitbox) must be deactivated
+            // after one pass regardless of whether it connected or not.
+            if (projectile.isSingleUse()) {
                 projectile.setActive(false);
             }
         }

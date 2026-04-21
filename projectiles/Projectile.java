@@ -20,6 +20,11 @@ import sk.stuba.fiit.util.Vector2D;
  *
  * <p>Pool reuse: {@link #resetEffects()} must be called in each subclass {@code reset()}
  * so effects never leak between shots when the projectile is recycled from the pool.
+ *
+ * <p>Single-use projectiles: {@link #isSingleUse()} returns {@code false} by default.
+ * Subclasses (e.g. {@link MeleeHitbox}) override it to {@code true} so that
+ * {@code CollisionManager} deactivates them after one collision pass, preventing them
+ * from lingering when they miss every target.
  */
 public abstract class Projectile implements Updatable, Collidable, Physicable {
     protected int      damage;
@@ -57,6 +62,24 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
         this.tintR = r;
         this.tintG = g;
         this.tintB = b;
+    }
+
+    // -------------------------------------------------------------------------
+    //  Single-use flag
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns {@code true} for projectiles that must be deactivated by
+     * {@code CollisionManager} after a single collision check, even when no
+     * target was hit.
+     *
+     * <p>Default implementation returns {@code false} (normal flying projectiles).
+     * {@link MeleeHitbox} overrides this to {@code true}.
+     *
+     * @return {@code false} unless overridden
+     */
+    public boolean isSingleUse() {
+        return false;
     }
 
     // -------------------------------------------------------------------------
