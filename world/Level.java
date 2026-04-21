@@ -14,6 +14,7 @@ import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.projectiles.EggProjectile;
 import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.projectiles.Projectile;
+import sk.stuba.fiit.save.SaveData;
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.ArrayList;
@@ -182,6 +183,96 @@ public class Level implements Updatable {
             if (!p.isActive() && p instanceof Poolable) {
                 ((Poolable) p).returnToPool();
             }
+        }
+    }
+
+    /**
+     * Načíta mapu (len geometriu + hitboxy) a obnoví entity zo SaveData
+     * namiesto spawnovania z TMX vrstvy "entities".
+     */
+    public void loadFromSave(String mapPath, SaveData savedState) {
+        mapManager = new MapManager(mapPath);
+
+        // Pozícia aktívneho hráča
+        PlayerCharacter active = GameManager.getInstance().getInventory().getActive();
+        if (active != null) {
+            for (SaveData.CharacterData cd : savedState.characters) {
+                if (cd.isActive) {
+                    active.setPosition(new Vector2D(cd.x, cd.y));
+                    active.setFacingRight(cd.facingRight);
+                    active.updateHitbox();
+                    break;
+                }
+            }
+        }
+
+        // Nepriatelia zo save
+        for (SaveData.EnemyData ed : savedState.enemies) {
+            EnemyCharacter enemy = createEnemyFromSave(ed);
+            if (enemy != null) spawnEnemy(enemy);
+        }
+
+        for (SaveData.DuckData dd : savedState.ducks) {
+            Duck duck = new Duck(new Vector2D(dd.x, dd.y));
+            duck.restoreStats(dd.hp, duck.getMaxHp()); // hp sa obnoví
+            addDuck(duck);
+        }
+
+        // Predmety na zemi zo save
+        for (SaveData.GroundItemData gd : savedState.groundItems) {
+            Item item = createGroundItemFromSave(gd);
+            if (item != null) addItem(item);
+        }
+    }
+
+    private EnemyCharacter createEnemyFromSave(SaveData.EnemyData ed) {
+        Vector2D pos = new Vector2D(ed.x, ed.y);
+        EnemyCharacter enemy;
+
+        switch (ed.type) {
+            case "EnemyKnight": {
+                EnemyKnight ek = new EnemyKnight(pos);
+                ek.initAI(new Vector2D(ed.x - 100, ed.y), new Vector2D(ed.x + 100, ed.y), 52f, 52f);
+                ek.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
+                enemy = ek;
+                break;
+            }
+            case "EnemyArcher": {
+                EnemyArcher ea = new EnemyArcher(pos);
+                ea.initAI(new Vector2D(ed.x - 150, ed.y), new Vector2D(ed.x + 150, ed.y), 300f, 250f);
+                ea.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
+                enemy = ea;
+                break;
+            }
+            case "EnemyWizzard": {
+                EnemyWizzard ew = new EnemyWizzard(pos);
+                ew.initAI(new Vector2D(ed.x - 100, ed.y), new Vector2D(ed.x + 100, ed.y), 350f, 280f);
+                ew.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
+                enemy = ew;
+                break;
+            }
+            case "DarkKnight": {
+                DarkKnight dk = new DarkKnight(pos);
+                dk.initAI(new Vector2D(ed.x - 200, ed.y), new Vector2D(ed.x + 200, ed.y), 200f, 150f);
+                dk.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
+                enemy = dk;
+                break;
+            }
+            default:
+                return null;
+        }
+
+        enemy.restoreStats(ed.hp, ed.armor);
+        return enemy;
+    }
+
+    private Item createGroundItemFromSave(SaveData.GroundItemData gd) {
+        Vector2D pos = new Vector2D(gd.x, gd.y);
+        switch (gd.type) {
+            case "HealingPotion": return new HealingPotion(50, pos);
+            case "Armour":        return new Armour(50, pos);
+            default:
+                return null;
         }
     }
 

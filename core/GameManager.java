@@ -6,6 +6,7 @@ import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.core.exceptions.GameStateException;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.projectiles.ProjectilePool;
+import sk.stuba.fiit.save.SaveData;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -76,6 +77,25 @@ public class GameManager {
             levelNumber,
             currentLevel.getEnemies().size(),
             currentLevel.getItems().size());
+    }
+
+    /**
+     * Spustí level z uloženého stavu – načíta mapu a obnoví entity zo SaveData.
+     * Volá sa po load() a applyInventoryToGameManager().
+     *
+     * @param savedState kompletný SaveData objekt vrátený SaveManager.load()
+     */
+    public void startLevelFromSave(SaveData savedState) {
+        if (inventory.getActive() == null) {
+            throw new GameStateException(
+                "Cannot start level – no active player", "GameManager.startLevelFromSave");
+        }
+        int levelNumber = savedState.currentLevel;
+        log.info("Starting level from save: level={}", levelNumber);
+        this.currentLevel = new Level(levelNumber);
+        this.currentLevel.loadFromSave("test_map.tmx", savedState);
+        log.info("Level restored: level={}, enemies={}, groundItems={}",
+            levelNumber, savedState.enemies.size(), savedState.groundItems.size());
     }
 
     /**

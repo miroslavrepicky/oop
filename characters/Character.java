@@ -304,6 +304,15 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     }
 
     /**
+     * Priamo nastaví HP a armor na uložené hodnoty (používa SaveManager pri načítaní).
+     * Na rozdiel od takeDamage() nepreteká cez armor absorpciu.
+     */
+    public void restoreStats(int hp, int armor) {
+        this.hp    = Math.max(0, Math.min(hp,    maxHp));
+        this.armor = Math.max(0, Math.min(armor, maxArmor));
+    }
+
+    /**
      * Permanently increases armour by {@code amount}, clamped to {@code maxArmor}.
      *
      * @param amount armour points to add

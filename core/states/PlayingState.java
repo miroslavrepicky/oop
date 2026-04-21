@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.AppController;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.physics.CollisionManager;
@@ -36,6 +37,7 @@ public class PlayingState implements IGameState {
     private final GameManager      gameManager;
     private final CollisionManager collisionManager;
     private final GameRenderer     gameRenderer;
+    private final AppController app;
 
     /** Pending state to transition to; set inside {@link #update(float)}, consumed by {@link #next()}. */
     private IGameState nextState = null;
@@ -49,11 +51,13 @@ public class PlayingState implements IGameState {
     public PlayingState(PlayerController playerController,
                         GameManager      gameManager,
                         CollisionManager collisionManager,
-                        GameRenderer     gameRenderer) {
+                        GameRenderer     gameRenderer,
+                        AppController    app) {           // <-- nový parameter
         this.playerController = playerController;
         this.gameManager      = gameManager;
         this.collisionManager = collisionManager;
         this.gameRenderer     = gameRenderer;
+        this.app              = app;
     }
 
     /**
@@ -71,7 +75,7 @@ public class PlayingState implements IGameState {
     @Override
     public void update(float deltaTime) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            nextState = new PausedState(gameRenderer, this);
+            nextState = new PausedState(gameRenderer, this, app, gameManager);
             return;
         }
 

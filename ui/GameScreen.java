@@ -64,7 +64,7 @@ public class GameScreen implements Screen {
         playerController = new PlayerController(collisionManager);
 
         currentState = new PlayingState(
-            playerController, gameManager, collisionManager, gameRenderer);
+            playerController, gameManager, collisionManager, gameRenderer, app);
     }
 
     @Override

@@ -1,10 +1,7 @@
 package sk.stuba.fiit.save;
 
 import org.slf4j.Logger;
-import sk.stuba.fiit.characters.Archer;
-import sk.stuba.fiit.characters.Knight;
-import sk.stuba.fiit.characters.PlayerCharacter;
-import sk.stuba.fiit.characters.Wizzard;
+import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.exceptions.ShadowQuestException;
@@ -13,6 +10,7 @@ import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
 import sk.stuba.fiit.util.Vector2D;
+import sk.stuba.fiit.world.Level;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,39 +87,72 @@ public final class SaveManager {
     }
 
     private SaveData buildSaveData(int levelNumber) {
-        Inventory inv = GameManager.getInstance().getInventory();
+        Inventory inv        = GameManager.getInstance().getInventory();
+        PlayerCharacter active = inv.getActive();
 
-        // --- Konverzia postáv ---
+        // Postavy v inventári
         List<SaveData.CharacterData> chars = new ArrayList<>();
-        PlayerCharacter activeChar = inv.getActive();
-
         for (PlayerCharacter pc : inv.getCharacters()) {
             chars.add(new SaveData.CharacterData(
                 pc.getClass().getSimpleName(),
-                pc.getHp(),
-                pc.getArmor(),
+                pc.getHp(), pc.getArmor(),
                 inv.isBaseCharacter(pc),
-                pc == activeChar
+                pc == active,
+                pc.getPosition().getX(), pc.getPosition().getY(),
+                pc.isFacingRight()
             ));
-            log.debug("Saving character: type={}, hp={}, armor={}, isBase={}",
-                pc.getClass().getSimpleName(), pc.getHp(), pc.getArmor(),
-                inv.isBaseCharacter(pc));
         }
 
-        // --- Konverzia itemov (skupinované podľa triedy) ---
+        // Inventory itemy (zoskupené)
         Map<String, Integer> itemCounts = new LinkedHashMap<>();
         for (Item item : inv.getItems()) {
-            String key = item.getClass().getSimpleName();
-            itemCounts.merge(key, 1, Integer::sum);
+            itemCounts.merge(item.getClass().getSimpleName(), 1, Integer::sum);
         }
-
         List<SaveData.ItemData> itemData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : itemCounts.entrySet()) {
-            itemData.add(new SaveData.ItemData(entry.getKey(), entry.getValue()));
-            log.debug("Saving item: type={}, count={}", entry.getKey(), entry.getValue());
+        for (Map.Entry<String, Integer> e : itemCounts.entrySet()) {
+            itemData.add(new SaveData.ItemData(e.getKey(), e.getValue()));
         }
 
-        return new SaveData(levelNumber, chars, itemData);
+        // Nepriatelia v leveli
+        List<SaveData.EnemyData> enemyData = new ArrayList<>();
+        Level level = GameManager.getInstance().getCurrentLevel();
+        if (level != null) {
+            for (EnemyCharacter enemy : level.getEnemies()) {
+                if (!enemy.isAlive()) continue;
+                enemyData.add(new SaveData.EnemyData(
+                    enemy.getClass().getSimpleName(),
+                    enemy.getPosition().getX(), enemy.getPosition().getY(),
+                    enemy.getHp(), enemy.getArmor()
+                ));
+            }
+        }
+
+        // Predmety na zemi
+        List<SaveData.GroundItemData> groundItems = new ArrayList<>();
+        if (level != null) {
+            for (Item item : level.getItems()) {
+                String type = item.getClass().getSimpleName();
+                if ("EggProjectileSpawner".equals(type)) continue;
+                groundItems.add(new SaveData.GroundItemData(
+                    type,
+                    item.getPosition().getX(), item.getPosition().getY()
+                ));
+            }
+        }
+
+        List<SaveData.DuckData> duckData = new ArrayList<>();
+        if (level != null) {
+            for (Duck duck : level.getDucks()) {
+                if (!duck.isAlive()) continue;
+                duckData.add(new SaveData.DuckData(
+                    duck.getPosition().getX(),
+                    duck.getPosition().getY(),
+                    duck.getHp()
+                ));
+            }
+        }
+
+        return new SaveData(levelNumber, chars, itemData, enemyData, groundItems, duckData);
     }
 
     private void writeToDisk(SaveData data) {
@@ -135,37 +166,65 @@ public final class SaveManager {
         }
     }
 
-    /**
-     * Loads a saved game and reconstructs {@code GameManager} + {@code Inventory} state.
-     *
-     * @return the saved level number to pass to {@code startLevel()},
-     *         or {@code -1} if no save file exists or the version is incompatible
-     */
-    public int load() {
+    public SaveData load() {
         File file = new File(SAVE_FILE);
         if (!file.exists()) {
             log.info("No save file found: path={}", file.getAbsolutePath());
-            return -1;
+            return null;
         }
 
         SaveData data = readFromDisk(file);
-        if (data == null) return -1;
+        if (data == null) return null;
 
         if (data.saveVersion != SaveData.SAVE_VERSION) {
-            log.warn("Save file version mismatch: fileVersion={}, expectedVersion={} – ignoring",
+            log.warn("Save version mismatch: fileVersion={}, expected={} – ignoring",
                 data.saveVersion, SaveData.SAVE_VERSION);
-            return -1;
+            return null;
         }
 
-        applyToGameManager(data);
+        // Obnov inventár (postavy + inventory itemy)
+        applyInventoryToGameManager(data);
 
-        log.info("Game loaded: level={}, characters={}, items={}, savedAt={}",
-            data.currentLevel,
-            data.characters.size(),
-            data.inventoryItems.size(),
-            data.savedAt);
+        log.info("Game loaded: level={}, chars={}, enemies={}, groundItems={}, savedAt={}",
+            data.currentLevel, data.characters.size(),
+            data.enemies.size(), data.groundItems.size(), data.savedAt);
 
-        return data.currentLevel;
+        return data;  // <-- caller odovzdá do GameManager.startLevelFromSave()
+    }
+
+    private void applyInventoryToGameManager(SaveData data) {
+        GameManager gm = GameManager.getInstance();
+        gm.resetGame();
+        Inventory inv = gm.getInventory();
+
+        PlayerCharacter activeChar = null;
+        for (SaveData.CharacterData cd : data.characters) {
+            PlayerCharacter pc = createCharacter(cd.characterType);
+            if (pc == null) {
+                log.warn("Unknown character type in save – skipped: type={}", cd.characterType);
+                continue;
+            }
+            // Použijeme restoreStats() namiesto série takeDamage()
+            pc.restoreStats(cd.hp, cd.armor);
+            inv.addCharacter(pc);
+            if (cd.isActive) activeChar = pc;
+        }
+
+        if (activeChar != null) {
+            for (int i = 0; i < inv.getCharacters().size(); i++) {
+                if (inv.getCharacters().get(i) == activeChar) {
+                    inv.switchCharacter(i + 1);
+                    break;
+                }
+            }
+        }
+
+        for (SaveData.ItemData id : data.inventoryItems) {
+            for (int i = 0; i < id.count; i++) {
+                Item item = createItem(id.itemType);
+                if (item != null) inv.addItem(item);
+            }
+        }
     }
 
     private SaveData readFromDisk(File file) {

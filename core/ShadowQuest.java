@@ -1,6 +1,7 @@
 package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.Game;
+import sk.stuba.fiit.save.SaveData;
 import sk.stuba.fiit.save.SaveManager;
 import sk.stuba.fiit.ui.GameScreen;
 import sk.stuba.fiit.ui.InventoryScreen;
@@ -90,19 +91,12 @@ public class ShadowQuest extends Game implements AppController {
         setScreen(new InventoryScreen(this, 1));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Implementation: asks {@link SaveManager} to deserialise the save file
-     * and reconstruct the inventory. If the returned level number is valid,
-     * starts that level and switches to {@link GameScreen}. On any failure,
-     * falls back to {@link #startNewGame()}.
-     */
+
     @Override
     public void continueGame() {
-        int level = SaveManager.getInstance().load();
-        if (level > 0) {
-            GameManager.getInstance().startLevel(level);
+        SaveData data = SaveManager.getInstance().load();  // teraz vracia SaveData
+        if (data != null) {
+            GameManager.getInstance().startLevelFromSave(data);
             setScreen(new GameScreen(this));
         } else {
             startNewGame();
