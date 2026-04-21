@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.Gdx;
 import sk.stuba.fiit.core.AppController;
-import sk.stuba.fiit.save.SaveManager;
 
 /**
  * Main menu screen shown on application startup and after returning from
@@ -20,10 +19,6 @@ import sk.stuba.fiit.save.SaveManager;
  * <p>This class is a <b>View + input handler</b>. It renders buttons and
  * reacts to mouse clicks, but contains no business logic. All game-state
  * mutations and navigation are delegated to the {@link AppController}.
- *
- * <p>The only read access to game state is {@link SaveManager#hasSave()},
- * which is a pure query with no side-effects and is needed to decide whether
- * the Continue button should be enabled.
  *
  * <h2>Actions</h2>
  * <ul>
@@ -77,7 +72,7 @@ public class MainMenuScreen implements Screen {
         btnContinue = new Rectangle(W / 2 - 100, 215, 200, 44);
         btnExit     = new Rectangle(W / 2 - 100, 155, 200, 44);
 
-        hasSave = SaveManager.getInstance().hasSave();
+        hasSave = app.hasSave();
     }
 
     @Override

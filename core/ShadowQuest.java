@@ -157,6 +157,27 @@ public class ShadowQuest extends Game implements AppController {
     }
 
     /**
+     * Delegates to {@link SaveManager}. Catches {@link SaveManager.SaveException}
+     * so callers do not need to import it.
+     *
+     * @return {@code true} if the save was written successfully
+     */
+    @Override
+    public boolean saveGame(int level) {
+        try {
+            SaveManager.getInstance().save(level);
+            return true;
+        } catch (SaveManager.SaveException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean hasSave() {
+        return SaveManager.getInstance().hasSave();
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>Implementation: delegates to {@link com.badlogic.gdx.Gdx#app#exit()}.

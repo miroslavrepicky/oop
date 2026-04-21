@@ -18,7 +18,7 @@ import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.HealingPotion;
 import sk.stuba.fiit.items.Item;
-import sk.stuba.fiit.save.SaveManager;
+
 import sk.stuba.fiit.util.Vector2D;
 
 import java.util.ArrayList;
@@ -42,10 +42,6 @@ import java.util.function.Supplier;
  * <p>Navigation and level-start business logic are fully delegated to the
  * {@link AppController}. The screen never calls
  * {@link GameManager#startLevel(int)}.
- *
- * <h2>Save action</h2>
- * <p>Saving is triggered directly via {@link SaveManager} because it is a
- * pure persistence operation with no navigation side-effect.
  */
 public class InventoryScreen implements Screen {
 
@@ -427,10 +423,7 @@ public class InventoryScreen implements Screen {
      * <p>Inventory mutations (add/remove character, add/remove item) are
      * performed directly on the {@link Inventory} model – they are inventory
      * management operations, not game-flow operations.
-     *
-     * <p>Navigation (Start, Save) is delegated to {@link AppController} or
-     * {@link SaveManager} as appropriate. This method never calls
-     * {@link GameManager#startLevel}.
+
      *
      * @param mx virtual mouse X coordinate
      * @param my virtual mouse Y coordinate
@@ -491,12 +484,9 @@ public class InventoryScreen implements Screen {
         }
 
         if (btnSave.contains(mx, my)) {
-            try {
-                SaveManager.getInstance().save(levelToStart);
-                feedback = "Hra ulozena!  (Level " + levelToStart + ")";
-            } catch (SaveManager.SaveException e) {
-                feedback = "Ulozenie zlyhalo: " + e.getMessage();
-            }
+            feedback = app.saveGame(levelToStart)
+                ? "Hra ulozena!  (Level " + levelToStart + ")"
+                : "Ulozenie zlyhalo.";
             return;
         }
 
