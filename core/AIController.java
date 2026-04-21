@@ -191,7 +191,7 @@ public class AIController {
     private void transitionTo(AIState newState) {
         if (log.isDebugEnabled()) {
             log.debug("AI state transition: enemy={}, from={}, to={}",
-                enemy.getPosition(), state, newState);
+                enemy.getPosition().toString(), state, newState);
         }
         state = newState;
     }

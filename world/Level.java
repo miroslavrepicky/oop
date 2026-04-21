@@ -23,16 +23,39 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a single game level containing all active game objects.
+ * Represents one game level and owns all active game objects within it.
  *
- * <p>On-hit effects (DOT, slow) are handled directly on {@link Character} instances
- * and ticked there – no separate status-effect list is needed in the level.
+ * <h2>Loading</h2>
+ * <p>{@link #load(String)} delegates to {@link MapManager} to parse a Tiled {@code .tmx} file.
+ * Entity spawn data extracted from the {@code "entities"} layer is converted into live objects:
+ * enemies (with AI and movement resolvers), ducks, and ground items. The active player's
+ * position is set from the {@code "player"} entity.
+ *
+ * <h2>Update loop</h2>
+ * <p>{@link #update(UpdateContext)} advances one frame:
+ * <ol>
+ *   <li>Inactive poolable projectiles are returned to {@link sk.stuba.fiit.projectiles.ProjectilePool}.</li>
+ *   <li>Inactive projectiles are removed from the list.</li>
+ *   <li>Active projectiles are updated.</li>
+ *   <li>Enemies whose death animation has finished are removed.</li>
+ *   <li>Remaining enemies are updated (AI, physics).</li>
+ *   <li>{@link EggProjectileSpawner} marker items are converted into live {@link EggProjectile}s.</li>
+ *   <li>Remaining items are updated.</li>
+ *   <li>Dead ducks are removed; living ducks are updated.</li>
+ *   <li>The level completion flag is set when all enemies are dead.</li>
+ * </ol>
+ *
+ * <h2>On-hit effects</h2>
+ * <p>DOT and slow effects are handled directly on {@link Character} instances and
+ * ticked there – no separate status-effect list is maintained in the level.
  */
 public class Level implements Updatable {
     private int levelNumber;
     private List<EnemyCharacter> enemies;
     private List<Item>           items;
     private List<Duck>           ducks;
+
+    /** Set to {@code true} once all enemies have been defeated. */
     private boolean              isCompleted;
     private List<Projectile>     projectiles = new ArrayList<>();
     private MapManager           mapManager;
@@ -45,8 +68,19 @@ public class Level implements Updatable {
         this.isCompleted = false;
     }
 
+    /** Adds a projectile to the active projectile list. */
     public void addProjectile(Projectile projectile) { projectiles.add(projectile); }
 
+    /**
+     * Loads the Tiled map from {@code mapPath} and spawns all entities defined
+     * in the {@code "entities"} layer.
+     *
+     * <p>Supported entity types: {@code player}, {@code enemy_knight}, {@code duck},
+     * {@code healing_potion}, {@code armour}, {@code enemy_archer}, {@code enemy_wizzard},
+     * {@code dark_knight}.
+     *
+     * @param mapPath relative path to the {@code .tmx} file
+     */
     public void load(String mapPath) {
         mapManager = new MapManager(mapPath);
         for (Map<String, Object> entity : mapManager.getEntities()) {
@@ -61,7 +95,7 @@ public class Level implements Updatable {
                     break;
                 case "enemy_knight":
                     EnemyKnight ek = new EnemyKnight(new Vector2D(x, y));
-                    ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 80f, 80f);
+                    ek.initAI(new Vector2D(x - 100, y), new Vector2D(x + 100, y), 52f, 52f);
                     ek.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(ek);
                     break;
@@ -96,6 +130,13 @@ public class Level implements Updatable {
         }
     }
 
+    /**
+     * Advances all level objects by one frame. See class-level documentation for the
+     * full update order.
+     *
+     * @param upx the frame context; {@code upx.deltaTime} and {@code upx.platforms} are
+     *            replaced internally with map-sourced data; all other fields are forwarded
+     */
     @Override
     public void update(UpdateContext upx) {
         float deltaTime = upx.deltaTime;
@@ -132,6 +173,10 @@ public class Level implements Updatable {
         }
     }
 
+    /**
+     * Returns all inactive poolable projectiles to their respective {@link sk.stuba.fiit.projectiles.ProjectilePool}.
+     * Called at the start of each update before the inactive projectiles are removed.
+     */
     private void returnInactiveProjectilesToPool() {
         for (Projectile p : projectiles) {
             if (!p.isActive() && p instanceof Poolable) {
@@ -140,6 +185,10 @@ public class Level implements Updatable {
         }
     }
 
+    /**
+     * Returns the currently active player character via {@link GameManager}.
+     * Convenience accessor used by AI and collision code that holds a level reference.
+     */
     public PlayerCharacter getActivePlayer() {
         return GameManager.getInstance().getInventory().getActive();
     }

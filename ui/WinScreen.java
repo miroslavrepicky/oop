@@ -12,6 +12,17 @@ import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.ShadowQuest;
 
+
+/**
+ * Screen displayed when the player successfully completes all levels.
+ *
+ * <p>Renders a congratulatory message and a single "Main Menu" button that
+ * resets the game state via {@link GameManager#resetGame()} before navigating
+ * back to {@link MainMenuScreen}.
+ *
+ * <p>Uses a fixed virtual resolution of {@value #W}×{@value #H} pixels mapped
+ * through an {@link OrthographicCamera}, so button hit-testing is resolution-independent.
+ */
 public class WinScreen implements Screen {
 
     private static final float W = 800f;
@@ -22,6 +33,8 @@ public class WinScreen implements Screen {
     private final SpriteBatch batch;
     private final ShapeRenderer shape;
     private final BitmapFont font;
+
+    /** Hit-area for the "Main Menu" button. */
     private final Rectangle btnMenu;
 
     public WinScreen(ShadowQuest game) {
@@ -56,6 +69,12 @@ public class WinScreen implements Screen {
         drawText(mx, my);
     }
 
+    /**
+     * Draws the button background with a hover highlight.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
         boolean hover = btnMenu.contains(mx, my);
@@ -69,6 +88,12 @@ public class WinScreen implements Screen {
         shape.end();
     }
 
+    /**
+     * Draws the win message and the button label.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawText(float mx, float my) {
         batch.begin();
 
@@ -85,6 +110,12 @@ public class WinScreen implements Screen {
         batch.end();
     }
 
+    /**
+     * Handles a mouse click: navigates to the main menu if the button was clicked.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void handleClick(float mx, float my) {
         if (btnMenu.contains(mx, my)) {
             GameManager.getInstance().resetGame();

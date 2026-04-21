@@ -12,18 +12,38 @@ import com.badlogic.gdx.math.Rectangle;
 import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.ShadowQuest;
 
+
+/**
+ * Screen displayed after the player's party is fully defeated.
+ *
+ * <p>Shows the number of the failed level and provides two actions:
+ * <ul>
+ *   <li><b>Retry</b> – revives all party members via {@link GameManager#reviveParty()}
+ *       and returns to {@link InventoryScreen} for the same level.</li>
+ *   <li><b>Main Menu</b> – resets all game state and navigates to {@link MainMenuScreen}.</li>
+ * </ul>
+ *
+ * <p>Uses a fixed virtual resolution of {@value #W}×{@value #H} pixels mapped
+ * through an {@link OrthographicCamera} so button hit-testing is resolution-independent.
+ */
 public class GameOverScreen implements Screen {
 
     private static final float W = 800f;
     private static final float H = 480f;
 
     private final ShadowQuest game;
+
+    /** The 1-based level number in which the party was defeated. */
     private final int failedLevel;
     private final OrthographicCamera cam;
     private final SpriteBatch batch;
     private final ShapeRenderer shape;
     private final BitmapFont font;
+
+    /** Hit-area for the "Try Again" button. */
     private final Rectangle btnRetry;
+
+    /** Hit-area for the "Main Menu" button. */
     private final Rectangle btnMenu;
 
     public GameOverScreen(ShadowQuest game, int failedLevel) {
@@ -60,6 +80,12 @@ public class GameOverScreen implements Screen {
         drawText(mx, my);
     }
 
+    /**
+     * Draws background rectangles for both buttons with hover highlighting.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
         drawButtonShape(btnRetry, mx, my, false);
@@ -73,6 +99,14 @@ public class GameOverScreen implements Screen {
         shape.end();
     }
 
+    /**
+     * Fills a single button background, applying a green hover tint when the cursor is over it.
+     *
+     * @param btn     the button rectangle
+     * @param mx      virtual mouse X
+     * @param my      virtual mouse Y
+     * @param danger  reserved for future use (e.g. destructive action styling)
+     */
     private void drawButtonShape(Rectangle btn, float mx, float my, boolean danger) {
         boolean hover = btn.contains(mx, my);
         shape.setColor(
@@ -83,6 +117,12 @@ public class GameOverScreen implements Screen {
         shape.rect(btn.x, btn.y, btn.width, btn.height);
     }
 
+    /**
+     * Draws all text elements: the "YOU FAILED" heading, the level hint, and button labels.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawText(float mx, float my) {
         batch.begin();
 
@@ -98,12 +138,29 @@ public class GameOverScreen implements Screen {
         batch.end();
     }
 
+    /**
+     * Draws a button label, brightening it when the cursor is hovering over the button.
+     *
+     * @param btn   the button rectangle
+     * @param label text to display
+     * @param mx    virtual mouse X
+     * @param my    virtual mouse Y
+     */
     private void drawButtonLabel(Rectangle btn, String label, float mx, float my) {
         boolean hover = btn.contains(mx, my);
         font.setColor(hover ? Color.WHITE : Color.LIGHT_GRAY);
         font.draw(batch, label, btn.x + 10, btn.y + btn.height - 10);
     }
 
+    /**
+     * Handles a mouse click on either button.
+     *
+     * <p>Retry: revives all party members and loads the inventory screen for the failed level.
+     * Main Menu: resets all game state and navigates to the main menu.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void handleClick(float mx, float my) {
         if (btnRetry.contains(mx, my)) {
             // revive postav - game over ich zabil

@@ -9,19 +9,31 @@ import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.render.GameRenderer;
 
 /**
- * GameScreen po refaktore na State vzor + RenderSnapshot.
+ * LibGDX {@link Screen} that hosts the active gameplay loop.
  *
- * Zmeny oproti pôvodnému kódu:
- *  - Odstránené {@code gameRenderer.setCollisionManager()} –
- *    GameRenderer už CollisionManager nepotrebuje (HUDRenderer
- *    dostáva boolean nearbyItemAvailable cez snapshot).
- *  - Všetko ostatné zostáva rovnaké.
+ * <p>Delegates all game logic to the State pattern: a {@link IGameState} instance
+ * receives {@code update(dt)} and {@code render(dt)} calls every frame.
+ * When a state signals a transition via {@link IGameState#next()}, this screen
+ * calls {@link #handleTransition(IGameState)} to switch either the internal
+ * state or the LibGDX screen.
+ *
+ * <h2>State transitions handled here</h2>
+ * <ul>
+ *   <li>{@link GameOverState}  → {@link GameOverScreen} for the failed level number.</li>
+ *   <li>{@link LevelCompleteState} → {@link InventoryScreen} for the next level number.</li>
+ *   <li>{@link WinState}       → {@link WinScreen}.</li>
+ *   <li>Any other state → replaced as the new {@code currentState} (e.g. pause/resume).</li>
+ * </ul>
+ *
+ * <h2>Debug shortcut</h2>
+ * <p>Pressing F1 toggles hitbox outlines via {@link GameRenderer#toggleDebugHitboxes()}.
  */
 public class GameScreen implements Screen {
 
     private final ShadowQuest       game;
-    private       IGameState        currentState;
 
+    /** The currently active game-state machine node. */
+    private       IGameState        currentState;
     private final GameManager       gameManager;
     private final CollisionManager  collisionManager;
     private final PlayerController  playerController;
@@ -57,6 +69,15 @@ public class GameScreen implements Screen {
         currentState.render(deltaTime);
     }
 
+    /**
+     * Responds to a state transition request produced by the current state.
+     *
+     * <p>Terminal states ({@link GameOverState}, {@link LevelCompleteState}, {@link WinState})
+     * cause a LibGDX screen change. All other states replace {@link #currentState} in-place
+     * (e.g. transitioning between {@link PlayingState} and {@link sk.stuba.fiit.core.states.PausedState}).
+     *
+     * @param next the next state returned by {@link IGameState#next()}
+     */
     private void handleTransition(IGameState next) {
         if (next instanceof GameOverState) {
             int level = gameManager.getCurrentLevel().getLevelNumber();

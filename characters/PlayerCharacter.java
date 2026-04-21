@@ -11,17 +11,25 @@ import sk.stuba.fiit.world.Level;
 /**
  * Base class for all player-controlled characters.
  *
- * <p>Manages the primary and secondary attack lifecycle:
- * an attack is initiated via {@link #executeAttack(Attack)}, which starts an animation
- * timer and records the attack. The actual projectile/hit is spawned in
- * {@link #updateAnimation(float)} at the appropriate animation frame (near the end).
+ * <h2>Attack lifecycle</h2>
+ * <p>An attack is initiated via {@link #executeAttack(Attack)}, which:
+ * <ol>
+ *   <li>Checks that no other attack is in progress.</li>
+ *   <li>Verifies that the character has enough mana (delegated to {@link #getMana()}).</li>
+ *   <li>Spends mana via {@link #spendMana(int)}.</li>
+ *   <li>Records the attack and starts the animation timer.</li>
+ * </ol>
+ * The actual projectile or hit-box is spawned inside {@link #updateAnimation(UpdateContext)}
+ * at the correct animation frame (near the end of the animation), not at initiation time.
  *
- * <p>Mana management uses a template method: the base implementation treats mana
- * as unlimited ({@code Integer.MAX_VALUE}). {@code Wizzard} overrides
- * {@link #getMana()} and {@link #spendMana(int)} to use real mana values.
+ * <h2>Mana – template method</h2>
+ * <p>The default implementation treats mana as unlimited ({@link Integer#MAX_VALUE}).
+ * {@link Wizzard} overrides {@link #getMana()} and {@link #spendMana(int)} to use real
+ * mana values, without requiring any changes to this base class.
  *
+ * <h2>Physics</h2>
  * <p>Gravity is applied by {@code PlayerController}, which passes the platform list
- * directly – the character does not need to call {@code GameManager} for physics data.
+ * directly – this class does not call {@code GameManager} for physics data.
  */
 public abstract class PlayerCharacter extends Character {
     protected Attack primaryAttack;
@@ -29,6 +37,8 @@ public abstract class PlayerCharacter extends Character {
     protected boolean isAttacking       = false;
     protected float   attackAnimTimer   = 0f;
     protected Attack  currentAttack     = null;
+
+    /** Guards against spawning the projectile more than once per attack swing. */
     protected boolean projectileSpawned = false;
 
     public PlayerCharacter(String name, int hp, int attackPower,
@@ -36,21 +46,44 @@ public abstract class PlayerCharacter extends Character {
         this(name, hp, attackPower, speed, position, 0);
     }
 
+    /**
+     * @param name      display name
+     * @param hp        starting and maximum HP
+     * @param attackPower base damage forwarded to attack strategies
+     * @param speed     movement speed in world units per second
+     * @param position  initial world position
+     * @param maxArmor  maximum armour value (starting armour is 0)
+     */
     public PlayerCharacter(String name, int hp, int attackPower, float speed,
                            Vector2D position, int maxArmor) {
         super(name, hp, attackPower, speed, position, 0, maxArmor);
     }
 
     // --- mana – default prázdna implementácia, Wizzard override-ne ---
+    /**
+     * Returns the character's current mana. Default: {@link Integer#MAX_VALUE} (unlimited).
+     *
+     * @return current mana points
+     */
     protected int  getMana()             { return Integer.MAX_VALUE; }
+
+    /**
+     * Deducts {@code amount} mana points. Default: no-op (unlimited mana).
+     *
+     * @param amount mana points to spend
+     */
     protected void spendMana(int amount) { }
 
     /**
-     * Attempts to execute an attack. Checks mana cost for spell attacks and
-     * starts the attack animation timer.
-     * Has no effect if another attack is already in progress.
+     * Attempts to execute an attack. Silently ignored when:
+     * <ul>
+     *   <li>{@code attack} is {@code null}.</li>
+     *   <li>Another attack is already in progress.</li>
+     *   <li>The character has insufficient mana.</li>
+     *   <li>No level is currently loaded.</li>
+     * </ul>
      *
-     * @param attack the attack strategy to execute; {@code null} is silently ignored
+     * @param attack the attack strategy to execute
      */
     protected void executeAttack(Attack attack) {
         if (attack == null || isAttacking) {
@@ -73,13 +106,25 @@ public abstract class PlayerCharacter extends Character {
         }
     }
 
+    /** Initiates the primary attack (typically mapped to {@code SPACE}). */
     public void performPrimaryAttack()   { executeAttack(primaryAttack); }
+
+    /** Initiates the secondary attack (typically mapped to {@code V}). */
     public void performSecondaryAttack() { executeAttack(secondaryAttack); }
 
     /**
-     * Drives the attack animation: spawns the projectile at the correct frame,
-     * manages the animation timer, and switches to the appropriate locomotion
-     * animation (idle / walk / jump) when the attack ends.
+     * Drives the attack animation frame-by-frame.
+     *
+     * <ul>
+     *   <li>If the character is dead: starts and ticks the death animation, then
+     *       switches to the next living party member when the animation finishes.</li>
+     *   <li>While attacking: spawns the projectile/hitbox at the correct frame (within
+     *       the last three frame-durations), then counts down the animation timer.</li>
+     *   <li>When not attacking: selects {@code "jump"}, {@code "walk"}, or {@code "idle"}
+     *       based on the character's current movement state.</li>
+     * </ul>
+     *
+     * @param ctx frame context including {@code deltaTime}, {@code level}, and {@code inventory}
      */
     public void updateAnimation(UpdateContext ctx) {
         if (getAnimationManager() == null) return;
@@ -91,14 +136,13 @@ public abstract class PlayerCharacter extends Character {
 
             if (isDeathAnimationDone()) {
                 if (ctx.inventory.getActive() == this && !ctx.inventory.switchToNextAlive()) {
-                    // žiadna živá postava – party je porazená, nič nerob,
-                    // PlayingState.update() zachytí isPartyDefeated() a prepne stav
+                    // No living characters remain – PlayingState will detect isPartyDefeated().
                 }
             }
             return;
         }
 
-        // Spawn projektilu pri správnom frame útočnej animácie
+        // Spawn the projectile near the end of the attack animation.
         if (!projectileSpawned && currentAttack != null) {
             float frameDuration = currentAttack.getFrameDuration(getAnimationManager());
             if (attackAnimTimer <= frameDuration * 3) {
@@ -127,10 +171,21 @@ public abstract class PlayerCharacter extends Character {
         getAnimationManager().update(ctx.deltaTime);
     }
 
+    /**
+     * Returns {@code true} if the character's animation manager has an animation
+     * registered under the given name.
+     *
+     * @param name the animation key to check
+     * @return {@code true} when the animation exists
+     */
     protected boolean hasAnimation(String name) {
         return getAnimationManager() != null && getAnimationManager().hasAnimation(name);
     }
 
+    /**
+     * Returns the shared {@link Inventory} via {@link GameManager}.
+     * Items call this to remove themselves after use.
+     */
     public Inventory getInventory() {
         return GameManager.getInstance().getInventory();
     }

@@ -15,16 +15,19 @@ import java.util.List;
 /**
  * Manages the player party and item slots using a shared slot budget.
  *
- * <p>Slot budget: the inventory has {@code totalSlots} slots total.
- * Each non-base character costs 3 slots; the base ({@code Knight}) is free.
- * Items cost their {@link sk.stuba.fiit.items.Item#getSlotsRequired()} value.
+ * <h2>Slot budget</h2>
+ * <p>The inventory has {@code totalSlots} slots in total.
+ * Each non-base character costs 3 slots; the base {@link Knight} is free.
+ * Items cost their {@link Item#getSlotsRequired()} value.
  *
- * <p>Active character: only one character is active at a time. On death the
- * controller calls {@link #switchToNextAlive()} to swap automatically.
- * When no living character remains, {@link #isPartyDefeated()} returns {@code true}.
+ * <h2>Active character</h2>
+ * <p>Only one character is active at a time. On death the controller calls
+ * {@link #switchToNextAlive()} to swap automatically. When no living character
+ * remains, {@link #isPartyDefeated()} returns {@code true}.
  *
- * <p>Item selection: a cursor ({@code selectedSlot}) cycles through the item list.
- * Items are used via {@link #useSelected(PlayerCharacter, Level)}.
+ * <h2>Item selection</h2>
+ * <p>A cursor ({@code selectedSlot}) cycles through the item list.
+ * Items are consumed via {@link #useSelected(PlayerCharacter, Level)}.
  */
 public class Inventory {
     private int totalSlots;
@@ -33,6 +36,8 @@ public class Inventory {
     private List<PlayerCharacter> characters;
     private List<Item> items;
     private int selectedSlot = 0;
+
+    /** The base character (Knight) that can never be removed. */
     private PlayerCharacter baseCharacter;
     private static final Logger log = GameLogger.get(Inventory.class);
 
@@ -49,11 +54,12 @@ public class Inventory {
 
     /**
      * Adds a character to the party.
-     * The {@code Knight} base character is always accepted without slot cost.
+     *
+     * <p>The {@link Knight} base character is always accepted without slot cost.
      * All other characters cost 3 slots.
      *
      * @param character the character to add
-     * @return {@code true} if added successfully, {@code false} if not enough slots
+     * @return {@code true} if added successfully; {@code false} if not enough slots remain
      */
     public boolean addCharacter(PlayerCharacter character) {
         if (character instanceof Knight) {
@@ -81,7 +87,7 @@ public class Inventory {
      * Removes a non-base character from the party, freeing 3 slots.
      *
      * @param character the character to remove
-     * @return {@code false} if the character is the base character or not in the party
+     * @return {@code false} if the character is the base character or not found in the party
      */
     public boolean removeCharacter(PlayerCharacter character) {
         if (character == baseCharacter) {
@@ -103,10 +109,22 @@ public class Inventory {
         return true;
     }
 
+    /**
+     * Returns {@code true} if the given character is the unremovable base character.
+     *
+     * @param c the character to check
+     * @return {@code true} when {@code c} is the base ({@link Knight})
+     */
     public boolean isBaseCharacter(PlayerCharacter c) {
         return c == baseCharacter;
     }
 
+    /**
+     * Adds an item to the inventory if enough slots are available.
+     *
+     * @param item the item to add
+     * @return {@code true} if the item was added; {@code false} if slots are insufficient
+     */
     public boolean addItem(Item item) {
         int cost = item.getSlotsRequired();
         if (usedSlots + cost > totalSlots) {
@@ -121,6 +139,12 @@ public class Inventory {
         return true;
     }
 
+    /**
+     * Removes an item from the inventory, freeing its slot cost.
+     * Adjusts {@link #selectedSlot} if it would be out of range after removal.
+     *
+     * @param item the item to remove; silently ignored if not present
+     */
     public void removeItem(Item item) {
         if (items.remove(item)) {
             usedSlots -= item.getSlotsRequired();
@@ -135,11 +159,13 @@ public class Inventory {
         }
     }
 
+    /** Moves the item cursor one step backward (wraps around). */
     public void selectPrevious() {
         if (items.isEmpty()) return;
         selectedSlot = (selectedSlot - 1 + items.size()) % items.size();
     }
 
+    /** Moves the item cursor one step forward (wraps around). */
     public void selectNext() {
         if (items.isEmpty()) return;
         selectedSlot = (selectedSlot + 1) % items.size();
@@ -147,16 +173,22 @@ public class Inventory {
 
     /**
      * Uses the currently selected item on {@code character} within the given {@code level}.
-     * The level is passed as a parameter so this method does not need to call {@code GameManager}.
+     * The level is passed as a parameter so this method does not call {@code GameManager}.
      *
      * @param character the active player character
-     * @param level     the current level (passed from {@code PlayerController})
+     * @param level     the current level (forwarded from {@code PlayerController})
      */
     public void useSelected(PlayerCharacter character, Level level) {
         if (items.isEmpty() || selectedSlot >= items.size()) return;
         items.get(selectedSlot).use(character, level);
     }
 
+    /**
+     * Switches the active character to the one mapped to the given numeric key (1-based).
+     * The new character inherits the previous character's position and facing direction.
+     *
+     * @param key 1-based index into the party list (matches keyboard number keys)
+     */
     public void switchCharacter(int key) {
         if (key >= 1 && key <= characters.size()) {
             PlayerCharacter next = characters.get(key - 1);
@@ -180,8 +212,10 @@ public class Inventory {
 
     /**
      * Switches to the next living character in the party, preserving position and facing.
+     * Called automatically when the active character's HP reaches zero.
      *
-     * @return {@code true} if a living character was found and activated
+     * @return {@code true} if a living character was found and activated;
+     *         {@code false} if the entire party is defeated
      */
     public boolean switchToNextAlive() {
         Vector2D currentPosition = activeCharacter.getPosition();
@@ -202,7 +236,7 @@ public class Inventory {
     }
 
     /**
-     * Returns {@code true} when all party members have zero HP.
+     * Returns {@code true} when every party member has zero HP.
      *
      * @return {@code true} if the party is fully defeated
      */

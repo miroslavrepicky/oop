@@ -46,7 +46,7 @@ public class MeleeAttack implements Attack {
      *
      * <p>Hit-area geometry:
      * <ul>
-     *   <li><b>Width</b> – {@code rangeTiles * 52} px</li>
+     *   <li><b>Width</b> – {@code rangeTiles * 26} px</li>
      *   <li><b>Height</b> – matches the attacker's current hitbox height</li>
      *   <li><b>X</b> – starts at the leading edge of the attacker's hitbox
      *       (right when facing right, left-minus-reach when facing left)</li>
@@ -57,7 +57,7 @@ public class MeleeAttack implements Attack {
      */
     @Override
     public Projectile execute(Character attacker, Level level) {
-        float reach = rangeTiles * 52f;
+        float reach = rangeTiles * 26f;
 
         boolean facingRight = attacker.isFacingRight();
         float   hitboxH     = attacker.getHitbox().height;

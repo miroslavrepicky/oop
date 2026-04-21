@@ -14,7 +14,7 @@ public class Knight extends PlayerCharacter {
     private AnimationManager animationManager;
 
     public Knight(Vector2D position) {
-        super("Knight", 150, 30, 2.0f, position, MAX_ARMOR);
+        super("Knight", 1500, 30, 2.0f, position, MAX_ARMOR);
         this.gravityStrategy = new NormalGravity();
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");

@@ -15,15 +15,27 @@ import sk.stuba.fiit.util.Vector2D;
 import java.util.List;
 
 /**
- * Abstract base class for all characters (player and enemy alike).
+ * Abstract base class for all characters – both player-controlled and AI-controlled.
  *
- * <p>Damage model: {@link #takeDamage(int)} first drains armour, then HP.
- * A negative damage value heals the character up to {@code maxHp}.
+ * <h2>Damage model</h2>
+ * <p>{@link #takeDamage(int)} first drains armour, then reduces HP.
+ * A <em>negative</em> damage value heals the character up to {@code maxHp}.
  *
- * <p>On-hit effects: {@link #applyDot(int, float)} and {@link #applySlow(float, float)}
- * are called by {@code CollisionManager} when a projectile carrying an effect hits this
- * character. Effects tick internally each frame via {@link #tickEffects(float)}, which
- * subclasses must call from their {@code update()} implementation.
+ * <h2>On-hit effects</h2>
+ * <p>{@link #applyDot(int, float)} and {@link #applySlow(float, float)} are called by
+ * {@code CollisionManager} when a projectile carrying an effect hits this character.
+ * Effects tick each frame via {@link #tickEffects(float)}, which subclasses must call
+ * from their own {@code update()} implementation.
+ *
+ * <h2>Death animation</h2>
+ * <p>Calling {@link #startDeathAnimation()} switches to the {@code "death"} animation
+ * and starts a countdown equal to the animation duration. Once the countdown reaches
+ * zero, {@link #isDeathAnimationDone()} returns {@code true} and the object may be
+ * removed from the level.
+ *
+ * <h2>Gravity</h2>
+ * <p>Gravity is pluggable via the Strategy pattern: assign a {@link GravityStrategy}
+ * implementation and call {@link #applyGravity(float, List)} each frame.
  */
 public abstract class Character implements Updatable, Movable, Collidable, Physicable {
     protected String    name;
@@ -38,6 +50,8 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     protected boolean isOnGround = false;
     protected boolean facingRight = true;
     protected float   velocityX  = 0f;
+
+    /** Countdown for the death animation; -1 means the animation has not started yet. */
     private   float   deathTimer = -1f;
     protected int     armor;
     protected int     maxArmor;
@@ -48,15 +62,28 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     private float dotAccumulator = 0f;
 
     // Slow state
+    /** Saved speed before a slow was applied; -1 when no slow is active. */
     private float originalSpeed  = -1f;
     private float slowRemaining  = 0f;
 
     private static final Logger log = GameLogger.get(Character.class);
 
+    /** Constructs a character with zero armour. */
     public Character(String name, int hp, int attackPower, float speed, Vector2D position) {
         this(name, hp, attackPower, speed, position, 0, 0);
     }
 
+    /**
+     * Full constructor used by armoured characters.
+     *
+     * @param name        display name
+     * @param hp          starting and maximum HP
+     * @param attackPower base damage value forwarded to attack strategies
+     * @param speed       movement speed in world units per second
+     * @param position    initial world position
+     * @param armor       starting armour value (clamped to {@code maxArmor})
+     * @param maxArmor    maximum armour value
+     */
     public Character(String name, int hp, int attackPower, float speed,
                      Vector2D position, int armor, int maxArmor) {
         this.name     = name;
@@ -91,6 +118,12 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     //  Gravity
     // -------------------------------------------------------------------------
 
+    /**
+     * Applies the configured {@link GravityStrategy} for one frame.
+     *
+     * @param deltaTime elapsed time in seconds
+     * @param platforms collision rectangles from the map
+     */
     public void applyGravity(float deltaTime, List<Rectangle> platforms) {
         if (gravityStrategy != null) {
             gravityStrategy.apply(this, deltaTime, platforms);
@@ -102,10 +135,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     // -------------------------------------------------------------------------
 
     /**
-     * Applies a damage-over-time effect. Replaces any active DOT.
+     * Applies a damage-over-time burn effect, replacing any previously active DOT.
      *
-     * @param dps      damage per second
-     * @param duration total duration in seconds
+     * @param dps      damage dealt per second
+     * @param duration total effect duration in seconds
      */
     public void applyDot(int dps, float duration) {
         this.dotDps         = dps;
@@ -115,11 +148,12 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     }
 
     /**
-     * Applies a slow effect, reducing speed to {@code multiplier * originalSpeed}.
-     * Replaces any active slow (original speed is restored first).
+     * Applies a slow effect that reduces speed to {@code multiplier × originalSpeed}.
+     * If a slow is already active the original speed is restored before the new
+     * multiplier is applied, preventing multiplicative stacking.
      *
-     * @param multiplier fraction of original speed (e.g. 0.3 = 30%)
-     * @param duration   total duration in seconds
+     * @param multiplier fraction of original speed (e.g. {@code 0.3f} = 30 %)
+     * @param duration   effect duration in seconds
      */
     public void applySlow(float multiplier, float duration) {
         if (originalSpeed >= 0f) {
@@ -133,10 +167,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     }
 
     /**
-     * Ticks active DOT and slow effects. Must be called once per frame from
-     * each subclass {@code update()} implementation.
+     * Ticks active DOT and slow effects. Must be called once per frame from each
+     * subclass {@code update()} implementation.
      *
-     * @param deltaTime time since last frame in seconds
+     * @param deltaTime elapsed time since the last frame, in seconds
      */
     protected void tickEffects(float deltaTime) {
         if (dotRemaining > 0f && isAlive()) {
@@ -174,6 +208,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     //  Death animation
     // -------------------------------------------------------------------------
 
+    /**
+     * Switches to the {@code "death"} animation and starts a countdown equal to its
+     * duration. Has no effect if the death animation was already started.
+     */
     public void startDeathAnimation() {
         if (deathTimer != -1f) return;
         AnimationManager am = getAnimationManager();
@@ -184,16 +222,31 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         if (am != null) am.play("death");
     }
 
+    /**
+     * Decrements the death-animation countdown by {@code deltaTime}, clamped to zero.
+     *
+     * @param deltaTime elapsed time in seconds
+     */
     public void updateDeathTimer(float deltaTime) {
         if (deathTimer > 0f) {
             deathTimer = Math.max(0f, deathTimer - deltaTime);
         }
     }
 
+    /**
+     * Returns {@code true} when the character is dead <em>and</em> the death animation
+     * countdown has reached zero. The character may then be removed from the level.
+     */
     public boolean isDeathAnimationDone() {
         return !isAlive() && deathTimer == 0f;
     }
 
+    /**
+     * Applies an upward impulse if the character is on the ground.
+     * Has no effect while airborne.
+     *
+     * @param jumpForce initial upward velocity in world units per second
+     */
     public void jump(float jumpForce) {
         if (isOnGround) {
             velocityY  = jumpForce;
@@ -201,6 +254,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Restores full HP and clears all active effects (DOT, slow, death timer).
+     * Called by {@code GameManager.reviveParty()} before retrying a failed level.
+     */
     public void revive() {
         this.hp           = this.maxHp;
         this.velocityY    = 0f;
@@ -215,6 +272,12 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Applies damage to the character. Armour absorbs damage first; any remainder
+     * reduces HP. A negative {@code dmg} value heals up to {@code maxHp}.
+     *
+     * @param dmg raw damage value; negative values heal
+     */
     public void takeDamage(int dmg) {
         if (dmg > 0) {
             int armorAbsorb = Math.min(armor, dmg);
@@ -240,12 +303,19 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
         }
     }
 
+    /**
+     * Permanently increases armour by {@code amount}, clamped to {@code maxArmor}.
+     *
+     * @param amount armour points to add
+     */
     public void addArmor(int amount) {
         armor = Math.min(maxArmor, armor + amount);
     }
 
+    /** Returns {@code true} when the character's HP is greater than zero. */
     public boolean isAlive() { return hp > 0; }
 
+    /** No-op default; subclasses override to drive frame-by-frame animation logic. */
     public void updateAnimation(float deltaTime) { }
 
     public String    getName()             { return name; }
@@ -261,5 +331,7 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     public void      setVelocityX(float v){ this.velocityX = v; }
     public int       getArmor()           { return armor; }
     public int       getMaxArmor()        { return maxArmor; }
+
+    /** Returns the character's {@link AnimationManager}; must not return {@code null}. */
     public abstract AnimationManager getAnimationManager();
 }

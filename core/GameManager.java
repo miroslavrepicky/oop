@@ -11,25 +11,29 @@ import sk.stuba.fiit.world.Level;
 
 
 /**
- * Central singleton coordinating top-level game state.
+ * Central singleton that coordinates top-level game state across screens and sessions.
  *
- * <p>Responsibilities:
+ * <h2>Responsibilities</h2>
  * <ul>
  *   <li>Holds the active {@link Inventory} (party + items).</li>
  *   <li>Creates and loads {@link Level} instances via {@link #startLevel(int)}.</li>
- *   <li>Initialises a new game with a default {@code Knight} party via {@link #initGame()}.</li>
- *   <li>Resets all game states (inventory, level, caches) via {@link #resetGame()}.</li>
- *   <li>Revives all party members after a game-over retry.</li>
+ *   <li>Initialises a new game session with a default {@link Knight} via {@link #initGame()}.</li>
+ *   <li>Resets all game state (inventory, level, texture cache, projectile pool)
+ *       via {@link #resetGame()}.</li>
+ *   <li>Revives all party members after a game-over retry via {@link #reviveParty()}.</li>
  * </ul>
  *
+ * <h2>Design notes</h2>
  * <p>Screens and controllers access the manager via {@link #getInstance()}.
  * Game logic classes (enemies, items, attacks) receive their dependencies through
- * {@link UpdateContext} or method parameters to avoid hard coupling to this singleton.
+ * {@link UpdateContext} or method parameters to avoid direct coupling to this singleton.
  */
 public class GameManager {
     private static GameManager instance;
     private Inventory inventory;
     private Level currentLevel;
+
+    /** Maximum number of levels in the game. Used to determine win condition. */
     private static final int MAX_LEVELS = 1;
     private static final Logger log = GameLogger.get(GameManager.class);
 
@@ -37,6 +41,7 @@ public class GameManager {
         inventory = new Inventory();
     }
 
+    /** Returns the single shared instance, creating it on first call. */
     public static GameManager getInstance() {
         if (instance == null) {
             instance = new GameManager();
@@ -49,7 +54,7 @@ public class GameManager {
      * and positions the active player at the spawn point defined in the map.
      *
      * @param levelNumber 1-based level number; must be in range [1, {@link #MAX_LEVELS}]
-     * @throws GameStateException if no active player exists or the level number is invalid
+     * @throws GameStateException if no active player exists or the level number is out of range
      */
     public void startLevel(int levelNumber) {
         if (inventory.getActive() == null) {
@@ -74,8 +79,8 @@ public class GameManager {
     }
 
     /**
-     * Initialises a new game session with a default {@code Knight} as the base character.
-     * Called after {@link #resetGame()} when starting a new game.
+     * Initialises a new game session with a default {@link Knight} as the base character.
+     * Must be called after {@link #resetGame()} when starting a new game.
      */
     public void initGame() {
         Knight knight = new Knight(new Vector2D(0, 0)); // pozicia sa nastavi z Tiled
@@ -84,7 +89,7 @@ public class GameManager {
 
     /**
      * Resets all game state: clears the inventory, nulls the current level,
-     * disposes the {@link AtlasCache} and empties the {@link ProjectilePool}.
+     * disposes the {@link AtlasCache}, and empties the {@link ProjectilePool}.
      * Must be called before starting a new game or loading a save.
      */
     public void resetGame() {
@@ -97,8 +102,8 @@ public class GameManager {
     }
 
     /**
-     * Restores all party members to full HP. Called by {@code GameOverScreen}
-     * when the player chooses to retry the level.
+     * Restores all party members to full HP.
+     * Called by {@code GameOverScreen} when the player chooses to retry the level.
      */
     public void reviveParty() {
         inventory.getCharacters().forEach(c -> {

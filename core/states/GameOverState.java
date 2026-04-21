@@ -5,8 +5,23 @@ package sk.stuba.fiit.core.states;
 //  GameScreen zistí tento stav cez next() a prepne na GameOverScreen.
 // ─────────────────────────────────────────────────────────────────────────────
 public class GameOverState implements IGameState {
-    /** Flag pre GameScreen – keď vidí tento stav, prepne obrazovku. */
-    @Override public void  update(float dt) { /* nič – čakáme na GameScreen */ }
-    @Override public void  render(float dt) { /* nič – GameScreen prepne */ }
+
+    /**
+     * No-op – the game has ended; no further logic is executed in this state.
+     */
+    @Override public void  update(float dt) {
+        /* terminal – GameScreen switches screen */
+    }
+
+    /**
+     * No-op – rendering is handled by {@code GameOverScreen} after the transition.
+     */
+    @Override public void  render(float dt) {
+        /* terminal – GameScreen switches screen */
+    }
+
+    /**
+     * Always returns {@code null}; {@code GameScreen} reacts to this state type directly.
+     */
     @Override public IGameState next()      { return null; }
 }

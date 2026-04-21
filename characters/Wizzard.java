@@ -9,8 +9,30 @@ import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
 
+/**
+ * Player character specialised in ranged magic attacks.
+ *
+ * <h2>Attacks</h2>
+ * <ul>
+ *   <li><b>Primary (SPACE)</b> – {@link SpellAttack}: fast AOE magic projectile
+ *       with a mana cost of 20.</li>
+ *   <li><b>Secondary (V)</b>   – {@link MeleeAttack}: melee backup with 1-tile reach.</li>
+ * </ul>
+ *
+ * <h2>Mana system</h2>
+ * <p>Unlike other characters, the Wizzard has a finite mana pool that regenerates
+ * passively at 5 mana per second. The template methods {@link #getMana()} and
+ * {@link #spendMana(int)} from {@link PlayerCharacter} are overridden here to
+ * connect the base class attack-check logic to the real mana pool.
+ *
+ * <h2>Armour</h2>
+ * <p>Low armour ({@value #MAX_ARMOR}) compared to {@link Knight}, reflecting the
+ * archetype's "glass cannon" role.
+ */
 public class Wizzard extends PlayerCharacter {
-    private static final int MAX_ARMOR = 30; // carodejnik ma nizku obranu
+
+    /** Maximum armour value – Wizzard has low physical defence. */
+    private static final int MAX_ARMOR = 30;
 
     private int mana;
     private int maxMana;
@@ -38,20 +60,37 @@ public class Wizzard extends PlayerCharacter {
         animationManager.addAnimation("hurt",   "HURT/HURT",     0.08f);
     }
 
-    // Wizzard override-ne mana metody z PlayerCharacter
+    /**
+     * Returns the Wizzard's current mana, used by the base class to gate spell attacks.
+     */
     @Override
     protected int getMana() { return mana; }
 
+    /**
+     * Deducts {@code amount} from the mana pool, clamped to zero.
+     *
+     * @param amount mana points consumed by the attack
+     */
     @Override
     protected void spendMana(int amount) {
         mana = Math.max(0, mana - amount);
     }
 
+    /**
+     * Passive mana regeneration: restores 5 mana per second, capped at {@link #maxMana}.
+     *
+     * @param ctx frame context; only {@code deltaTime} is used here
+     */
     @Override
     public void update(UpdateContext ctx) {
         regenerateMana(ctx.deltaTime);
     }
 
+    /**
+     * Increases mana by {@code 5 * deltaTime}, capped at {@link #maxMana}.
+     *
+     * @param deltaTime elapsed time in seconds
+     */
     private void regenerateMana(float deltaTime) {
         mana = Math.min(maxMana, mana + (int)(5 * deltaTime));
     }

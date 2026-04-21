@@ -13,6 +13,22 @@ import sk.stuba.fiit.core.GameManager;
 import sk.stuba.fiit.core.ShadowQuest;
 import sk.stuba.fiit.save.SaveManager;
 
+
+/**
+ * The main menu screen shown on application startup and after returning from in-game screens.
+ *
+ * <p>Provides three actions:
+ * <ul>
+ *   <li><b>New Game</b> – deletes any existing save file, resets game state, initialises a
+ *       fresh {@code Knight} party, and navigates to {@link InventoryScreen} for level 1.</li>
+ *   <li><b>Continue</b> – only active when a save file exists ({@link SaveManager#hasSave()}).
+ *       Loads the save, restarts the saved level, and navigates to {@link GameScreen}.
+ *       Falls back to a new game if loading fails.</li>
+ *   <li><b>Exit</b> – terminates the application via {@link Gdx#app}.</li>
+ * </ul>
+ *
+ * <p>The "Continue" button is visually disabled (greyed out) when no save file is present.
+ */
 public class MainMenuScreen implements Screen {
 
     private static final float W = 800f;
@@ -27,6 +43,10 @@ public class MainMenuScreen implements Screen {
     private final Rectangle btnContinue;
     private final Rectangle btnExit;
 
+    /**
+     * {@code true} when a save file was detected at screen construction time.
+     * Determines whether the Continue button is enabled.
+     */
     private final boolean hasSave;
 
     public MainMenuScreen(ShadowQuest game) {
@@ -66,6 +86,13 @@ public class MainMenuScreen implements Screen {
         drawText(mx, my);
     }
 
+    /**
+     * Draws all button backgrounds and outlines.
+     * The Continue button uses a gold border when a save exists, dark-gray otherwise.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawBackground(float mx, float my) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
         drawButtonShape(btnNewGame,  mx, my, false);
@@ -82,6 +109,14 @@ public class MainMenuScreen implements Screen {
         shape.end();
     }
 
+    /**
+     * Fills a button background with a hover tint, or a flat grey colour when disabled.
+     *
+     * @param btn      the button rectangle
+     * @param mx       virtual mouse X
+     * @param my       virtual mouse Y
+     * @param disabled when {@code true} the button is rendered as inactive
+     */
     private void drawButtonShape(Rectangle btn, float mx, float my, boolean disabled) {
         if (disabled) {
             shape.setColor(0.12f, 0.12f, 0.12f, 1f); // zašednuté
@@ -92,6 +127,12 @@ public class MainMenuScreen implements Screen {
         shape.rect(btn.x, btn.y, btn.width, btn.height);
     }
 
+    /**
+     * Draws the title and all button labels.
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void drawText(float mx, float my) {
         batch.begin();
 
@@ -107,6 +148,16 @@ public class MainMenuScreen implements Screen {
         batch.end();
     }
 
+    /**
+     * Draws a button label. Disabled buttons are rendered in dark-gray; active buttons
+     * brighten when hovered.
+     *
+     * @param btn      the button rectangle
+     * @param label    text to display
+     * @param mx       virtual mouse X
+     * @param my       virtual mouse Y
+     * @param disabled when {@code true} the label is greyed out
+     */
     private void drawButtonLabel(Rectangle btn, String label,
                                  float mx, float my, boolean disabled) {
         if (disabled) {
@@ -118,6 +169,18 @@ public class MainMenuScreen implements Screen {
         font.draw(batch, label, btn.x + 10, btn.y + btn.height - 10);
     }
 
+    /**
+     * Handles button clicks.
+     *
+     * <ul>
+     *   <li>New Game: deletes save, resets state, goes to inventory for level 1.</li>
+     *   <li>Continue: loads save; on failure falls back to a new game.</li>
+     *   <li>Exit: closes the application.</li>
+     * </ul>
+     *
+     * @param mx virtual mouse X coordinate
+     * @param my virtual mouse Y coordinate
+     */
     private void handleClick(float mx, float my) {
         if (btnNewGame.contains(mx, my)) {
             SaveManager.getInstance().deleteSave(); // vymaž starý save pri New Game

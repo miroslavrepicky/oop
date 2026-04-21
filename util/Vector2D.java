@@ -10,6 +10,8 @@ public class Vector2D {
     private float x;
     private float y;
 
+
+
     public Vector2D(float x, float y) {
         this.x = x;
         this.y = y;
@@ -46,6 +48,10 @@ public class Vector2D {
         float dx = this.x - v.x;
         float dy = this.y - v.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public String toString() {
+        return ("X: " + this.x + ", Y: " + this.y);
     }
 
     public float getX() { return x; }
