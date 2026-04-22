@@ -31,13 +31,13 @@ import sk.stuba.fiit.world.Level;
  */
 public class MeleeAttack implements Attack {
 
-    private final int rangeTiles;
+    private final float rangeTiles;
     private static final Logger log = GameLogger.get(MeleeAttack.class);
 
     /**
      * @param rangeTiles horizontal reach in tiles; one tile ≈ 52 px
      */
-    public MeleeAttack(int rangeTiles) {
+    public MeleeAttack(float rangeTiles) {
         this.rangeTiles = rangeTiles;
     }
 

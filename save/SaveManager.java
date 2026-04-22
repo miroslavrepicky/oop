@@ -242,60 +242,6 @@ public final class SaveManager {
         }
     }
 
-    private void applyToGameManager(SaveData data) {
-        // Resetujeme hru a zostavíme nový Inventory zo SaveData
-        GameManager gm = GameManager.getInstance();
-        gm.resetGame();
-
-        Inventory inv = gm.getInventory();
-
-        // --- Rekonštrukcia postáv ---
-        PlayerCharacter activeChar = null;
-        for (SaveData.CharacterData cd : data.characters) {
-            PlayerCharacter pc = createCharacter(cd.characterType);
-            if (pc == null) {
-                log.warn("Unknown character type in save – skipped: type={}", cd.characterType);
-                continue;
-            }
-            // Obnovíme HP a armor zo save
-            pc.revive();                          // nastaví maxHp
-            pc.takeDamage(pc.getMaxHp() - cd.hp); // zredukujeme na uložené HP
-            // Armor: rozdiel oproti max
-            int armorDiff = pc.getMaxArmor() - cd.armor;
-            if (armorDiff > 0) pc.takeDamage(armorDiff); // jednoduché – armor sa spotrebuje
-
-            inv.addCharacter(pc);
-
-            if (cd.isActive) activeChar = pc;
-
-            log.debug("Restored character: type={}, hp={}, armor={}",
-                cd.characterType, cd.hp, cd.armor);
-        }
-
-        // Aktivujeme správnu postavu
-        if (activeChar != null) {
-            for (int i = 0; i < inv.getCharacters().size(); i++) {
-                if (inv.getCharacters().get(i) == activeChar) {
-                    inv.switchCharacter(i + 1);
-                    break;
-                }
-            }
-        }
-
-        // --- Rekonštrukcia itemov ---
-        for (SaveData.ItemData id : data.inventoryItems) {
-            for (int i = 0; i < id.count; i++) {
-                Item item = createItem(id.itemType);
-                if (item == null) {
-                    log.warn("Unknown item type in save – skipped: type={}", id.itemType);
-                    continue;
-                }
-                inv.addItem(item);
-                log.debug("Restored item: type={}", id.itemType);
-            }
-        }
-    }
-
     // -------------------------------------------------------------------------
     //  Factory metódy – mapovanie String → konkrétna trieda
     // -------------------------------------------------------------------------

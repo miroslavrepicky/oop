@@ -335,7 +335,6 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     public int       getMaxHp()           { return maxHp; }
     public int       getAttackPower()     { return attackPower; }
     public float     getSpeed()           { return speed; }
-    public void      setSpeed(float s)    { this.speed = s; }
     public void      setHitboxSize(Vector2D size) { this.hitbox.setSize(size.getX(), size.getY()); }
     public boolean   isFacingRight()      { return facingRight; }
     public void      setFacingRight(boolean b) { this.facingRight = b; }

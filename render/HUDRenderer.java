@@ -12,11 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Kreslí HUD (HP, zbroj, inventár, pick-up hint).
+ * Kreslí HUD (HP, zbroj, mana, šípy, inventár, pick-up hint).
  *
  * Po refaktore: žiadna závislosť na GameManager, Inventory, PlayerCharacter
  * ani Item. Všetky dáta prídu cez {@link RenderSnapshot.HUDSnapshot} DTO,
  * ktorý zostaví {@link SnapshotBuilder}.
+ *
+ * <h2>Mana a šípy</h2>
+ * <p>Každý {@link RenderSnapshot.HUDSnapshot.CharacterHUDData} nesie
+ * {@code mana}/{@code maxMana} a {@code arrows}/{@code maxArrows}.
+ * Hodnota {@code -1} znamená „neaplikovateľné" – bar sa nevykreslí.
+ * Tým sa renderer nemusí pýtať na konkrétny typ postavy.
  */
 public class HUDRenderer {
 
@@ -32,6 +38,19 @@ public class HUDRenderer {
     private static final float SLOT_Y        = 430f;
     private static final float TOTAL_WIDTH   = SLOT_COUNT * (SLOT_SIZE + SLOT_PAD) - SLOT_PAD;
     private static final float START_X       = (800f - TOTAL_WIDTH) / 2f;
+
+    // ── Resource bar constants (mana / arrows) ────────────────────────────────
+    /** Width of the mana/arrow bar drawn next to the character row. */
+    private static final float RES_BAR_W  = 60f;
+    private static final float RES_BAR_H  = 6f;
+    /** Horizontal gap between the text line and the bar. */
+    private static final float RES_BAR_GAP = 6f;
+    /** Vertical offset of the bar center relative to the text baseline. */
+    private static final float RES_BAR_Y_OFFSET = -4f;
+
+    private static final Color MANA_COLOR   = new Color(0.25f, 0.55f, 1.00f, 1f);
+    private static final Color ARROW_COLOR  = new Color(0.85f, 0.65f, 0.10f, 1f);
+    private static final Color BAR_BG_COLOR = new Color(0.15f, 0.15f, 0.15f, 0.85f);
 
     public HUDRenderer(SpriteBatch batch) {
         this.batch        = batch;
@@ -51,6 +70,7 @@ public class HUDRenderer {
         if (hud == null || hud.characters.isEmpty()) return;
 
         drawSlotFrames(hud.selectedSlot);
+        drawResourceBars(hud.characters);
         drawContent(hud);
     }
 
@@ -69,6 +89,56 @@ public class HUDRenderer {
         }
 
         shapeRenderer.end();
+    }
+
+    /**
+     * Kreslí mana bar (modrý) alebo arrow counter bar (zlatý) pre každú postavu
+     * v strane, ktorá ho má. Používa samostatný ShapeRenderer pass pred SpriteBatch,
+     * aby nevznikali Begin/End konflikty.
+     *
+     * @param characters zoznam postáv z HUD snapshotu
+     */
+    private void drawResourceBars(List<RenderSnapshot.HUDSnapshot.CharacterHUDData> characters) {
+        shapeRenderer.setProjectionMatrix(hudCamera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        float y = 420f;
+        for (RenderSnapshot.HUDSnapshot.CharacterHUDData c : characters) {
+            float barY = y + RES_BAR_Y_OFFSET;
+
+            if (c.mana >= 0 && c.maxMana > 0) {
+                drawResourceBar(barY, c.mana, c.maxMana, MANA_COLOR);
+            } else if (c.arrows >= 0 && c.maxArrows > 0) {
+                drawResourceBar(barY, c.arrows, c.maxArrows, ARROW_COLOR);
+            }
+
+            y -= 20f;
+        }
+
+        shapeRenderer.end();
+    }
+
+    /**
+     * Vykreslí jeden resource bar na pevnej X pozícii (pravá strana party listu).
+     *
+     * @param barY   bottom-left Y súradnica baru
+     * @param cur    aktuálna hodnota (mana / šípy)
+     * @param max    maximálna hodnota
+     * @param color  farba výplne
+     */
+    private void drawResourceBar(float barY, int cur, int max, Color color) {
+        // Pevná X pozícia – za najdlhším riadkom party textu
+        final float barX = 10f + 340f + RES_BAR_GAP;
+
+        float ratio = Math.max(0f, Math.min(1f, (float) cur / max));
+
+        // Pozadie
+        shapeRenderer.setColor(BAR_BG_COLOR);
+        shapeRenderer.rect(barX, barY, RES_BAR_W, RES_BAR_H);
+
+        // Výplň
+        shapeRenderer.setColor(color);
+        shapeRenderer.rect(barX, barY, RES_BAR_W * ratio, RES_BAR_H);
     }
 
     // -------------------------------------------------------------------------
@@ -114,7 +184,6 @@ public class HUDRenderer {
     private void drawCharacterList(
         List<RenderSnapshot.HUDSnapshot.CharacterHUDData> characters) {
 
-        // Nájdeme aktívnu postavu pre riadok "Active: ..."
         for (RenderSnapshot.HUDSnapshot.CharacterHUDData c : characters) {
             if (c.isActive) {
                 font.setColor(Color.WHITE);
@@ -123,15 +192,25 @@ public class HUDRenderer {
             }
         }
 
-        int y = 420;
+        float y = 420f;
         for (int i = 0; i < characters.size(); i++) {
             RenderSnapshot.HUDSnapshot.CharacterHUDData c = characters.get(i);
-            String hpText = (i + 1) + ". " + c.name
-                + "  HP: "  + c.hp    + "/" + c.maxHp
-                + "  ARM: " + c.armor + "/" + c.maxArmor;
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(i + 1).append(". ").append(c.name)
+                .append("  HP: ").append(c.hp).append("/").append(c.maxHp)
+                .append("  ARM: ").append(c.armor).append("/").append(c.maxArmor);
+
+            // Doplnok za HP/ARM – mana alebo šípy (číselne)
+            if (c.mana >= 0 && c.maxMana > 0) {
+                sb.append("  MANA: ").append(c.mana).append("/").append(c.maxMana);
+            } else if (c.arrows >= 0 && c.maxArrows > 0) {
+                sb.append("  SIPY: ").append(c.arrows).append("/").append(c.maxArrows);
+            }
+
             font.setColor(c.isActive ? Color.GREEN : Color.WHITE);
-            font.draw(batch, hpText, 10, y);
-            y -= 20;
+            font.draw(batch, sb.toString(), 10, y);
+            y -= 20f;
         }
     }
 

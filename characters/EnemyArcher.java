@@ -16,7 +16,7 @@ public class EnemyArcher extends EnemyCharacter {
         super("EnemyArcher", 70, 15, 2.0f, position, 150f, 300f, ARMOR, ARMOR);
         this.arrowCount      = 20;
         this.gravityStrategy = new NormalGravity();
-        this.attack          = new ArrowAttack(false);
+        this.attack          = new ArrowAttack();
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());

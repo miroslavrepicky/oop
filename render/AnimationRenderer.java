@@ -53,27 +53,6 @@ public final class AnimationRenderer {
     }
 
     /**
-     * Draws the current frame at its ACTUAL packed size, anchored to the
-     * bottom-centre of the hitbox.
-     *
-     * <p>Because each frame has its natural size, the animation does not stretch
-     * into a fixed rectangle. A billowing cloak or up-and-down motion looks
-     * correct because the sprite simply extends beyond the hitbox as needed.
-     *
-     * @param batch   active {@link SpriteBatch}
-     * @param am      the object's {@link AnimationManager}
-     * @param x       hitbox left edge in world coordinates
-     * @param y       hitbox bottom edge in world coordinates
-     * @param hitboxW hitbox width used for horizontal centering of the sprite
-     * @param flipX   {@code true} to mirror horizontally
-     */
-    public static void renderActualSize(SpriteBatch batch, AnimationManager am,
-                                        float x, float y, float hitboxW,
-                                        boolean flipX) {
-        renderActualSize(batch, am, x, y, hitboxW, flipX, false);
-    }
-
-    /**
      * Rozšírená verzia s možnosťou otočenia strany kotvenia.
      *
      * @param anchorOpposite ak {@code true}, sprite sa ukotvuje na opačnú stranu hitboxu.

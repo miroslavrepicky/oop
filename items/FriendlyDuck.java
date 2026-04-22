@@ -66,6 +66,5 @@ public class FriendlyDuck extends Item {
 
     @Override
     public String getIconPath() { return "icons/duck.png"; }
-
-    public AnimationManager getAnimationManager() { return animationManager; }
+    
 }

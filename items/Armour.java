@@ -27,6 +27,4 @@ public class Armour extends Item {
 
     @Override
     public String getIconPath() { return "icons/armour.png"; }
-
-    public int getDefenseBonus() { return defenseBonus; }
 }

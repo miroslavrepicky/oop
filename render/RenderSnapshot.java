@@ -96,18 +96,60 @@ public final class RenderSnapshot {
             public final int     maxArmor;
             public final boolean isActive;
 
+            /**
+             * Current mana, or {@code -1} if this character has no mana system.
+             * A value of {@code -1} tells {@link HUDRenderer} to skip the mana bar.
+             */
+            public final int mana;
+
+            /**
+             * Maximum mana, or {@code -1} if this character has no mana system.
+             */
+            public final int maxMana;
+
+            /**
+             * Remaining arrows, or {@code -1} if this character has no arrow limit.
+             * A value of {@code -1} tells {@link HUDRenderer} to skip the arrow counter.
+             */
+            public final int arrows;
+
+            /**
+             * Maximum arrows, or {@code -1} if this character has no arrow limit.
+             */
+            public final int maxArrows;
+
+            /**
+             * @param name      display name
+             * @param hp        current HP
+             * @param maxHp     maximum HP
+             * @param armor     current armour
+             * @param maxArmor  maximum armour
+             * @param isActive  {@code true} when this is the currently controlled character
+             * @param mana      current mana, or {@code -1} if not applicable
+             * @param maxMana   maximum mana, or {@code -1} if not applicable
+             * @param arrows    remaining arrows, or {@code -1} if not applicable
+             * @param maxArrows maximum arrows, or {@code -1} if not applicable
+             */
             public CharacterHUDData(String  name,
                                     int     hp,
                                     int     maxHp,
                                     int     armor,
                                     int     maxArmor,
-                                    boolean isActive) {
+                                    boolean isActive,
+                                    int     mana,
+                                    int     maxMana,
+                                    int     arrows,
+                                    int     maxArrows) {
                 this.name     = name;
                 this.hp       = hp;
                 this.maxHp    = maxHp;
                 this.armor    = armor;
                 this.maxArmor = maxArmor;
                 this.isActive = isActive;
+                this.mana     = mana;
+                this.maxMana  = maxMana;
+                this.arrows   = arrows;
+                this.maxArrows = maxArrows;
             }
         }
 

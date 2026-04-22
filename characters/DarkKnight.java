@@ -48,7 +48,7 @@ public class DarkKnight extends EnemyCharacter {
      * Distance threshold (px) that determines attack type.
      * Below → melee swing; at or above → ranged spell.
      */
-    private static final float MELEE_THRESHOLD = 130f;
+    private static final float MELEE_THRESHOLD = 26f * 1.2f;
 
     /**
      * 1-based frame indices within the 20-frame melee animation at which a
@@ -59,10 +59,10 @@ public class DarkKnight extends EnemyCharacter {
     // ── Attack lists ──────────────────────────────────────────────────────────
 
     /** Attacks available in close-range mode. */
-    final List<Attack> meleeAttacks = new ArrayList<>();
+    private final List<Attack> meleeAttacks = new ArrayList<>();
 
     /** Attacks available in long-range mode. */
-    final List<Attack> spellAttacks = new ArrayList<>();
+    private final List<Attack> spellAttacks = new ArrayList<>();
 
     // ── Runtime state ─────────────────────────────────────────────────────────
 
@@ -99,12 +99,12 @@ public class DarkKnight extends EnemyCharacter {
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());
 
-        // Melee: 2-tile (~104 px) and 3-tile (~156 px) swings
-        meleeAttacks.add(new MeleeAttack(2));
-        meleeAttacks.add(new MeleeAttack(3));
 
-        // Spells: plain, fire-DoT, freeze-slow, and combined
-        meleeAttacks.add(new MeleeAttack(2)); // 3rd variant for more weight on 2-tile
+        meleeAttacks.add(new MeleeAttack(1f));
+        meleeAttacks.add(new MeleeAttack(1.1f));
+
+
+        meleeAttacks.add(new MeleeAttack(1.2f));
 
         spellAttacks.add(new SpellAttack(5.0f, 0f, 0));
         spellAttacks.add(new FireDecorator(new SpellAttack(5.0f, 0f, 0)));
@@ -138,13 +138,13 @@ public class DarkKnight extends EnemyCharacter {
         if (ctx.player != null) {
             lastKnownPlayer = ctx.player;
         }
-        super.update(ctx); // gravity, AI controller (→ triggerAttack), animation
+        super.update(ctx); // gravity, AI controller (-> triggerAttack), animation
     }
 
     // ── Attack selection ──────────────────────────────────────────────────────
 
     /**
-     * Selects the attack type based on current distance to the player, initialises
+     * Selects the attack type based on current distance to the player, initializes
      * the multi-hit tracking arrays for melee, then delegates to the parent's
      * cooldown logic and animation trigger.
      */

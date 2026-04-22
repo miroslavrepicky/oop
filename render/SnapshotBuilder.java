@@ -106,7 +106,11 @@ public class SnapshotBuilder {
                 c.getMaxHp(),
                 c.getArmor(),
                 c.getMaxArmor(),
-                c == active
+                c == active,
+                c.getCurrentMana(),
+                c.getMaxMana(),
+                c.getArrowCount(),
+                c.getMaxArrows()
             ));
         }
 

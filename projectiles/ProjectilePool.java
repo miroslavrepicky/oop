@@ -42,7 +42,7 @@ public final class ProjectilePool {
     private ProjectilePool() {
         arrowPool = new ObjectPool<>(
             // factory: vytvorí "prázdnu" šablónu – hodnoty sa prepíšu v reset()
-            () -> new Arrow(0, POOL_SPEED, ZERO, RIGHT, false),
+            () -> new Arrow(0, POOL_SPEED, ZERO, RIGHT),
             // resetAction: pred opätovným použitím znovu aktivujeme projektil
             arrow -> arrow.setActive(true),
             /* maxSize */ 30
@@ -76,7 +76,7 @@ public final class ProjectilePool {
 
     /**
      * Vrátí Arrow z poolu. Volajúci musí ihneď zavolať
-     * {@link Arrow#reset(int, float, Vector2D, Vector2D, boolean)}
+     * {@link Arrow#reset(int, float, Vector2D, Vector2D)}
      * aby nastavil skutočné herné hodnoty.
      */
     public Arrow obtainArrow() {
@@ -117,6 +117,7 @@ public final class ProjectilePool {
      * Vyprázdni všetky pooly. Volať z {@code GameManager.resetGame()}.
      */
     public void clearAll() {
+        logStats();
         arrowPool.clear();
         spellPool.clear();
         turdflyPool.clear();

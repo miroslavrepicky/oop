@@ -70,16 +70,6 @@ public final class UpdateContext {
     }
 
     /**
-     * Shortened constructor – only time and platforms (e.g. for projectiles).
-     *
-     * @param deltaTime time elapsed since the last frame in seconds
-     * @param platforms map collision rectangles; {@code null} is treated as empty
-     */
-    public UpdateContext(float deltaTime, List<Rectangle> platforms) {
-        this(deltaTime, platforms, null, null, null);
-    }
-
-    /**
      * Minimal constructor – only time (e.g., for UI elements).
      *
      * @param deltaTime time elapsed since the last frame in seconds

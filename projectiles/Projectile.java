@@ -178,7 +178,6 @@ public abstract class Projectile implements Updatable, Collidable, Physicable {
     public boolean         isPlayerProjectile()        { return owner == ProjectileOwner.PLAYER; }
     public void            setActive(boolean active)   { this.active = active; }
     public boolean         isActive()                  { return active; }
-    public Vector2D        getDirection()              { return direction; }
     public ProjectileOwner getOwner()                  { return owner; }
     public void            setOwner(ProjectileOwner o) { this.owner = o; }
     public void            setHitboxSize(Vector2D size){ this.hitbox.setSize(size.getX(), size.getY()); }

@@ -10,7 +10,7 @@ import sk.stuba.fiit.world.Level;
 
 
 /**
- * Player character specialised in ranged physical attacks.
+ * Player character specialized in ranged physical attacks.
  *
  * <h2>Attacks</h2>
  * <ul>
@@ -43,7 +43,7 @@ public class Archer extends PlayerCharacter {
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());
-        primaryAttack = new ArrowAttack(true); // SPACE - normalna sipka
+        primaryAttack = new ArrowAttack(); // SPACE - normalna sipka
     }
 
     private void initAnimations() {
@@ -57,7 +57,7 @@ public class Archer extends PlayerCharacter {
 
     @Override
     public void performPrimaryAttack(Level level) {
-        if (arrowCount <= 0) return;
+        if (arrowCount <= 0 || isAttacking) return;
         arrowCount--;
         super.performPrimaryAttack(level);
     }
@@ -71,15 +71,20 @@ public class Archer extends PlayerCharacter {
 
     }
 
-    public int getArrowCount() {
-        return arrowCount;
-    }
-    public int getMaxArrows()   {
-        return MAX_ARROWS;
-    }
-
     @Override
     public AnimationManager getAnimationManager() {
         return animationManager;
     }
+
+    // -------------------------------------------------------------------------
+    //  HUD data – publicly expose arrow count for SnapshotBuilder
+    // -------------------------------------------------------------------------
+
+    /** Returns remaining arrows; used by HUD rendering. */
+    @Override
+    public int getArrowCount() { return arrowCount; }
+
+    /** Returns maximum arrows; used by HUD rendering. */
+    @Override
+    public int getMaxArrows() { return MAX_ARROWS; }
 }

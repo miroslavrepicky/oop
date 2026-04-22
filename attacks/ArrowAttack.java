@@ -19,12 +19,10 @@ import sk.stuba.fiit.world.Level;
  */
 public class ArrowAttack implements Attack {
 
-    private final boolean piercing;
 
     private static final Logger log = GameLogger.get(ArrowAttack.class);
 
-    public ArrowAttack(boolean piercing) {
-        this.piercing = piercing;
+    public ArrowAttack() {
     }
 
     @Override
@@ -39,7 +37,7 @@ public class ArrowAttack implements Attack {
         Vector2D direction = new Vector2D(dirX, 0);
 
         Arrow arrow = ProjectilePool.getInstance().obtainArrow();
-        arrow.reset(attacker.getAttackPower(), 5.0f, spawnPos, direction, piercing);
+        arrow.reset(attacker.getAttackPower(), 5.0f, spawnPos, direction);
 
         arrow.setOwner(attacker instanceof EnemyCharacter
             ? ProjectileOwner.ENEMY
@@ -48,8 +46,8 @@ public class ArrowAttack implements Attack {
         level.addProjectile(arrow);
 
         if (log.isDebugEnabled()) {
-            log.debug("Arrow spawned: owner={}, piercing={}, dmg={}, pos=({},{})",
-                arrow.getOwner(), piercing,
+            log.debug("Arrow spawned: owner={}, dmg={}, pos=({},{})",
+                arrow.getOwner(),
                 attacker.getAttackPower(),
                 String.format("%.1f", spawnPos.getX()),
                 String.format("%.1f", spawnPos.getY()));

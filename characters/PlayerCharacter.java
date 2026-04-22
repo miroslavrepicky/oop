@@ -189,4 +189,36 @@ public abstract class PlayerCharacter extends Character {
 
     @Override
     public void onCollision(Object other) { }
+
+    // -------------------------------------------------------------------------
+    //  HUD data – subclasses with mana/arrows override these
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the character's current mana for HUD display.
+     * Default: {@code -1} – character has no mana system, bar is not shown.
+     * {@link Wizzard} overrides this.
+     */
+    public int getCurrentMana() { return -1; }
+
+    /**
+     * Returns the character's maximum mana for HUD display.
+     * Default: {@code -1} – character has no mana system, bar is not shown.
+     * {@link Wizzard} overrides this.
+     */
+    public int getMaxMana() { return -1; }
+
+    /**
+     * Returns remaining arrows for HUD display.
+     * Default: {@code -1} – character has no arrow limit, counter is not shown.
+     * {@link Archer} overrides this.
+     */
+    public int getArrowCount() { return -1; }
+
+    /**
+     * Returns maximum arrow capacity for HUD display.
+     * Default: {@code -1} – character has no arrow limit, counter is not shown.
+     * {@link Archer} overrides this.
+     */
+    public int getMaxArrows() { return -1; }
 }

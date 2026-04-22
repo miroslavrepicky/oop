@@ -98,9 +98,19 @@ public class Wizzard extends PlayerCharacter {
         mana = Math.min(maxMana, mana + (int)(5 * deltaTime));
     }
 
-    /** Returns the Wizzard's maximum mana capacity. */
-    public int getMaxMana() { return maxMana; }
 
     @Override
     public AnimationManager getAnimationManager() { return animationManager; }
+
+    // -------------------------------------------------------------------------
+    //  HUD data – publicly expose mana for SnapshotBuilder
+    // -------------------------------------------------------------------------
+
+    /** Returns current mana; used by HUD rendering. */
+    @Override
+    public int getCurrentMana() { return mana; }
+
+    /** Returns maximum mana; used by HUD rendering. */
+    @Override
+    public int getMaxMana() { return maxMana; }
 }
