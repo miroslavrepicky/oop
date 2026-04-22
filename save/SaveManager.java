@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.GameManager;
-import sk.stuba.fiit.core.exceptions.ShadowQuestException;
+import sk.stuba.fiit.core.exceptions.SaveException;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.items.Armour;
 import sk.stuba.fiit.items.HealingPotion;
@@ -345,17 +345,5 @@ public final class SaveManager {
         }
     }
 
-    // =========================================================================
-    //  Vnorená výnimka
-    // =========================================================================
 
-    /**
-     * Výnimka pri zlyhaní uloženia hry.
-     * Rozlišuje chyby ukladania od ostatných herných chýb.
-     */
-    public static final class SaveException extends ShadowQuestException {
-        public SaveException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 }

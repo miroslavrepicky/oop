@@ -2,6 +2,7 @@ package sk.stuba.fiit.core;
 
 import com.badlogic.gdx.Game;
 import sk.stuba.fiit.save.SaveData;
+import sk.stuba.fiit.core.exceptions.SaveException;
 import sk.stuba.fiit.save.SaveManager;
 import sk.stuba.fiit.ui.GameScreen;
 import sk.stuba.fiit.ui.InventoryScreen;
@@ -156,7 +157,7 @@ public class ShadowQuest extends Game implements AppController {
     }
 
     /**
-     * Delegates to {@link SaveManager}. Catches {@link SaveManager.SaveException}
+     * Delegates to {@link SaveManager}. Catches {@link SaveException}
      * so callers do not need to import it.
      *
      * @return {@code true} if the save was written successfully
@@ -166,7 +167,7 @@ public class ShadowQuest extends Game implements AppController {
         try {
             SaveManager.getInstance().save(level);
             return true;
-        } catch (SaveManager.SaveException e) {
+        } catch (SaveException e) {
             return false;
         }
     }

@@ -1,5 +1,7 @@
 package sk.stuba.fiit.core;
 
+import sk.stuba.fiit.core.exceptions.SaveException;
+
 /**
  * Application-level controller contract that mediates between UI screens and
  * the game's business logic.
@@ -53,7 +55,7 @@ public interface AppController {
      *
      * <p>Returns {@code true} on success, {@code false} on failure.
      * A boolean result keeps callers free from importing
-     * {@link sk.stuba.fiit.save.SaveManager.SaveException}.
+     * {@link SaveException}.
      *
      * @param level 1-based level number to record in the save file
      * @return {@code true} if saved successfully
