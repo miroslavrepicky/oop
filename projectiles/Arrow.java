@@ -3,6 +3,7 @@ package sk.stuba.fiit.projectiles;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.Poolable;
 import sk.stuba.fiit.core.engine.UpdateContext;
+import sk.stuba.fiit.physics.FlyingGravity;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
@@ -31,6 +32,7 @@ public class Arrow extends Projectile implements Renderable, Poolable {
         animationManager.addAnimation("fly", "ARROW/ARROW", 0.05f);
         animationManager.play("fly");
         setHitboxSize(animationManager.getAnimationSize("fly"));
+        setGravityStrategy(new FlyingGravity());
     }
 
     public void reset(int damage, float speed, Vector2D position,
@@ -57,8 +59,7 @@ public class Arrow extends Projectile implements Renderable, Poolable {
 
     @Override
     public void update(UpdateContext ctx) {
-        move();
-        hitbox.setPosition(position.getX(), position.getY());
+        super.update(ctx);
         animationManager.update(ctx.deltaTime);
     }
 

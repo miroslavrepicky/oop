@@ -59,7 +59,9 @@ public class Duck extends Character {
     }
 
     /**
-     * Update s platformami predanými zvonku.
+     * Updates the duck: applies gravity and advances the walk/idle cycle.
+     *
+     * @param ctx frame context; {@code deltaTime} and {@code platforms} are used
      */
     public void update(UpdateContext ctx) {
         float deltaTime = ctx.deltaTime;
