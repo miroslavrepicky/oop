@@ -70,7 +70,6 @@ public class HUDRenderer {
         if (hud == null || hud.characters.isEmpty()) return;
 
         drawSlotFrames(hud.selectedSlot);
-        drawResourceBars(hud.characters);
         drawContent(hud);
     }
 
@@ -91,55 +90,6 @@ public class HUDRenderer {
         shapeRenderer.end();
     }
 
-    /**
-     * Kreslí mana bar (modrý) alebo arrow counter bar (zlatý) pre každú postavu
-     * v strane, ktorá ho má. Používa samostatný ShapeRenderer pass pred SpriteBatch,
-     * aby nevznikali Begin/End konflikty.
-     *
-     * @param characters zoznam postáv z HUD snapshotu
-     */
-    private void drawResourceBars(List<RenderSnapshot.HUDSnapshot.CharacterHUDData> characters) {
-        shapeRenderer.setProjectionMatrix(hudCamera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        float y = 420f;
-        for (RenderSnapshot.HUDSnapshot.CharacterHUDData c : characters) {
-            float barY = y + RES_BAR_Y_OFFSET;
-
-            if (c.mana >= 0 && c.maxMana > 0) {
-                drawResourceBar(barY, c.mana, c.maxMana, MANA_COLOR);
-            } else if (c.arrows >= 0 && c.maxArrows > 0) {
-                drawResourceBar(barY, c.arrows, c.maxArrows, ARROW_COLOR);
-            }
-
-            y -= 20f;
-        }
-
-        shapeRenderer.end();
-    }
-
-    /**
-     * Vykreslí jeden resource bar na pevnej X pozícii (pravá strana party listu).
-     *
-     * @param barY   bottom-left Y súradnica baru
-     * @param cur    aktuálna hodnota (mana / šípy)
-     * @param max    maximálna hodnota
-     * @param color  farba výplne
-     */
-    private void drawResourceBar(float barY, int cur, int max, Color color) {
-        // Pevná X pozícia – za najdlhším riadkom party textu
-        final float barX = 10f + 340f + RES_BAR_GAP;
-
-        float ratio = Math.max(0f, Math.min(1f, (float) cur / max));
-
-        // Pozadie
-        shapeRenderer.setColor(BAR_BG_COLOR);
-        shapeRenderer.rect(barX, barY, RES_BAR_W, RES_BAR_H);
-
-        // Výplň
-        shapeRenderer.setColor(color);
-        shapeRenderer.rect(barX, barY, RES_BAR_W * ratio, RES_BAR_H);
-    }
 
     // -------------------------------------------------------------------------
     //  Súkromné – ikony, texty
