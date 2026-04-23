@@ -1,0 +1,46 @@
+<configuration>
+
+    <!-- Human-readable konzola pre development -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Strojovo spracovatelné JSON logy pre produkciu / analyzu -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/shadowquest.ndjson</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/shadowquest.%d{yyyy-MM-dd}.ndjson.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Pridá vlastné polia do každého JSON záznamu -->
+            <customFields>{"app":"ShadowQuest","version":"1.0"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Plaintext subor pre lahke debugovanie -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/shadowquest.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/shadowquest.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Hot path loggery – DEBUG vypnuty aby update loop netrpel -->
+    <logger name="sk.stuba.fiit.physics.CollisionManager" level="INFO"/>
+    <logger name="sk.stuba.fiit.world.Level"              level="INFO"/>
+    <logger name="sk.stuba.fiit.core.PlayerController"   level="INFO"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+
+</configuration>
