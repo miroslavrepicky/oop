@@ -1,7 +1,9 @@
 package sk.stuba.fiit.characters;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.attacks.Attack;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -31,6 +33,8 @@ import sk.stuba.fiit.world.Level;
  * directly – this class does not call {@code GameManager} for physics data.
  */
 public abstract class PlayerCharacter extends Character {
+    private static final Logger log = GameLogger.get(PlayerCharacter.class);
+
     protected Attack primaryAttack;
     protected Attack secondaryAttack;
     protected boolean isAttacking       = false;
@@ -91,10 +95,18 @@ public abstract class PlayerCharacter extends Character {
         }
 
         int cost = attack.getManaCost();
-        if (getMana() < cost) return;
+        if (getMana() < cost) {
+            log.warn("Attack blocked – insufficient mana: character={}, mana={}, required={}",
+                name, getMana(), cost);
+            return;
+        }
         spendMana(cost);
 
-        if (level == null) return;
+        if (level == null) {
+            log.warn("executeAttack skipped – level is null: character={}, attack={}",
+                name, attack.getAnimationName());
+            return;
+        }
 
         AnimationManager am = getAnimationManager();
         if (am != null) {
@@ -102,6 +114,9 @@ public abstract class PlayerCharacter extends Character {
             currentAttack     = attack;
             attackAnimTimer   = attack.getAnimationDuration(am);
             projectileSpawned = false;
+            log.info("Attack started: character={}, attack={}, animDuration={}",
+                name, attack.getAnimationName(),
+                String.format("%.2f", attackAnimTimer));
         }
     }
 

@@ -5,6 +5,7 @@ import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
+import sk.stuba.fiit.core.exceptions.InvalidAttackException;
 import sk.stuba.fiit.projectiles.MeleeHitbox;
 import sk.stuba.fiit.projectiles.Projectile;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
@@ -38,25 +39,32 @@ public class MeleeAttack implements Attack {
      * @param rangeTiles horizontal reach in tiles; one tile ≈ 52 px
      */
     public MeleeAttack(float rangeTiles) {
+        if (rangeTiles <= 0f) {
+            throw new InvalidAttackException("unknown",
+                "rangeTiles must be positive, got: " + rangeTiles);
+        }
         this.rangeTiles = rangeTiles;
     }
 
     /**
      * Spawns a {@link MeleeHitbox} covering the melee reach in front of the attacker.
      *
-     * <p>Hit-area geometry:
-     * <ul>
-     *   <li><b>Width</b> – {@code rangeTiles * 26} px</li>
-     *   <li><b>Height</b> – matches the attacker's current hitbox height</li>
-     *   <li><b>X</b> – starts at the leading edge of the attacker's hitbox
-     *       (right when facing right, left-minus-reach when facing left)</li>
-     *   <li><b>Y</b> – aligned with the bottom of the attacker's hitbox</li>
-     * </ul>
-     *
-     * @return the spawned {@link MeleeHitbox} (never {@code null})
+     * @param attacker the character performing the attack; must not be {@code null}
+     * @param level    the active level to add the hitbox to; must not be {@code null}
+     * @return the spawned {@link MeleeHitbox}
+     * @throws InvalidAttackException if {@code attacker} is {@code null}
      */
     @Override
     public Projectile execute(Character attacker, Level level) {
+        if (attacker == null) {
+            throw new InvalidAttackException("unknown",
+                "MeleeAttack.execute called with null attacker");
+        }
+        if (level == null) {
+            log.warn("MeleeAttack.execute skipped – level is null: attacker={}",
+                attacker.getName());
+            return null;
+        }
         float reach = rangeTiles * 26f;
 
         boolean facingRight = attacker.isFacingRight();

@@ -162,6 +162,7 @@ public class CollisionManager {
     private void applyAoeExcluding(float cx, float cy, float radius, int damage,
                                    Level level, EnemyCharacter excludedEnemy) {
         Vector2D centre = new Vector2D(cx, cy);
+        int hitsCount = 0;
 
         for (EnemyCharacter enemy : level.getEnemies()) {
             if (!enemy.isAlive() || enemy == excludedEnemy) continue;
@@ -170,7 +171,9 @@ public class CollisionManager {
             double dist = centre.distanceTo(new Vector2D(ex, ey));
             if (dist <= radius) {
                 float falloff = 1f - (float)(dist / radius);
-                enemy.takeDamage(Math.max(1, (int)(damage * falloff)));
+                int dealt = Math.max(1, (int)(damage * falloff));
+                enemy.takeDamage(dealt);
+                hitsCount++;
             }
         }
 
@@ -183,7 +186,14 @@ public class CollisionManager {
                 duck.takeDamage(duck.getHp());
                 Item drop = duck.onKilled();
                 if (drop != null) level.addItem(drop);
+                hitsCount++;
             }
+        }
+
+        if (hitsCount > 0) {
+            log.info("AOE impact: centre=({},{}), radius={}, targetsHit={}",
+                String.format("%.1f", cx), String.format("%.1f", cy),
+                radius, hitsCount);
         }
     }
 
@@ -208,6 +218,11 @@ public class CollisionManager {
             if (projectile instanceof EggProjectile) continue;
 
             if (projectile.getHitbox().overlaps(player.getHitbox())) {
+                log.info("Player hit by enemy projectile: type={}, dmg={}, pos=({},{})",
+                    projectile.getClass().getSimpleName(),
+                    projectile.getDamage(),
+                    String.format("%.1f", projectile.getPosition().getX()),
+                    String.format("%.1f", projectile.getPosition().getY()));
                 projectile.onCollision(player);
             } else if (hitsWall(projectile, level)) {
                 projectile.setActive(false);
@@ -232,6 +247,11 @@ public class CollisionManager {
             if (egg.getEggState() != EggProjectile.EggState.BLASTING) continue;
             if (egg.isDamageDealt()) continue;
 
+            log.info("Egg explosion triggered: pos=({},{}), radius={}, dmg={}",
+                String.format("%.1f", egg.getPosition().getX()),
+                String.format("%.1f", egg.getPosition().getY()),
+                egg.getAoeRadius(), egg.getDamage());
+
             applyAoe(egg.getPosition().getX(), egg.getPosition().getY(),
                 egg.getAoeRadius(), egg.getDamage(), level);
 
@@ -239,7 +259,10 @@ public class CollisionManager {
                 double dist = egg.getPosition().distanceTo(player.getPosition());
                 if (dist <= egg.getAoeRadius()) {
                     float falloff = 1f - (float)(dist / egg.getAoeRadius());
-                    player.takeDamage(Math.max(1, (int)(egg.getDamage() * falloff)));
+                    int dealt = Math.max(1, (int)(egg.getDamage() * falloff));
+                    log.info("Egg explosion hit player: dist={}, dmg={}",
+                        String.format("%.1f", dist), dealt);
+                    player.takeDamage(dealt);
                 }
             }
 

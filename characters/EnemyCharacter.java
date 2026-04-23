@@ -1,6 +1,8 @@
 package sk.stuba.fiit.characters;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.attacks.Attack;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.core.AnimationManager;
@@ -27,6 +29,8 @@ import sk.stuba.fiit.util.Vector2D;
  * when to jump over obstacles or reverse a patrol direction.
  */
 public abstract class EnemyCharacter extends Character implements AIControllable {
+    private static final Logger log = GameLogger.get(EnemyCharacter.class);
+
     protected float     patrolRange;
     protected float     detectionRange;
     private   AIController     aiController;
@@ -165,7 +169,23 @@ public abstract class EnemyCharacter extends Character implements AIControllable
      */
     @Override
     public void triggerAttack() {
-        if (attackCooldown > 0 || isAttacking || attack == null) return;
+        if (attack == null) {
+            log.warn("triggerAttack called but no attack strategy assigned: enemy={}", name);
+            return;
+        }
+        if (attackCooldown > 0f) {
+            if (log.isDebugEnabled()) {
+                log.debug("triggerAttack skipped – cooldown active: enemy={}, cooldown={}",
+                    name, String.format("%.2f", attackCooldown));
+            }
+            return;
+        }
+        if (isAttacking) {
+            if (log.isDebugEnabled()) {
+                log.debug("triggerAttack skipped – attack already in progress: enemy={}", name);
+            }
+            return;
+        }
 
         attackCooldown  = ATTACK_COOLDOWN_MAX;
         isAttacking     = true;
@@ -174,6 +194,9 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         AnimationManager am = getAnimationManager();
         attackAnimTimer = attack.getAnimationDuration(am);
         if (am != null) am.play(attack.getAnimationName());
+        log.info("Attack triggered: enemy={}, attack={}, animDuration={}",
+            name, attack.getAnimationName(),
+            String.format("%.2f", attackAnimTimer));
     }
 
     /**
@@ -207,6 +230,8 @@ public abstract class EnemyCharacter extends Character implements AIControllable
         if (attackAnimTimer <= frameDuration * 2) {
             if (ctx.level != null) {
                 attack.execute(this, ctx.level);
+            }else {
+                log.warn("dealAttackDamage: level is null, skipping projectile spawn: enemy={}", name);
             }
             damageDealt = true;
         }

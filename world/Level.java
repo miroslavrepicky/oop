@@ -1,8 +1,10 @@
 package sk.stuba.fiit.world;
 
 import com.badlogic.gdx.math.Rectangle;
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.characters.Character;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.physics.MovementResolver;
 import sk.stuba.fiit.core.engine.Updatable;
 import sk.stuba.fiit.core.engine.UpdateContext;
@@ -50,6 +52,8 @@ import java.util.Map;
  * ticked there – no separate status-effect list is maintained in the level.
  */
 public class Level implements Updatable {
+    private static final Logger log = GameLogger.get(Level.class);
+
     private int levelNumber;
     private List<EnemyCharacter> enemies;
     private List<Item>           items;
@@ -125,8 +129,14 @@ public class Level implements Updatable {
                     dk.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(dk);
                     break;
+                default:
+                    log.warn("Unknown entity type in map – skipped: type={}, pos=({},{})",
+                        type, x, y);
+                    break;
             }
         }
+        log.info("Level loaded: levelNumber={}, enemies={}, items={}, ducks={}",
+            levelNumber, enemies.size(), items.size(), ducks.size());
     }
 
     /**
@@ -149,13 +159,22 @@ public class Level implements Updatable {
         projectiles.removeIf(p -> !p.isActive());
         for (Projectile p : projectiles) p.update(ctx);
 
+        int enemyCountBefore = enemies.size();
         enemies.removeIf(e -> !e.isAlive() && e.isDeathAnimationDone());
+        int removed = enemyCountBefore - enemies.size();
+        if (removed > 0 && log.isDebugEnabled()) {
+            log.debug("Dead enemies removed from level: count={}, remaining={}",
+                removed, enemies.size());
+        }
         for (EnemyCharacter e : enemies) e.update(ctx);
 
         Iterator<Item> itemIter = items.iterator();
         while (itemIter.hasNext()) {
             Item item = itemIter.next();
             if (item instanceof EggProjectileSpawner) {
+                log.info("EggProjectileSpawner converted to EggProjectile: pos=({},{})",
+                    String.format("%.1f", item.getPosition().getX()),
+                    String.format("%.1f", item.getPosition().getY()));
                 projectiles.add(new EggProjectile(item.getPosition()));
                 itemIter.remove();
                 continue;
@@ -169,6 +188,8 @@ public class Level implements Updatable {
         if (!isCompleted && !enemies.isEmpty()
             && enemies.stream().noneMatch(Character::isAlive)) {
             isCompleted = true;
+            log.info("Level completed: levelNumber={}, totalEnemiesDefeated={}",
+                levelNumber, enemyCountBefore);
         }
     }
 
@@ -219,6 +240,8 @@ public class Level implements Updatable {
             Item item = createGroundItemFromSave(gd);
             if (item != null) addItem(item);
         }
+        log.info("Level restored from save: levelNumber={}, enemies={}, ducks={}, groundItems={}",
+            levelNumber, enemies.size(), ducks.size(), items.size());
     }
 
     private EnemyCharacter createEnemyFromSave(SaveData.EnemyData ed) {
@@ -255,6 +278,7 @@ public class Level implements Updatable {
                 break;
             }
             default:
+                log.warn("Unknown enemy type in save – skipped: type={}", ed.type);
                 return null;
         }
 
@@ -268,6 +292,7 @@ public class Level implements Updatable {
             case "HealingPotion": return new HealingPotion(50, pos);
             case "Armour":        return new Armour(50, pos);
             default:
+                log.warn("Unknown ground item type in save – skipped: type={}", gd.type);
                 return null;
         }
     }

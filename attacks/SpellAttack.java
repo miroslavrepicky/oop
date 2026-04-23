@@ -5,6 +5,7 @@ import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
+import sk.stuba.fiit.core.exceptions.InvalidAttackException;
 import sk.stuba.fiit.projectiles.MagicSpell;
 import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.projectiles.ProjectilePool;
@@ -31,8 +32,25 @@ public class SpellAttack implements Attack {
         this.manaCost        = manaCost;
     }
 
+    /**
+     * Obtains a {@link MagicSpell} from the pool, resets it, and adds it to the level.
+     *
+     * @param attacker the character performing the attack; must not be {@code null}
+     * @param level    the active level; must not be {@code null}
+     * @return the spawned {@link MagicSpell}
+     * @throws InvalidAttackException if {@code attacker} is {@code null}
+     */
     @Override
     public MagicSpell execute(Character attacker, Level level) {
+        if (attacker == null) {
+            throw new InvalidAttackException("unknown",
+                "SpellAttack.execute called with null attacker");
+        }
+        if (level == null) {
+            log.warn("SpellAttack.execute skipped – level is null: attacker={}",
+                attacker.getName());
+            return null;
+        }
         boolean facingRight = attacker.isFacingRight();
         float dirX = facingRight ? 1f : -1f;
 

@@ -1,6 +1,8 @@
 package sk.stuba.fiit.projectiles;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
@@ -20,7 +22,7 @@ import sk.stuba.fiit.util.Vector2D;
  * on the current state so {@code GameRenderer} does not need to know the state.
  */
 public class EggProjectile extends Projectile implements AoeProjectile, Renderable {
-
+    private static final Logger log = GameLogger.get(EggProjectile.class);
     public enum EggState { TICKING, BLASTING }
 
     private static final float BOMB_DURATION  = 2.5f;
@@ -46,12 +48,15 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
         animationManager.addAnimation("bomb",  "BOMB/BOMB",   0.25f);
         animationManager.addAnimation("blast", "BLAST/BLAST", 0.08f);
         animationManager.play("bomb");
+        log.info("EggProjectile spawned: pos=({},{}), fuseTime={}s",
+            String.format("%.1f", position.getX()),
+            String.format("%.1f", position.getY()),
+            BOMB_DURATION);
     }
 
     /**
-     * Riadi časovač a prechody stavov.
-     * Damage pri výbuchu je zodpovednosť CollisionManageru –
-     * tu iba meníme stav a animáciu.
+     * Advances the fuse/blast timer and handles state transitions.
+     * Damage at explosion time is {@code CollisionManager}'s responsibility.
      */
     @Override
     public void update(UpdateContext ctx) {
@@ -64,11 +69,19 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
                     eggState   = EggState.BLASTING;
                     stateTimer = BLAST_DURATION;
                     animationManager.play("blast");
+                    log.info("EggProjectile state: TICKING → BLASTING, pos=({},{})",
+                        String.format("%.1f", position.getX()),
+                        String.format("%.1f", position.getY()));
                 }
                 break;
             case BLASTING:
                 if (stateTimer <= 0f) {
                     active = false;
+                    if (log.isDebugEnabled()) {
+                        log.debug("EggProjectile deactivated after blast: pos=({},{})",
+                            String.format("%.1f", position.getX()),
+                            String.format("%.1f", position.getY()));
+                    }
                 }
                 break;
         }

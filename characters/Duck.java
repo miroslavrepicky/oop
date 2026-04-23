@@ -1,7 +1,9 @@
 package sk.stuba.fiit.characters;
 
 import com.badlogic.gdx.math.Rectangle;
+import org.slf4j.Logger;
 import sk.stuba.fiit.core.AnimationManager;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.physics.FloatingGravity;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.items.EggProjectileSpawner;
@@ -24,6 +26,7 @@ import java.util.Random;
  * {@link sk.stuba.fiit.items.EggProjectileSpawner} (50 %).
  */
 public class Duck extends Character {
+    private static final Logger log = GameLogger.get(Duck.class);
     private static final int   DUCK_HP     = 20;
 
     private float walkTimer  = 0f;
@@ -104,10 +107,16 @@ public class Duck extends Character {
      */
     public Item onKilled() {
         Random random = new Random();
+        Item drop;
         if (random.nextBoolean()) {
-            return new FriendlyDuck(new Vector2D(position.getX(), position.getY()));
+            drop = new FriendlyDuck(new Vector2D(position.getX(), position.getY()));
         } else {
-            return new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
+            drop = new EggProjectileSpawner(new Vector2D(position.getX(), position.getY()));
         }
+        log.info("Duck killed – drop: type={}, pos=({},{})",
+            drop.getClass().getSimpleName(),
+            String.format("%.1f", position.getX()),
+            String.format("%.1f", position.getY()));
+        return drop;
     }
 }
