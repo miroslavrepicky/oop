@@ -50,6 +50,7 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     protected boolean isOnGround = false;
     protected boolean facingRight = true;
     protected float   velocityX  = 0f;
+    protected boolean enemy   = true;
 
     /** Countdown for the death animation; -1 means the animation has not started yet. */
     private   float   deathTimer = -1f;
@@ -342,6 +343,7 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     public void      setVelocityX(float v){ this.velocityX = v; }
     public int       getArmor()           { return armor; }
     public int       getMaxArmor()        { return maxArmor; }
+    public boolean   isEnemy() {return this.enemy;}
 
     /** Returns the character's {@link AnimationManager}; must not return {@code null}. */
     public abstract AnimationManager getAnimationManager();

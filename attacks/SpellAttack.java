@@ -2,7 +2,6 @@ package sk.stuba.fiit.attacks;
 
 import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.exceptions.InvalidAttackException;
@@ -63,7 +62,7 @@ public class SpellAttack implements Attack {
         MagicSpell spell = ProjectilePool.getInstance().obtainSpell();
         spell.reset(attacker.getAttackPower(), projectileSpeed, spawnPos, direction, aoeRadius);
 
-        spell.setOwner(attacker instanceof EnemyCharacter
+        spell.setOwner(attacker.isEnemy()
             ? ProjectileOwner.ENEMY
             : ProjectileOwner.PLAYER);
 

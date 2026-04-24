@@ -2,7 +2,6 @@ package sk.stuba.fiit.attacks;
 
 import org.slf4j.Logger;
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.characters.EnemyCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.core.exceptions.InvalidAttackException;
@@ -77,7 +76,7 @@ public class MeleeAttack implements Attack {
         float hitX = facingRight ? leadX : leadX - reach;
         float hitY = attacker.getHitbox().y;
 
-        ProjectileOwner owner = (attacker instanceof EnemyCharacter)
+        ProjectileOwner owner = (attacker.isEnemy())
             ? ProjectileOwner.ENEMY
             : ProjectileOwner.PLAYER;
 

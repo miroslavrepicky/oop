@@ -61,6 +61,7 @@ public abstract class PlayerCharacter extends Character {
     public PlayerCharacter(String name, int hp, int attackPower, float speed,
                            Vector2D position, int maxArmor) {
         super(name, hp, attackPower, speed, position, 0, maxArmor);
+        this.enemy = false;
     }
 
     // --- Mana – default empty implementation; Wizzard overrides ---
