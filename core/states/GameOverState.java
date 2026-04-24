@@ -26,12 +26,9 @@ public class GameOverState implements IGameState, TerminalState {
      */
     @Override public IGameState next() { return null; }
 
-    /**
-     * Triggers the retry flow: revives the party and navigates to the
-     * inventory screen for the failed level.
-     */
+
     @Override
     public void execute(AppController app, int currentLevel, int maxLevels) {
-        app.retryLevel(currentLevel);
+        app.goToGameOverScreen(currentLevel);
     }
 }

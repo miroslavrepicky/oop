@@ -4,10 +4,7 @@ import com.badlogic.gdx.Game;
 import sk.stuba.fiit.save.SaveData;
 import sk.stuba.fiit.core.exceptions.SaveException;
 import sk.stuba.fiit.save.SaveManager;
-import sk.stuba.fiit.ui.GameScreen;
-import sk.stuba.fiit.ui.InventoryScreen;
-import sk.stuba.fiit.ui.MainMenuScreen;
-import sk.stuba.fiit.ui.WinScreen;
+import sk.stuba.fiit.ui.*;
 
 /**
  * LibGDX application entry point and central {@link AppController} implementation.
@@ -70,6 +67,11 @@ public class ShadowQuest extends Game implements AppController {
     public void goToMainMenu() {
         GameManager.getInstance().resetGame();
         setScreen(new MainMenuScreen(this));
+    }
+
+    @Override
+    public void goToGameOverScreen(int level) {
+        setScreen(new GameOverScreen(this, level));
     }
 
     /**

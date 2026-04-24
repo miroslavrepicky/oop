@@ -47,6 +47,8 @@ public interface AppController {
     /** Navigates to the win screen after the player clears the final level. */
     void goToWinScreen();
 
+    void goToGameOverScreen(int level);
+
     /** Exits the application. */
     void exitApp();
 

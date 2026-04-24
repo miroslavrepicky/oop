@@ -52,7 +52,7 @@ public class PlayingState implements IGameState {
                         GameManager      gameManager,
                         CollisionManager collisionManager,
                         GameRenderer     gameRenderer,
-                        AppController    app) {           // <-- nový parameter
+                        AppController    app) {
         this.playerController = playerController;
         this.gameManager      = gameManager;
         this.collisionManager = collisionManager;
