@@ -21,7 +21,7 @@ import com.badlogic.gdx.math.Rectangle;
  *   <li><b>Inventory</b> – stored in an inventory slot; the player selects and uses them.</li>
  * </ol>
  *
- * <p>The {@code level} parameter in {@link #use(PlayerCharacter, Level)} lets the item
+ * <p>The {@code level} parameter in {@link #use(PlayerCharacter, Level, Inventory)} lets the item
  * interact with the game world (e.g. spawn projectiles) without calling {@code GameManager}.
  */
 public abstract class Item implements Pickable, Updatable {

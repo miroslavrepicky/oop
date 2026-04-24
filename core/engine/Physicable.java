@@ -1,11 +1,10 @@
 package sk.stuba.fiit.core.engine;
 
 import com.badlogic.gdx.math.Rectangle;
-import sk.stuba.fiit.physics.GravityStrategy;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Contract for objects on which a {@link GravityStrategy} can act.
+ * Contract for objects on which a GravityStrategy can act.
  *
  * <p>Originally {@code GravityStrategy} depended on {@code Character}, which
  * made it impossible to apply gravity to projectiles or other objects without

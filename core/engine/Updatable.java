@@ -20,7 +20,7 @@ public interface Updatable {
     /**
      * Main update method called once per frame.
      *
-     * @param ctx frame context containing deltaTime, platforms, level and player
+     * @param ctx frame context containing deltaTime, platforms, level, and player
      */
     void update(UpdateContext ctx);
 }

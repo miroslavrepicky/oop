@@ -1,13 +1,12 @@
 package sk.stuba.fiit.core.engine;
 
 import sk.stuba.fiit.characters.PlayerCharacter;
-import sk.stuba.fiit.core.AIController;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
  * Contract that must be implemented by every character controlled by AI.
  *
- * <p>{@link AIController} depends exclusively on this interface and has no
+ * <p>AIController depends exclusively on this interface and has no
  * knowledge of {@code EnemyCharacter} or any other concrete class. This makes
  * it possible to add new enemy types or NPCs without modifying the controller.
  */
