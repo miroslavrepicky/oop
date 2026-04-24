@@ -3,34 +3,45 @@ package sk.stuba.fiit.render;
 import sk.stuba.fiit.core.AnimationManager;
 
 /**
- * DTO popisujúci jeden vizuálny objekt pre renderer.
+ * Immutable data transfer object describing a single visual entity for the renderer.
  *
- * Dôvod existencie: GameRenderer pôvodne importoval EnemyCharacter,
- * PlayerCharacter, Duck, Item a Projectile len preto, aby zavolal
- * .getPosition().getX(), .getAnimationManager() a .isFacingRight().
- * To je porušenie MVC – View závisí na celom Modeli.
+ * <p>Motivation: {@code GameRenderer} previously imported {@code EnemyCharacter},
+ * {@code PlayerCharacter}, {@code Duck}, {@code Item} and {@code Projectile} just
+ * to call {@code .getPosition().getX()}, {@code .getAnimationManager()} and
+ * {@code .isFacingRight()}. This constitutes a violation of MVC – the View depended
+ * on the entire Model.
  *
- * Po refaktore: Controller (PlayingState) zostaví EntityRenderData
- * z každého živého objektu. GameRenderer dostane len tento DTO –
- * neimportuje ani jednu model triedu.
+ * <p>After refactoring: the Controller ({@code PlayingState}) assembles an
+ * {@code EntityRenderData} from each live object. {@code GameRenderer} receives
+ * only this DTO – it does not import a single model class.
  *
- * Čo DTO nesie:
- *  - pozícia a rozmery hitboxu (float primitívy)
- *  - AnimationManager – jedina "model" závislosť, ale je to čisto
- *    vizuálna trieda (žiadna herná logika), takže View ju smie poznať
- *  - flipX, isAttacking – jednoduché booleany
- *  - renderType – enum, aby renderer vedel ako kresliť (actualSize vs fixedRect)
- *  - pre projektily: renderWidth/renderHeight/offsetX/offsetY
+ * <p>Contents:
+ * <ul>
+ *   <li>Position and hitbox dimensions (float primitives)</li>
+ *   <li>{@link AnimationManager} – the only "model" dependency, but it is a purely
+ *       visual class (no game logic), so the View is permitted to know it</li>
+ *   <li>{@code flipX}, {@code isAttacking} – simple booleans</li>
+ *   <li>{@code renderType} – enum telling the renderer how to draw (actualSize vs fixedRect)</li>
+ *   <li>For projectiles: {@code renderWidth}/{@code renderHeight}/{@code offsetX}/{@code offsetY}</li>
+ * </ul>
  *
- * Trieda je immutable (všetky polia final). Builder pattern
- * uľahčuje konštrukciu – nie všetky polia sú relevantné pre každý typ.
+ * <p>The class is immutable (all fields are {@code final}). The Builder pattern
+ * makes construction convenient – not all fields are relevant for every type.
  */
 public final class EntityRenderData {
 
+    /**
+     * Rendering mode for this entity.
+     */
     public enum RenderType {
-        /** Kreslí sa v skutočnej veľkosti framu ukotvený na spodný stred hitboxu (postavy, kačky). */
+        /**
+         * Drawn at the actual frame size, anchored to the bottom-centre of the
+         * hitbox (characters, ducks).
+         */
         ACTUAL_SIZE,
-        /** Kreslí sa do pevne zadaného obdĺžnika (projektily, itemy). */
+        /**
+         * Drawn stretched to fill a fixed rectangle (projectiles, items).
+         */
         FIXED_RECT
     }
 
@@ -43,21 +54,18 @@ public final class EntityRenderData {
     public final boolean        isAttacking;
     public final RenderType     renderType;
 
-    /** Len pre FIXED_RECT – šírka vykresleného sprite-u. */
     public final float          renderWidth;
-    /** Len pre FIXED_RECT – výška vykresleného sprite-u. */
     public final float          renderHeight;
-    /** Horizontálny offset od pozície (napr. vajce pri výbuchu). */
     public final float          renderOffsetX;
-    /** Vertikálny offset od pozície. */
     public final float          renderOffsetY;
 
-    // HP/Armor bary (pre nepriateľov, 0 = nezobrazovať)
+    /** HP and armour bars (for enemies, 0 = do not display). */
     public final int  hp;
     public final int  maxHp;
     public final int  armor;
     public final int  maxArmor;
 
+    /** RGB tint multipliers applied to the sprite (1, 1, 1 = no tint). */
     public final float tintR;
     public final float tintG;
     public final float tintB;
@@ -84,11 +92,23 @@ public final class EntityRenderData {
         this.tintB = b.tintB;
     }
 
+    /**
+     * Creates a new {@link Builder} with the mandatory position and animation manager.
+     *
+     * @param x  entity X position in world coordinates
+     * @param y  entity Y position in world coordinates
+     * @param am the entity's animation manager; may be {@code null} (fallback shape is drawn)
+     * @return a new builder instance
+     */
     public static Builder builder(float x, float y, AnimationManager am) {
 
         return new Builder(x, y, am);
     }
 
+    /**
+     * Fluent builder for {@link EntityRenderData}.
+     * All optional fields default to sensible values (64×64 hitbox, no flip, no tint, etc.).
+     */
     public static final class Builder {
         private final float x, y;
         private final AnimationManager animationManager;
@@ -116,22 +136,31 @@ public final class EntityRenderData {
             this.animationManager = am;
         }
 
+        /** Sets the hitbox dimensions used for debug rendering and bar placement. */
         public Builder hitbox(float w, float h)  { hitboxWidth = w; hitboxHeight = h; return this; }
+        /** Sets whether the sprite should be flipped horizontally. */
         public Builder flipX(boolean v)           { flipX = v; return this; }
+        /** Marks the entity as currently performing an attack animation. */
         public Builder attacking(boolean v)       { isAttacking = v; return this; }
+        /** Sets the render type ({@link RenderType#ACTUAL_SIZE} or {@link RenderType#FIXED_RECT}). */
         public Builder renderType(RenderType t)   { renderType = t; return this; }
+        /** Sets the fixed render dimensions (used for {@link RenderType#FIXED_RECT}). */
         public Builder renderSize(float w, float h){ renderWidth = w; renderHeight = h; return this; }
+        /** Sets the render offset relative to the entity's world position. */
         public Builder renderOffset(float ox, float oy){ renderOffsetX = ox; renderOffsetY = oy; return this; }
+        /** Sets the HP and armour bar values for enemy health display. */
         public Builder bars(int hp, int maxHp, int armor, int maxArmor) {
             this.hp = hp; this.maxHp = maxHp;
             this.armor = armor; this.maxArmor = maxArmor;
             return this;
         }
+        /** Sets the RGB tint applied to the sprite during rendering. */
         public Builder tint(float r, float g, float b) {
             tintR = r; tintG = g; tintB = b;
             return this;
         }
 
+        /** Builds and returns the immutable {@link EntityRenderData} instance. */
         public EntityRenderData build() { return new EntityRenderData(this); }
     }
 }

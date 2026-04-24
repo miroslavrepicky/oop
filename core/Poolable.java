@@ -1,9 +1,8 @@
 package sk.stuba.fiit.core;
 
-import sk.stuba.fiit.projectiles.*;
 
 /**
- * Contract for projectiles managed by {@link ObjectPool} via {@link ProjectilePool}.
+ * Contract for projectiles managed by {@link ObjectPool} via ProjectilePool.
  *
  * <p>Replaces the series of {@code instanceof} checks that previously existed
  * in {@code Level.returnInactiveProjectilesToPool()}. Each pooled projectile
@@ -12,8 +11,7 @@ import sk.stuba.fiit.projectiles.*;
  *   if (p instanceof Poolable) ((Poolable) p).returnToPool();
  * </pre>
  *
- * <p>Implemented by: {@link Arrow}, {@link MagicSpell}, {@link TurdflyProjectile}.
- * {@link EggProjectile} is NOT pooled and is handled by the GC.
+ * <p>Implemented by projectiles except EggProjectile. It is NOT pooled and is handled by the GC.
  */
 public interface Poolable {
     /**
