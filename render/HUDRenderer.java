@@ -12,17 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Kreslí HUD (HP, zbroj, mana, šípy, inventár, pick-up hint).
+ * Kresli HUD (HP, zbroj, mana, sipy, inventár, pick-up hint).
  *
- * Po refaktore: žiadna závislosť na GameManager, Inventory, PlayerCharacter
- * ani Item. Všetky dáta prídu cez {@link RenderSnapshot.HUDSnapshot} DTO,
- * ktorý zostaví {@link SnapshotBuilder}.
+ * Po refaktore: ziadna závislost na GameManager, Inventory, PlayerCharacter
+ * ani Item. Vsetky dáta pridu cez {@link RenderSnapshot.HUDSnapshot} DTO,
+ * ktory zostavi {@link SnapshotBuilder}.
  *
- * <h2>Mana a šípy</h2>
- * <p>Každý {@link RenderSnapshot.HUDSnapshot.CharacterHUDData} nesie
+ * <h2>Mana a sipy</h2>
+ * <p>Kazdy {@link RenderSnapshot.HUDSnapshot.CharacterHUDData} nesie
  * {@code mana}/{@code maxMana} a {@code arrows}/{@code maxArrows}.
- * Hodnota {@code -1} znamená „neaplikovateľné" – bar sa nevykreslí.
- * Tým sa renderer nemusí pýtať na konkrétny typ postavy.
+ * Hodnota {@code -1} znamená „neaplikovatelne" – bar sa nevykresli.
+ * Tym sa renderer nemusi pytat na konkretny typ postavy.
  */
 public class HUDRenderer {
 
@@ -39,7 +39,7 @@ public class HUDRenderer {
     private static final float TOTAL_WIDTH   = SLOT_COUNT * (SLOT_SIZE + SLOT_PAD) - SLOT_PAD;
     private static final float START_X       = (800f - TOTAL_WIDTH) / 2f;
 
-    // ── Resource bar constants (mana / arrows) ────────────────────────────────
+    //  Resource bar constants (mana / arrows)
     /** Width of the mana/arrow bar drawn next to the character row. */
     private static final float RES_BAR_W  = 60f;
     private static final float RES_BAR_H  = 6f;
@@ -61,10 +61,10 @@ public class HUDRenderer {
     }
 
     /**
-     * Vykreslí celý HUD z predpripraveného snapshotu.
-     * Žiadne volania na GameManager ani Inventory.
+     * Vykresli cely HUD z predpripraveneho snapshotu.
+     * ziadne volania na GameManager ani Inventory.
      *
-     * @param hud snapshot zostavený cez SnapshotBuilder; môže byť null
+     * @param hud snapshot zostaveny cez SnapshotBuilder; moze byt null
      */
     public void render(RenderSnapshot.HUDSnapshot hud) {
         if (hud == null || hud.characters.isEmpty()) return;
@@ -74,7 +74,7 @@ public class HUDRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Súkromné – rámčeky slotov
+    //  Sukromne – rámceky slotov
     // -------------------------------------------------------------------------
 
     private void drawSlotFrames(int selectedSlot) {
@@ -92,7 +92,7 @@ public class HUDRenderer {
 
 
     // -------------------------------------------------------------------------
-    //  Súkromné – ikony, texty
+    //  Sukromne – ikony, texty
     // -------------------------------------------------------------------------
 
     private void drawContent(RenderSnapshot.HUDSnapshot hud) {
@@ -151,7 +151,7 @@ public class HUDRenderer {
                 .append("  HP: ").append(c.hp).append("/").append(c.maxHp)
                 .append("  ARM: ").append(c.armor).append("/").append(c.maxArmor);
 
-            // Doplnok za HP/ARM – mana alebo šípy (číselne)
+            // Doplnok za HP/ARM – mana alebo sipy (ciselne)
             if (c.mana >= 0 && c.maxMana > 0) {
                 sb.append("  MANA: ").append(c.mana).append("/").append(c.maxMana);
             } else if (c.arrows >= 0 && c.maxArrows > 0) {

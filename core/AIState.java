@@ -1,7 +1,7 @@
 package sk.stuba.fiit.core;
 
 /**
- * Represents the possible behavioural states of an AI-controlled enemy.
+ * Represents the possible behavioral states of an AI-controlled enemy.
  *
  * <p>State transitions are managed by {@link AIController}:
  * <ul>

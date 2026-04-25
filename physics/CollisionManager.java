@@ -66,7 +66,7 @@ public class CollisionManager {
         } else {
             log.warn("Item pickup failed – inventory full: item={}, player={}",
                 nearbyItem.getClass().getSimpleName(), player.getName());
-            // item zostáva v leveli
+            // item zostava v leveli
         }
     }
 
@@ -114,11 +114,9 @@ public class CollisionManager {
     }
 
     private void triggerImpact(Projectile projectile, Object hitTarget, Level level) {
-        if (projectile instanceof AoeProjectile) {
-            AoeProjectile aoe = (AoeProjectile) projectile;
+        if (projectile instanceof AoeProjectile aoe) {
 
-            if (hitTarget instanceof EnemyCharacter) {
-                EnemyCharacter directHit = (EnemyCharacter) hitTarget;
+            if (hitTarget instanceof EnemyCharacter directHit) {
                 directHit.takeDamage(aoe.getDamage());
                 applyOnHitEffects(projectile, directHit);
                 applyAoeExcluding(
@@ -198,8 +196,7 @@ public class CollisionManager {
     }
 
     private void applySingleHit(Projectile projectile, Object hitTarget, Level level) {
-        if (hitTarget instanceof EnemyCharacter) {
-            EnemyCharacter enemy = (EnemyCharacter) hitTarget;
+        if (hitTarget instanceof EnemyCharacter enemy) {
             projectile.onCollision(enemy);
             applyOnHitEffects(projectile, enemy);
         } else if (hitTarget instanceof Duck) {
@@ -242,8 +239,7 @@ public class CollisionManager {
 
     private void checkEggExplosions(PlayerCharacter player, Level level) {
         for (Projectile p : level.getProjectiles()) {
-            if (!(p instanceof EggProjectile)) continue;
-            EggProjectile egg = (EggProjectile) p;
+            if (!(p instanceof EggProjectile egg)) continue;
             if (egg.getEggState() != EggProjectile.EggState.BLASTING) continue;
             if (egg.isDamageDealt()) continue;
 

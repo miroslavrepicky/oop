@@ -47,7 +47,7 @@ public final class AtlasCache {
      */
     public TextureAtlas get(String path) {
         if (cache.containsKey(path)) {
-            // Guard – cache.containsKey sa volá často
+
             if (log.isDebugEnabled()) {
                 log.debug("Atlas cache hit: path={}", path);
             }

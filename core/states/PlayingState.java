@@ -25,10 +25,10 @@ import sk.stuba.fiit.world.Level;
  *
  * <h2>Transition triggers</h2>
  * <ul>
- *   <li>{@code P} key              → {@link PausedState} (game freezes, scene stays visible)</li>
- *   <li>All party members dead     → {@link GameOverDelayState} (death animation plays out)</li>
- *   <li>Level complete, more levels remain → {@link LevelCompleteState}</li>
- *   <li>Level complete, no more levels     → {@link WinState}</li>
+ *   <li>{@code P} key -> {@link PausedState} (game freezes, a scene stays visible)</li>
+ *   <li>All party members dead -> {@link GameOverDelayState} (death animation plays out)</li>
+ *   <li>Level complete, more levels remain -> {@link LevelCompleteState}</li>
+ *   <li>Level complete, no more levels -> {@link WinState}</li>
  * </ul>
  */
 public class PlayingState implements IGameState {
@@ -123,7 +123,7 @@ public class PlayingState implements IGameState {
         PlayerCharacter player  = inv.getActive();
         boolean         nearby  = collisionManager.getNearbyItem() != null;
 
-        // Controller zostaví DTO – GameRenderer model nevidí
+        // Controller builds DTO – GameRenderer doesnt see model
         RenderSnapshot snapshot = SnapshotBuilder.build(
             player, level, inv, gameRenderer.isDebugHitboxes(), nearby);
 

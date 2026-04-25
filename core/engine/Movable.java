@@ -7,7 +7,7 @@ import sk.stuba.fiit.util.Vector2D;
  *
  * <p>Separates the movement capability from the full {@code Character} contract
  * so that lightweight objects or decorators can implement movement without
- * carrying all character state.
+ * carrying all character states.
  */
 public interface Movable {
     /**

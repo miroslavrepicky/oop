@@ -18,9 +18,9 @@ import java.util.Random;
  * <p>When {@link #triggerAttack()} is called by the AI controller, DarkKnight
  * checks the current distance to the player:
  * <ul>
- *   <li><b>Close range</b> (≤ {@value #MELEE_THRESHOLD} px) → random attack from
+ *   <li><b>Close range</b> (≤ {@value #MELEE_THRESHOLD} px) -> random attack from
  *       {@link #meleeAttacks}. Uses a wide sweep hitbox via {@link MeleeAttack}.</li>
- *   <li><b>Long range</b> (&gt; {@value #MELEE_THRESHOLD} px) → random attack from
+ *   <li><b>Long range</b> (&gt; {@value #MELEE_THRESHOLD} px) -> random attack from
  *       {@link #spellAttacks}. Can carry Fire or Freeze on-hit effects.</li>
  * </ul>
  * <p>This approach was chosen over health-threshold phases because it requires no
@@ -40,13 +40,13 @@ import java.util.Random;
  */
 public class DarkKnight extends EnemyCharacter {
 
-    // ── Constants ─────────────────────────────────────────────────────────────
+    //  Constants
 
     private static final int   ARMOR           = 30;
 
     /**
      * Distance threshold (px) that determines attack type.
-     * Below → melee swing; at or above → ranged spell.
+     * Below -> melee swing; at or above -> ranged spell.
      */
     private static final float MELEE_THRESHOLD = 26f * 1.2f;
 
@@ -56,7 +56,7 @@ public class DarkKnight extends EnemyCharacter {
      */
     private static final int[] HIT_FRAME_NUMBERS = {4, 8, 13, 17};
 
-    // ── Attack lists ──────────────────────────────────────────────────────────
+    //  Attack lists
 
     /** Attacks available in close-range mode. */
     private final List<Attack> meleeAttacks = new ArrayList<>();
@@ -64,7 +64,7 @@ public class DarkKnight extends EnemyCharacter {
     /** Attacks available in long-range mode. */
     private final List<Attack> spellAttacks = new ArrayList<>();
 
-    // ── Runtime state ─────────────────────────────────────────────────────────
+    //  Runtime state
 
     private final Random rng = new Random();
 
@@ -89,7 +89,7 @@ public class DarkKnight extends EnemyCharacter {
 
     private AnimationManager animationManager;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
+    //  Constructor
 
     public DarkKnight(Vector2D position) {
         super("DarkKnight", 500, 50, 2.0f, position, 200f, 400f, ARMOR, ARMOR);
@@ -127,7 +127,7 @@ public class DarkKnight extends EnemyCharacter {
         animationManager.addAnimation("death",  "DEATH/DEATH",   0.3f, Animation.PlayMode.NORMAL);
     }
 
-    // ── Update ────────────────────────────────────────────────────────────────
+    //  Update
 
     /**
      * Caches the player reference for use in {@link #triggerAttack()} and
@@ -141,7 +141,7 @@ public class DarkKnight extends EnemyCharacter {
         super.update(ctx); // gravity, AI controller (-> triggerAttack), animation
     }
 
-    // ── Attack selection ──────────────────────────────────────────────────────
+    //  Attack selection
 
     /**
      * Selects the attack type based on current distance to the player, initializes
@@ -152,7 +152,7 @@ public class DarkKnight extends EnemyCharacter {
     public void triggerAttack() {
         if (isAttacking) return; // guard against re-entry (also checked by super)
 
-        // ── Choose attack ──────────────────────────────────────────────────
+        //  Choose attack
         if (lastKnownPlayer != null) {
             double dist = position.distanceTo(lastKnownPlayer.getPosition());
             if (dist <= MELEE_THRESHOLD) {
@@ -167,7 +167,7 @@ public class DarkKnight extends EnemyCharacter {
             usingMeleeAttack = true;
         }
 
-        // ── Reset multi-hit tracking for melee ────────────────────────────
+        //  Reset multi-hit tracking for melee
         if (usingMeleeAttack) {
             hitsFired = new boolean[HIT_FRAME_NUMBERS.length];
             computeHitThresholds();
@@ -195,7 +195,7 @@ public class DarkKnight extends EnemyCharacter {
         }
     }
 
-    // ── Damage-dealing hook ───────────────────────────────────────────────────
+    //  Damage-dealing hook
 
     /**
      * For <b>spell</b> attacks delegates to the standard single-hit logic.
@@ -203,7 +203,7 @@ public class DarkKnight extends EnemyCharacter {
      * <p>For <b>melee</b> attacks fires a {@link sk.stuba.fiit.projectiles.MeleeHitbox}
      * at each of the four scheduled frames (4, 8, 13, 17).  At each scheduled frame,
      * if the player is no longer within {@value #MELEE_THRESHOLD} px the remaining
-     * animation is cancelled immediately.
+     * animation is canceled immediately.
      */
     @Override
     protected void dealAttackDamage(UpdateContext ctx) {
@@ -223,7 +223,7 @@ public class DarkKnight extends EnemyCharacter {
 
             if (attackAnimTimer > hitThresholds[i]) continue; // not yet this frame
 
-            // ── Time to fire hit i ──────────────────────────────────────────
+            //  Time to fire hit i
             if (isPlayerInMeleeReach()) {
                 attack.execute(this, ctx.level);
                 hitsFired[i] = true;
@@ -252,7 +252,7 @@ public class DarkKnight extends EnemyCharacter {
             && position.distanceTo(lastKnownPlayer.getPosition()) <= MELEE_THRESHOLD;
     }
 
-    // ── Animation name ────────────────────────────────────────────────────────
+    //  Animation name
 
     /**
      * Routes to "attack" for melee or "cast" for spells so that

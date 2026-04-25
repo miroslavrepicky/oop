@@ -22,7 +22,7 @@ import sk.stuba.fiit.core.AnimationManager;
 public final class AnimationRenderer {
 
     private AnimationRenderer() {
-        // utility trieda – žiadne inštancie
+        // utility class - no instances
     }
 
     /**
@@ -53,10 +53,10 @@ public final class AnimationRenderer {
     }
 
     /**
-     * Rozšírená verzia s možnosťou otočenia strany kotvenia.
+     * Rozsirena verzia s moznostou otocenia strany kotvenia.
      *
-     * @param anchorOpposite ak {@code true}, sprite sa ukotvuje na opačnú stranu hitboxu.
-     *                       Používa sa pri útočných animáciách kde sprite „vyčnieva" dopredu.
+     * @param anchorOpposite ak {@code true}, sprite sa ukotvuje na opacnu stranu hitboxu.
+     *                       Pouziva sa pri utocnych animaciach kde sprite „vycnieva" dopredu.
      */
     public static void renderActualSize(SpriteBatch batch, AnimationManager am,
                                         float x, float y, float hitboxW,

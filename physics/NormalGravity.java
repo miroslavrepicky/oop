@@ -15,7 +15,7 @@ import java.util.List;
  * NOT handled here – see {@link MovementResolver}.
  *
  * <p>Collision resolution prefers vertical correction when the vertical overlap
- * is smaller than the horizontal overlap (i.e. the body hit a floor/ceiling,
+ * is smaller than the horizontal overlap (i.e., the body hit a floor/ceiling,
  * not a wall).
  */
 public class NormalGravity implements GravityStrategy {

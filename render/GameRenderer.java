@@ -50,7 +50,7 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Hlavný vstupný bod
+    //  Hlavny vstupny bod
     // -------------------------------------------------------------------------
 
     public void render(RenderSnapshot snapshot, float deltaTime) {
@@ -79,7 +79,7 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Čiastkové kroky
+    //  ciastkove kroky
     // -------------------------------------------------------------------------
 
     private void clearScreen() {
@@ -93,7 +93,7 @@ public class GameRenderer {
         }
     }
 
-    /** Fallback pre objekty bez animácie (AnimationManager == null). */
+    /** Fallback pre objekty bez animacie (AnimationManager == null). */
     private void renderFallbackShapes(RenderSnapshot snapshot) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -154,7 +154,7 @@ public class GameRenderer {
     private void renderProjectile(EntityRenderData proj) {
         if (proj.animationManager == null) return;
 
-        batch.setColor(proj.tintR, proj.tintG, proj.tintB, 1f); // nové
+        batch.setColor(proj.tintR, proj.tintG, proj.tintB, 1f); // nove
         AnimationRenderer.render(
             batch, proj.animationManager,
             proj.x + proj.renderOffsetX,
@@ -163,11 +163,11 @@ public class GameRenderer {
             proj.renderHeight,
             proj.flipX
         );
-        batch.setColor(1f, 1f, 1f, 1f); // reset aby ostatné sprite-y neboli ovplyvnené
+        batch.setColor(1f, 1f, 1f, 1f); // reset aby ostatne sprite-y neboli ovplyvnene
     }
 
     // -------------------------------------------------------------------------
-    //  HP / Armor bary nepriateľov
+    //  HP / Armor bary nepriatelov
     // -------------------------------------------------------------------------
 
     private void renderEnemyBars(RenderSnapshot snapshot) {
@@ -203,7 +203,7 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Indikátor aktívneho hráča
+    //  Indikator aktivneho hraca
     // -------------------------------------------------------------------------
 
     private void renderPlayerIndicator(EntityRenderData player) {
@@ -267,7 +267,7 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Verejné API
+    //  Verejne API
     // -------------------------------------------------------------------------
 
     public void resize(int width, int height) {

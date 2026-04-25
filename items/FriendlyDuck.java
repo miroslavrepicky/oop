@@ -36,8 +36,7 @@ public class FriendlyDuck extends Item {
     }
 
     /**
-     * Vystrelí TurdflyProjectile do aktuálneho levelu.
-     * Level je predaný zvonku – item nemusí volať GameManager.
+     * Shoot TurdflyProjectile in the direction the player is currently facing.
      */
     @Override
     public void use(PlayerCharacter character, Level level, Inventory inventory) {
@@ -56,7 +55,7 @@ public class FriendlyDuck extends Item {
         level.addProjectile(turdfly);
 
         inventory.removeItem(this);
-        System.out.println("FriendlyDuck použitá -> turdfly vystrelený!");
+        System.out.println("FriendlyDuck used -> turdfly shot!");
     }
 
     @Override
@@ -66,5 +65,5 @@ public class FriendlyDuck extends Item {
 
     @Override
     public String getIconPath() { return "icons/duck.png"; }
-    
+
 }

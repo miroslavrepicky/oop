@@ -116,7 +116,7 @@ public class AnimationManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Prístup k frameom – používa AnimationRenderer
+    //  Access to frames for AnimationRenderer
     // -------------------------------------------------------------------------
 
     /**

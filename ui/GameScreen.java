@@ -84,7 +84,7 @@ public class GameScreen implements Screen {
         currentState.render(deltaTime);
     }
 
-    // ── Transition handling ───────────────────────────────────────────────────
+    //  Transition handling
 
     /**
      * Responds to a state-transition request produced by the current state.
@@ -109,7 +109,7 @@ public class GameScreen implements Screen {
         }
     }
 
-    // ── Screen lifecycle ──────────────────────────────────────────────────────
+    //  Screen lifecycle
 
     @Override public void resize(int w, int h) { gameRenderer.resize(w, h); }
     @Override public void show()   {}

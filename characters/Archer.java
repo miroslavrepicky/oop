@@ -43,7 +43,7 @@ public class Archer extends PlayerCharacter {
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());
-        primaryAttack = new ArrowAttack(); // SPACE - normalna sipka
+        primaryAttack = new ArrowAttack();
     }
 
     private void initAnimations() {

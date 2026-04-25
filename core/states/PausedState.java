@@ -64,7 +64,7 @@ public class PausedState implements IGameState {
         font.getData().setScale(1.4f);
     }
 
-    // ── IGameState ────────────────────────────────────────────────────────────
+    //  IGameState
 
     /**
      * Processes pause-menu key presses. Game simulation does not advance here.
@@ -137,7 +137,7 @@ public class PausedState implements IGameState {
     @Override
     public IGameState next() {
         if (exitRequested) {
-            // Vrátim TerminalState – GameScreen ho zachytí a zavolá execute()
+            // Vratim TerminalState – GameScreen ho zachyti a zavola execute()
             return new ExitToMenuState();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {

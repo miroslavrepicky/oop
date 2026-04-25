@@ -111,13 +111,13 @@ public class WinScreen implements Screen {
         batch.begin();
 
         font.setColor(Color.GOLD);
-        font.draw(batch, "VYHRAL SI!", W / 2 - 75, 370f);
+        font.draw(batch, "YOU HAVE WON!", W / 2 - 75, 370f);
 
         font.setColor(Color.WHITE);
-        font.draw(batch, "Gratulujeme, svet je zachraneny.", W / 2 - 185, 310f);
+        font.draw(batch, "Congratulations, world is saved.", W / 2 - 185, 310f);
 
         font.setColor(btnMenu.contains(mx, my) ? Color.WHITE : Color.LIGHT_GRAY);
-        font.draw(batch, "Hlavne menu", btnMenu.x + 10, btnMenu.y + btnMenu.height - 10);
+        font.draw(batch, "Main Menu", btnMenu.x + 10, btnMenu.y + btnMenu.height - 10);
 
         batch.end();
     }

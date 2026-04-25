@@ -21,49 +21,49 @@ import java.util.List;
  * <p>Structure:
  * <pre>
  *   SaveData
- *   ├── saveVersion      – guards against incompatible old files
- *   ├── savedAt          – ISO timestamp for the UI
- *   ├── currentLevel     – 1-based level number where the player saved
- *   ├── characters[]     – party snapshot (type, HP, armor, position, facing…)
- *   ├── inventoryItems[] – item snapshot (type + count, grouped by class)
- *   ├── enemies[]        – live enemies in the level (type, position, HP, armor)
- *   ├── groundItems[]    – items lying on the ground (type, position)
- *   └── ducks[]          – live ducks in the level (position, HP)
+ *   ├ saveVersion      – guards against incompatible old files
+ *   ├ savedAt          – ISO timestamp for the UI
+ *   ├ currentLevel     – 1-based level number where the player saved
+ *   ├ characters[]     – party snapshot (type, HP, armor, position, facing…)
+ *   ├ inventoryItems[] – item snapshot (type + count, grouped by class)
+ *   ├ enemies[]        – live enemies in the level (type, position, HP, armor)
+ *   ├ groundItems[]    – items lying on the ground (type, position)
+ *   └ ducks[]          – live ducks in the level (position, HP)
  * </pre>
  */
 public final class SaveData implements Serializable {
 
-    /** Zvýšiť pri každej zmene štruktúry ktorá je nekompatibilná so starými súbormi. */
+    /** Zvysit pri kazdej zmene struktury ktora je nekompatibilná so starymi subormi. */
     public static final int SAVE_VERSION = 3;
 
     private static final long serialVersionUID = 3L;
 
     // -------------------------------------------------------------------------
-    //  Polia uloženého stavu
+    //  Polia ulozeneho stavu
     // -------------------------------------------------------------------------
 
-    /** Verzia formátu – porovnaná pri načítaní so {@link #SAVE_VERSION}. */
+    /** Verzia formátu – porovnaná pri nacitani so {@link #SAVE_VERSION}. */
     public final int    saveVersion;
 
-    /** ISO dátum a čas uloženia, napr. "2025-04-19 14:32:01". */
+    /** ISO dátum a cas ulozenia, napr. "2025-04-19 14:32:01". */
     public final String savedAt;
 
-    /** Číslo levelu, ktorý bol aktívny pri uložení (1-based). */
+    /** cislo levelu, ktory bol aktivny pri ulozeni (1-based). */
     public final int    currentLevel;
 
-    /** Stav každej postavy v inventári. */
+    /** Stav kazdej postavy v inventári. */
     public final List<CharacterData>  characters;
 
-    /** Itemy v inventári (skupinové – jeden záznam na typ + počet). */
+    /** Itemy v inventári (skupinove – jeden záznam na typ + pocet). */
     public final List<ItemData>       inventoryItems;
 
-    /** Živí nepriatelia v leveli pri uložení. */
+    /** zivi nepriatelia v leveli pri ulozeni. */
     public final List<EnemyData>      enemies;
 
-    /** Predmety ležiace na zemi pri uložení. */
+    /** Predmety leziace na zemi pri ulozeni. */
     public final List<GroundItemData> groundItems;
 
-    /** Živé kačky v leveli pri uložení. */
+    /** zive kacky v leveli pri ulozeni. */
     public final List<DuckData>       ducks;
 
 
@@ -85,26 +85,26 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorené DTO pre postavu
+    //  Vnorene DTO pre postavu
     // =========================================================================
 
     /**
-     * Serializovateľný snapshot jednej postavy v inventári.
+     * Serializovatelny snapshot jednej postavy v inventári.
      */
     public static final class CharacterData implements Serializable {
         private static final long serialVersionUID = 2L;
 
         /** Trieda postavy, napr. "Knight", "Wizzard", "Archer". */
         public final String  characterType;
-        /** Aktuálne HP pri uložení. */
+        /** Aktuálne HP pri ulozeni. */
         public final int     hp;
-        /** Aktuálny armor pri uložení. */
+        /** Aktuálny armor pri ulozeni. */
         public final int     armor;
-        /** True = táto postava je base (Knight) a nemôže byť odstránená. */
+        /** True = táto postava je base (Knight) a nemoze byt odstránená. */
         public final boolean isBase;
-        /** True = táto postava bola aktívna pri uložení. */
+        /** True = táto postava bola aktivna pri ulozeni. */
         public final boolean isActive;
-        /** Pozícia vo svete – relevantná najmä pre aktívnu postavu. */
+        /** Pozicia vo svete – relevantná najma pre aktivnu postavu. */
         public final float   x, y;
         public final boolean facingRight;
 
@@ -132,19 +132,19 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorené DTO pre inventárový item
+    //  Vnorene DTO pre inventárovy item
     // =========================================================================
 
     /**
-     * Serializovateľný snapshot jedného druhu itemu v inventári.
-     * Itemy rovnakého druhu sa skupinujú (count).
+     * Serializovatelny snapshot jedneho druhu itemu v inventári.
+     * Itemy rovnakeho druhu sa skupinuju (count).
      */
     public static final class ItemData implements Serializable {
         private static final long serialVersionUID = 1L;
 
         /** Trieda itemu, napr. "HealingPotion", "Armour". */
         public final String itemType;
-        /** Počet itemov tohto druhu. */
+        /** Pocet itemov tohto druhu. */
         public final int    count;
 
         public ItemData(String itemType, int count) {
@@ -159,14 +159,14 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorené DTO pre nepriateľa v leveli
+    //  Vnorene DTO pre nepriatela v leveli
     // =========================================================================
 
-    /** Snapshot jedného živého nepriateľa v leveli. */
+    /** Snapshot jedneho ziveho nepriatela v leveli. */
     public static final class EnemyData implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        /** Jednoduchý názov triedy, napr. "EnemyKnight", "DarkKnight". */
+        /** Jednoduchy názov triedy, napr. "EnemyKnight", "DarkKnight". */
         public final String type;
         public final float  x, y;
         public final int    hp, armor;
@@ -188,14 +188,14 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorené DTO pre predmet na zemi
+    //  Vnorene DTO pre predmet na zemi
     // =========================================================================
 
-    /** Snapshot jedného predmetu ležiaceho na zemi v leveli. */
+    /** Snapshot jedneho predmetu leziaceho na zemi v leveli. */
     public static final class GroundItemData implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        /** Jednoduchý názov triedy, napr. "HealingPotion", "Armour". */
+        /** Jednoduchy názov triedy, napr. "HealingPotion", "Armour". */
         public final String type;
         public final float  x, y;
 
@@ -212,15 +212,15 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorené DTO pre kačku
+    //  Vnorene DTO pre kacku
     // =========================================================================
 
-    /** Snapshot jednej živej kačky v leveli. */
+    /** Snapshot jednej zivej kacky v leveli. */
     public static final class DuckData implements Serializable {
         private static final long serialVersionUID = 1L;
 
         public final float x, y;
-        /** Aktuálne HP kačky pri uložení (zvyčajne plné, ale môže byť poškodená AOE). */
+        /** Aktuálne HP kacky pri ulozeni (zvycajne plne, ale moze byt poskodená AOE). */
         public final int   hp;
 
         public DuckData(float x, float y, int hp) {

@@ -11,7 +11,7 @@ import sk.stuba.fiit.physics.NoGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 
-// Projectiles do not implement movable interface, since their movement is self controlled, while characters movement is
+// Projectiles do not implement movable interface, since their movement is self-controlled, while characters' movement is
 // controlled from outside.
 /**
  * Base class for all projectiles in the game.

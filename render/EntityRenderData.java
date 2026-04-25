@@ -21,7 +21,7 @@ import sk.stuba.fiit.core.AnimationManager;
  *   <li>{@link AnimationManager} – the only "model" dependency, but it is a purely
  *       visual class (no game logic), so the View is permitted to know it</li>
  *   <li>{@code flipX}, {@code isAttacking} – simple booleans</li>
- *   <li>{@code renderType} – enum telling the renderer how to draw (actualSize vs fixedRect)</li>
+ *   <li>{@code renderType} – enum telling the renderer how to draw (actualSize vs. fixedRect)</li>
  *   <li>For projectiles: {@code renderWidth}/{@code renderHeight}/{@code offsetX}/{@code offsetY}</li>
  * </ul>
  *

@@ -24,7 +24,7 @@ public interface AIControllable {
     void    setFacingRight(boolean right);
     boolean isFacingRight();
 
-    // velocity (synchronisation with physics)
+    // velocity (synchronization with physics)
     void setVelocityX(float vx);
 
     /**

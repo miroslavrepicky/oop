@@ -16,9 +16,9 @@ import sk.stuba.fiit.world.Level;
  *
  * <h2>Responsibilities</h2>
  * <ul>
- *   <li>Holds the active {@link Inventory} (party + items).</li>
+ *   <li>Holds the active {@link Inventory} (party and items).</li>
  *   <li>Creates and loads {@link Level} instances via {@link #startLevel(int)}.</li>
- *   <li>Initialises a new game session with a default {@link Knight} via {@link #initGame()}.</li>
+ *   <li>Initializes a new game session with a default {@link Knight} via {@link #initGame()}.</li>
  *   <li>Resets all game states (inventory, level, texture cache, projectile pool)
  *       via {@link #resetGame()}.</li>
  *   <li>Revives all party members after a game-over retry via {@link #reviveParty()}.</li>
@@ -104,7 +104,7 @@ public class GameManager {
      * Must be called after {@link #resetGame()} when starting a new game.
      */
     public void initGame() {
-        Knight knight = new Knight(new Vector2D(0, 0)); // pozicia sa nastavi z Tiled
+        Knight knight = new Knight(new Vector2D(0, 0)); // Position from tiled map
         inventory.addCharacter(knight);
     }
 

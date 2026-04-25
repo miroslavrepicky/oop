@@ -20,11 +20,11 @@ import sk.stuba.fiit.util.Vector2D;
  * <p>No animation, no movement, no rendering (null {@code AnimationManager}).
  * In debug mode (F1) it appears as a cyan rectangle matching the hitbox.
  *
- * <p>Owner is set by the attack:
+ * <p>The attack sets owner:
  * <ul>
- *   <li>{@link ProjectileOwner#PLAYER} → {@code CollisionManager.checkPlayerProjectiles()}
+ *   <li>{@link ProjectileOwner#PLAYER} -> {@code CollisionManager.checkPlayerProjectiles()}
  *       handles it and can hit enemies and ducks.</li>
- *   <li>{@link ProjectileOwner#ENEMY} → {@code CollisionManager.checkEnemyProjectiles()}
+ *   <li>{@link ProjectileOwner#ENEMY} -> {@code CollisionManager.checkEnemyProjectiles()}
  *       handles it and can hit the player.</li>
  * </ul>
  */

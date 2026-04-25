@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  *
  * <p>Why generics are meaningful here: we have {@code ObjectPool<Arrow>},
  * {@code ObjectPool<MagicSpell>}, and {@code ObjectPool<TurdflyProjectile>} –
- * three distinct instances with different types, factory functions and reset actions.
+ * three distinct instances with different types, factory functions, and reset actions.
  *
  * @param <T> the pooled object type; must be resettable via the {@code resetAction}
  */

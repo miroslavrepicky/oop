@@ -7,14 +7,14 @@ import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyWizzard extends EnemyCharacter {
-    private static final int ARMOR = 0; // carodejnik bez brnenia
+    private static final int ARMOR = 0;
 
     private AnimationManager animationManager;
 
     public EnemyWizzard(Vector2D position) {
         super("EnemyWizzard", 60, 35, 1.5f, position, 100f, 350f, ARMOR, ARMOR);
         this.gravityStrategy = new NormalGravity();
-        this.attack          = new SpellAttack(4.0f, 50.0f, 0); // mana cost 0 – enemy nema manu
+        this.attack          = new SpellAttack(4.0f, 50.0f, 0); // mana cost 0 – enemy doesnt have mana
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());

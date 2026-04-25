@@ -133,13 +133,13 @@ public class SnapshotBuilder {
     }
 
     // -------------------------------------------------------------------------
-    //  Konverzia jednotlivých typov
+    //  Konverzia jednotlivych typov
     // -------------------------------------------------------------------------
 
     private static EntityRenderData buildPlayer(PlayerCharacter p) {
         AnimationManager am = p.getAnimationManager();
         String currentAnim  = am != null ? am.getCurrentAnimation() : null;
-        // Animáciu updateuje GameRenderer – tu len predáme AnimationManager
+        // Animaciu updateuje GameRenderer – tu len predame AnimationManager
         return EntityRenderData
             .builder(p.getPosition().getX(), p.getPosition().getY(), am)
             .hitbox(p.getHitbox().width, p.getHitbox().height)

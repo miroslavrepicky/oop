@@ -86,7 +86,7 @@ public class Level implements Updatable {
      * @param mapPath relative path to the {@code .tmx} file
      */
     public void load(String mapPath, PlayerCharacter active) {
-        load(new MapManager(mapPath), active); // Volá novú metódu
+        load(new MapManager(mapPath), active); // Volá novu metodu
     }
 
 
@@ -211,7 +211,7 @@ public class Level implements Updatable {
     }
 
     /**
-     * Načíta mapu (len geometriu + hitboxy) a obnoví entity zo SaveData
+     * Nacita mapu (len geometriu + hitboxy) a obnovi entity zo SaveData
      * namiesto spawnovania z TMX vrstvy "entities".
      */
     public void loadFromSave(String mapPath, SaveData savedState, PlayerCharacter active) {
@@ -236,7 +236,7 @@ public class Level implements Updatable {
 
         for (SaveData.DuckData dd : savedState.ducks) {
             Duck duck = new Duck(new Vector2D(dd.x, dd.y));
-            duck.restoreStats(dd.hp, duck.getMaxHp()); // hp sa obnoví
+            duck.restoreStats(dd.hp, duck.getMaxHp()); // hp sa obnovi
             addDuck(duck);
         }
 

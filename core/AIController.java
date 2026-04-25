@@ -6,7 +6,7 @@ import sk.stuba.fiit.core.engine.AIControllable;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Controls AI behaviour (PATROL → CHASE → ATTACK) for any character
+ * Controls AI behavior (PATROL -> CHASE -> ATTACK) for any character
  * implementing {@link AIControllable}.
  *
  * <p>The controller has no knowledge of {@code EnemyCharacter}; all
@@ -16,7 +16,7 @@ import sk.stuba.fiit.util.Vector2D;
  * <p>State machine:
  * <ul>
  *   <li>{@code PATROL} – walks between {@code patrolStart} and {@code patrolEnd}.
- *       Detects wall blocks and attempts a jump after a threshold; reverses direction
+ *       Detects wall blocks and attempts a jump after a threshold; reverses a direction
  *       if still blocked.</li>
  *   <li>{@code CHASE}  – moves toward the player until within {@code preferredRange}
  *       or until the player leaves {@code detectionRange}.</li>

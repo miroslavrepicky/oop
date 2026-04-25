@@ -45,7 +45,7 @@ import java.util.function.Supplier;
  */
 public class InventoryScreen implements Screen {
 
-    // ── Layout constants ──────────────────────────────────────────────────────
+    //  Layout constants
 
     private static final float W     = 800f;
     private static final float H     = 480f;
@@ -57,25 +57,25 @@ public class InventoryScreen implements Screen {
     /** Horizontal centre of the virtual canvas. */
     private static final float MID = W / 2f;
 
-    // ── Dependencies ──────────────────────────────────────────────────────────
+    //  Dependencies
 
     private final AppController app;
     private final int           levelToStart;
     private final Inventory     inventory;
 
-    // ── LibGDX rendering objects ──────────────────────────────────────────────
+    //  LibGDX rendering objects
 
     private final OrthographicCamera cam;
     private final SpriteBatch        batch;
     private final ShapeRenderer      shape;
     private final BitmapFont         font;
 
-    // ── Fixed buttons ─────────────────────────────────────────────────────────
+    //  Fixed buttons
 
     private final Rectangle btnStart;
     private final Rectangle btnSave;
 
-    // ── Data ──────────────────────────────────────────────────────────────────
+    //  Data
 
     /**
      * Characters that exist in the game's character pool but are not yet in
@@ -89,7 +89,7 @@ public class InventoryScreen implements Screen {
      */
     private final List<ItemOffer> offers = new ArrayList<>();
 
-    // ── Dynamic button hit-boxes (rebuilt after every inventory change) ────────
+    //  Dynamic button hit-boxes (rebuilt after every inventory change)
 
     private final List<Rectangle> addCharBtns = new ArrayList<>();
     private final List<Rectangle> remCharBtns = new ArrayList<>();
@@ -99,7 +99,7 @@ public class InventoryScreen implements Screen {
     /** One-line status message shown at the bottom of the screen. */
     private String feedback = "";
 
-    // ── Inner helper ──────────────────────────────────────────────────────────
+    //  Inner helper
 
     /**
      * Descriptor for a single item type available for purchase in this screen.
@@ -116,7 +116,7 @@ public class InventoryScreen implements Screen {
         }
     }
 
-    // ── Constructor ───────────────────────────────────────────────────────────
+    //  Constructor
 
     /**
      * @param app          the application controller used for navigation;
@@ -149,7 +149,7 @@ public class InventoryScreen implements Screen {
         rebuildButtons();
     }
 
-    // ── Data helpers ──────────────────────────────────────────────────────────
+    //  Data helpers
 
     /**
      * Populates {@link #availableChars} with characters that are in the global
@@ -223,7 +223,7 @@ public class InventoryScreen implements Screen {
         return grouped;
     }
 
-    // ── LibGDX Screen ─────────────────────────────────────────────────────────
+    //  LibGDX Screen
 
     @Override
     public void render(float delta) {
@@ -243,7 +243,7 @@ public class InventoryScreen implements Screen {
         drawText(mx, my);
     }
 
-    // ── Drawing ───────────────────────────────────────────────────────────────
+    //  Drawing
 
     /**
      * Draws all button backgrounds and the two panel dividers using
@@ -318,13 +318,13 @@ public class InventoryScreen implements Screen {
         batch.begin();
 
         font.setColor(Color.WHITE);
-        font.draw(batch, "INVENTAR  -  Level " + levelToStart, PAD, H - PAD);
+        font.draw(batch, "INVENTORY  -  Level " + levelToStart, PAD, H - PAD);
 
         font.setColor(new Color(0.4f, 0.8f, 1f, 1f));
-        font.draw(batch, "Dostupne postavy",   PAD,       430f);
-        font.draw(batch, "Dostupne itemy",      PAD,       265f);
-        font.draw(batch, "Inventar - postavy", MID + PAD, 430f);
-        font.draw(batch, "Inventar - itemy",    MID + PAD, 265f);
+        font.draw(batch, "Available characters",   PAD,       430f);
+        font.draw(batch, "Available items",      PAD,       265f);
+        font.draw(batch, "Inventory - characters", MID + PAD, 430f);
+        font.draw(batch, "Inventory - items",    MID + PAD, 265f);
 
         drawAvailableChars();
         drawAvailableItems();
@@ -333,8 +333,8 @@ public class InventoryScreen implements Screen {
 
         font.setColor(Color.YELLOW);
         font.draw(batch,
-            "Sloty: " + this.inventory.getUsedSlots() + "/" + this.inventory.getTotalSlots()
-                + "   volne: " + this.inventory.getFreeSlots(),
+            "Slots: " + this.inventory.getUsedSlots() + "/" + this.inventory.getTotalSlots()
+                + "   free: " + this.inventory.getFreeSlots(),
             PAD, 80f);
 
         font.setColor(new Color(1f, 0.6f, 0.1f, 1f));
@@ -346,7 +346,7 @@ public class InventoryScreen implements Screen {
 
         boolean saveHover = btnSave.contains(mx, my);
         font.setColor(saveHover ? Color.WHITE : new Color(0.4f, 0.8f, 1f, 1f));
-        font.draw(batch, "Ulozit hru", btnSave.x + 10, btnSave.y + btnSave.height - 6);
+        font.draw(batch, "Save game", btnSave.x + 10, btnSave.y + btnSave.height - 6);
 
         batch.end();
     }
@@ -355,10 +355,10 @@ public class InventoryScreen implements Screen {
         float y = 390f;
         for (int i = 0; i < availableChars.size(); i++, y -= ROW_H) {
             font.setColor(Color.WHITE);
-            font.draw(batch, availableChars.get(i).getName() + "  (3 sloty)", PAD, y);
+            font.draw(batch, availableChars.get(i).getName() + "  (3 slots)", PAD, y);
             Rectangle btn = addCharBtns.get(i);
             font.setColor(Color.GREEN);
-            font.draw(batch, "+ Pridaj", btn.x + 6, btn.y + btn.height - 6);
+            font.draw(batch, "+ Add", btn.x + 6, btn.y + btn.height - 6);
         }
     }
 
@@ -370,7 +370,7 @@ public class InventoryScreen implements Screen {
             font.draw(batch, offer.label + "  (" + offer.slotCost + " slot)", PAD, y);
             Rectangle btn = addItemBtns.get(i);
             font.setColor(Color.GREEN);
-            font.draw(batch, "+ Pridaj", btn.x + 6, btn.y + btn.height - 6);
+            font.draw(batch, "+ Add", btn.x + 6, btn.y + btn.height - 6);
         }
     }
 
@@ -383,13 +383,13 @@ public class InventoryScreen implements Screen {
             font.setColor(isBase ? Color.GOLD : Color.WHITE);
             font.draw(batch,
                 c.getName()
-                    + (isBase ? "  [zakladna]" : "  (3 sloty)")
+                    + (isBase ? "  [base]" : "  (3 slots)")
                     + "  HP:" + c.getHp(),
                 MID + PAD, y);
             if (!isBase) {
                 Rectangle btn = remCharBtns.get(i);
                 font.setColor(new Color(1f, 0.4f, 0.4f, 1f));
-                font.draw(batch, "- Odober", btn.x + 6, btn.y + btn.height - 6);
+                font.draw(batch, "- Remove", btn.x + 6, btn.y + btn.height - 6);
             }
         }
     }
@@ -410,14 +410,14 @@ public class InventoryScreen implements Screen {
             if (btnIndex < remItemBtns.size()) {
                 Rectangle btn = remItemBtns.get(btnIndex);
                 font.setColor(new Color(1f, 0.4f, 0.4f, 1f));
-                font.draw(batch, "- Odober", btn.x + 6, btn.y + btn.height - 6);
+                font.draw(batch, "- Remove", btn.x + 6, btn.y + btn.height - 6);
             }
             btnIndex++;
             y -= ROW_H;
         }
     }
 
-    // ── Input handling ────────────────────────────────────────────────────────
+    //  Input handling
 
     /**
      * Dispatches a mouse click to the appropriate handler.
@@ -438,9 +438,9 @@ public class InventoryScreen implements Screen {
                 PlayerCharacter c = availableChars.get(i);
                 if (this.inventory.addCharacter(c)) {
                     availableChars.remove(i);
-                    feedback = c.getName() + " pridany do inventara.";
+                    feedback = c.getName() + " added to the inventory.";
                 } else {
-                    feedback = "Nedostatok slotov!";
+                    feedback = "Not enough free slots!";
                 }
                 rebuildButtons();
                 return;
@@ -452,9 +452,9 @@ public class InventoryScreen implements Screen {
                 PlayerCharacter c = this.inventory.getCharacters().get(i);
                 if (this.inventory.removeCharacter(c)) {
                     availableChars.add(c);
-                    feedback = c.getName() + " odstraneny.";
+                    feedback = c.getName() + " removed.";
                 } else {
-                    feedback = c.getName() + " je zakladna postava - neda sa odstranit.";
+                    feedback = c.getName() + " is base character - cant be removed.";
                 }
                 rebuildButtons();
                 return;
@@ -466,8 +466,8 @@ public class InventoryScreen implements Screen {
                 ItemOffer offer   = offers.get(i);
                 Item      newItem = offer.factory.get();
                 feedback = this.inventory.addItem(newItem)
-                    ? offer.label + " pridany."
-                    : "Nedostatok slotov!";
+                    ? offer.label + " added."
+                    : "Not enough free slots!";
                 rebuildButtons();
                 return;
             }
@@ -479,7 +479,7 @@ public class InventoryScreen implements Screen {
                 List<Item> group    = new ArrayList<>(grouped.values()).get(i);
                 Item       toRemove = group.getLast();
                 this.inventory.removeItem(toRemove);
-                feedback = toRemove.getClass().getSimpleName() + " odstraneny.";
+                feedback = toRemove.getClass().getSimpleName() + " removed.";
                 rebuildButtons();
                 return;
             }
@@ -487,8 +487,8 @@ public class InventoryScreen implements Screen {
 
         if (btnSave.contains(mx, my)) {
             feedback = app.saveGame(levelToStart)
-                ? "Hra ulozena!  (Level " + levelToStart + ")"
-                : "Ulozenie zlyhalo.";
+                ? "Game Saved!  (Level " + levelToStart + ")"
+                : "Save failed.";
             return;
         }
 
@@ -498,7 +498,7 @@ public class InventoryScreen implements Screen {
         }
     }
 
-    // ── Screen lifecycle ──────────────────────────────────────────────────────
+    //  Screen lifecycle
 
     @Override public void resize(int w, int h) { cam.setToOrtho(false, W, H); }
     @Override public void show()    {}

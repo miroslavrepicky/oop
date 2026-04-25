@@ -3,7 +3,7 @@ package sk.stuba.fiit.core.states;
 import sk.stuba.fiit.core.AppController;
 
 /**
- * Marker + callback interface for states that end the current game screen.
+ * Marker and callback interface for states that end the current game screen.
  *
  * <p>Motivation: {@code GameScreen.handleTransition()} originally contained
  * three {@code instanceof} checks ({@code GameOverState}, {@code LevelCompleteState},

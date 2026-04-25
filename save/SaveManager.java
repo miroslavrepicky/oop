@@ -54,7 +54,7 @@ public final class SaveManager {
 
     private static SaveManager instance;
 
-    /** Cesta k súboru uloženej hry – relatívna k working directory. */
+    /** Cesta k suboru ulozenej hry – relativna k working directory. */
     public static final String SAVE_FILE = "shadowquest.save";
 
     private static final Logger log = GameLogger.get(SaveManager.class);
@@ -67,7 +67,7 @@ public final class SaveManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Uloženie
+    //  Ulozenie
     // -------------------------------------------------------------------------
 
     /**
@@ -103,7 +103,7 @@ public final class SaveManager {
             ));
         }
 
-        // Inventory itemy (zoskupené)
+        // Inventory itemy (zoskupene)
         Map<String, Integer> itemCounts = new LinkedHashMap<>();
         for (Item item : inv.getItems()) {
             itemCounts.merge(item.getClass().getSimpleName(), 1, Integer::sum);
@@ -162,7 +162,7 @@ public final class SaveManager {
             oos.writeObject(data);
         } catch (IOException e) {
             log.error("Failed to write save file: path={}", file.getAbsolutePath(), e);
-            throw new SaveException("Uloženie hry zlyhalo: " + e.getMessage(), e);
+            throw new SaveException("Ulozenie hry zlyhalo: " + e.getMessage(), e);
         }
     }
 
@@ -204,7 +204,7 @@ public final class SaveManager {
                 log.warn("Unknown character type in save – skipped: type={}", cd.characterType);
                 continue;
             }
-            // Použijeme restoreStats() namiesto série takeDamage()
+            // Pouzijeme restoreStats() namiesto serie takeDamage()
             pc.restoreStats(cd.hp, cd.armor);
             inv.addCharacter(pc);
             if (cd.isActive) activeChar = pc;
@@ -243,14 +243,14 @@ public final class SaveManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Factory metódy – mapovanie String → konkrétna trieda
+    //  Factory metody – mapovanie String -> konkretna trieda
     // -------------------------------------------------------------------------
 
     /**
-     * Vytvorí postavu podľa názvu triedy uloženého v {@link SaveData.CharacterData#characterType}.
+     * Vytvori postavu podla názvu triedy ulozeneho v {@link SaveData.CharacterData#characterType}.
      *
-     * <p>Pozícia je pri rekonštrukcii (0,0) – Level.load() ju prepíše
-     * z Tiled mapy keď sa level spustí.
+     * <p>Pozicia je pri rekonstrukcii (0,0) – Level.load() ju prepise
+     * z Tiled mapy ked sa level spusti.
      */
     private PlayerCharacter createCharacter(String type) {
         return switch (type) {
@@ -262,7 +262,7 @@ public final class SaveManager {
     }
 
     /**
-     * Vytvorí item podľa názvu triedy uloženého v {@link SaveData.ItemData#itemType}.
+     * Vytvori item podla názvu triedy ulozeneho v {@link SaveData.ItemData#itemType}.
      */
     private Item createItem(String type) {
         return switch (type) {
@@ -273,7 +273,7 @@ public final class SaveManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Pomocné verejné metódy
+    //  Pomocne verejne metody
     // -------------------------------------------------------------------------
 
     /** @return {@code true} if a save file exists on disk */

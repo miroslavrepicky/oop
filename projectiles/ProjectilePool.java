@@ -6,19 +6,19 @@ import sk.stuba.fiit.core.ObjectPool;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Centrálny správca {@link ObjectPool} inštancií pre všetky typy projektilov.
+ * Centralny spravca {@link ObjectPool} instancii pre vsetky typy projektilov.
  *
- * <p>Prečo singleton: pool musí prežiť cez celý level, ale nie cez resetGame().
- * Singleton zaistí, že každý Attack dostane ten istý pool bez predávania
- * referencie cez konštruktory.
+ * <p>Preco singleton: pool musi prezit cez cely level, ale nie cez resetGame().
+ * Singleton zaisti, ze kazdy Attack dostane ten isty pool bez predavania
+ * referencie cez konstruktory.
  *
- * <p>Vzor použitia v ArrowAttack.execute():
+ * <p>Vzor pouzitia v ArrowAttack.execute():
  * <pre>
  *   Arrow arrow = ProjectilePool.getInstance().obtainArrow();
  *   arrow.reset(damage, speed, spawnPos, direction, piercing);
  *   level.addProjectile(arrow);
  *
- *   // keď projektil skončí (v Level.update):
+ *   // ked projektil skonci (v Level.update):
  *   if (!p.isActive()) {
  *       ProjectilePool.getInstance().free(p);
  *   }
@@ -32,7 +32,7 @@ public final class ProjectilePool {
     private final ObjectPool<MagicSpell>      spellPool;
     private final ObjectPool<TurdflyProjectile> turdflyPool;
 
-    // Predvolená (neplatná) pozícia pre factory inštancie – ihneď sa prepíše reset()
+    // Predvolena (neplatna) pozicia pre factory instancie – ihned sa prepise reset()
     private static final Vector2D ZERO      = new Vector2D(0, 0);
     private static final Vector2D RIGHT     = new Vector2D(1, 0);
     private static final float    POOL_SPEED = 1f;
@@ -41,9 +41,9 @@ public final class ProjectilePool {
 
     private ProjectilePool() {
         arrowPool = new ObjectPool<>(
-            // factory: vytvorí "prázdnu" šablónu – hodnoty sa prepíšu v reset()
+            // factory: vytvori "prazdnu" sablonu – hodnoty sa prepisu v reset()
             () -> new Arrow(0, POOL_SPEED, ZERO, RIGHT),
-            // resetAction: pred opätovným použitím znovu aktivujeme projektil
+            // resetAction: pred opatovnym pouzitim znovu aktivujeme projektil
             arrow -> arrow.setActive(true),
             /* maxSize */ 30
         );
@@ -71,38 +71,38 @@ public final class ProjectilePool {
     }
 
     // -------------------------------------------------------------------------
-    //  Obtain – vrátia pripravený objekt s resetovaným stavom
+    //  Obtain – vratia pripraveny objekt s resetovanym stavom
     // -------------------------------------------------------------------------
 
     /**
-     * Vrátí Arrow z poolu. Volajúci musí ihneď zavolať
+     * Vrati Arrow z poolu. Volajuci musi ihned zavolat
      * {@link Arrow#reset(int, float, Vector2D, Vector2D)}
-     * aby nastavil skutočné herné hodnoty.
+     * aby nastavil skutocne herne hodnoty.
      */
     public Arrow obtainArrow() {
         return arrowPool.obtain();
     }
 
     /**
-     * Vrátí MagicSpell z poolu. Volajúci musí ihneď zavolať
+     * Vrati MagicSpell z poolu. Volajuci musi ihned zavolat
      * {@link MagicSpell#reset(int, float, Vector2D, Vector2D, float)}
-     * aby nastavil skutočné herné hodnoty.
+     * aby nastavil skutocne herne hodnoty.
      */
     public MagicSpell obtainSpell() {
         return spellPool.obtain();
     }
 
     /**
-     * Vrátí TurdflyProjectile z poolu. Volajúci musí ihneď zavolať
+     * Vrati TurdflyProjectile z poolu. Volajuci musi ihned zavolat
      * {@link TurdflyProjectile#reset(Vector2D, Vector2D)}
-     * aby nastavil skutočné herné hodnoty.
+     * aby nastavil skutocne herne hodnoty.
      */
     public TurdflyProjectile obtainTurdfly() {
         return turdflyPool.obtain();
     }
 
     // -------------------------------------------------------------------------
-    //  Free – vrátenie objektu späť do poolu
+    //  Free – vratenie objektu spat do poolu
     // -------------------------------------------------------------------------
 
     public void free(Arrow arrow)               { arrowPool.free(arrow); }
@@ -110,11 +110,11 @@ public final class ProjectilePool {
     public void free(TurdflyProjectile turdfly) { turdflyPool.free(turdfly); }
 
     // -------------------------------------------------------------------------
-    //  Reset – volá sa pri resetGame() aby sme zahodili staré inštancie
+    //  Reset – vola sa pri resetGame() aby sme zahodili stare instancie
     // -------------------------------------------------------------------------
 
     /**
-     * Vyprázdni všetky pooly. Volať z {@code GameManager.resetGame()}.
+     * Vyprazdni vsetky pooly. Volat z {@code GameManager.resetGame()}.
      */
     public void clearAll() {
         logStats();

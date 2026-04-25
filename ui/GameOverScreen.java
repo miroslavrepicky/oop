@@ -16,7 +16,7 @@ import sk.stuba.fiit.core.AppController;
  *
  * <h2>MVC placement</h2>
  * <p>This class is a <b>View + input handler</b>. It renders the failure
- * message and button layout, but performs no game-state mutations itself.
+ * message and button layout but performs no game-state mutations itself.
  * All logic is delegated to the {@link AppController}.
  *
  * <h2>Actions</h2>
@@ -25,7 +25,7 @@ import sk.stuba.fiit.core.AppController;
  *       revives all party members and navigates to the inventory screen for
  *       the same level.</li>
  *   <li><b>Main Menu</b> – calls {@link AppController#goToMainMenu()}, which
- *       resets all game state and navigates to the main menu.</li>
+ *       resets all game states and navigates to the main menu.</li>
  * </ul>
  *
  * <p>Uses a fixed virtual resolution of {@value #W}×{@value #H} pixels mapped
@@ -145,10 +145,10 @@ public class GameOverScreen implements Screen {
         font.draw(batch, "YOU FAILED", W / 2 - 80, 380f);
 
         font.setColor(Color.LIGHT_GRAY);
-        font.draw(batch, "Level " + failedLevel + " - skus to znova.", W / 2 - 145, 310f);
+        font.draw(batch, "Level " + failedLevel + " - try again.", W / 2 - 145, 310f);
 
-        drawButtonLabel(btnRetry, "Skus znova",  mx, my);
-        drawButtonLabel(btnMenu,  "Hlavne menu", mx, my);
+        drawButtonLabel(btnRetry, "Try again",  mx, my);
+        drawButtonLabel(btnMenu,  "Main menu", mx, my);
 
         batch.end();
     }
@@ -172,7 +172,7 @@ public class GameOverScreen implements Screen {
     // -------------------------------------------------------------------------
 
     /**
-     * Routes button clicks to the appropriate {@link AppController} method.
+     * Route button clicks to the appropriate {@link AppController} method.
      *
      * <p>No game state is mutated here – reviving the party and resetting the
      * game are handled inside {@link sk.stuba.fiit.core.ShadowQuest}.

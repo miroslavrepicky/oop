@@ -9,7 +9,7 @@ import sk.stuba.fiit.world.Level;
  * Contract for all attack strategies used by player and enemy characters.
  *
  * <p>Follows the Strategy pattern: each concrete implementation encapsulates
- * a distinct attack behaviour (melee swing, arrow, magic spell, etc.).
+ * a distinct attack behavior (melee swing, arrow, magic spell, etc.).
  *
  * <p>{@link #execute(Character, Level)} returns the spawned {@link Projectile}
  * so that decorators ({@link FireDecorator}, {@link FreezeDecorator}) can attach

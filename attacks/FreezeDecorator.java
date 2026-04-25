@@ -20,7 +20,7 @@ public class FreezeDecorator extends AttackDecorator {
 
     private static final float SLOW_MULTIPLIER = 0.3f;
     private static final float SLOW_DURATION   = 2.5f;
-    private static final int   EXTRA_MANA      = 10; // opravené z DISCOUNT na EXTRA
+    private static final int   EXTRA_MANA      = 10;
 
     public FreezeDecorator(Attack wrapped) { super(wrapped); }
 

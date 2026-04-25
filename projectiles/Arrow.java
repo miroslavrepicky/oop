@@ -7,7 +7,6 @@ import sk.stuba.fiit.physics.FlyingGravity;
 import sk.stuba.fiit.render.Renderable;
 import sk.stuba.fiit.util.Vector2D;
 
-// TODO: consider removing piercing – currently not used anywhere
 
 /**
  * Arrow projectile fired by archer characters.

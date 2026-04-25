@@ -43,11 +43,11 @@ public class TurdflyProjectile extends Projectile implements Renderable, Poolabl
     // -------------------------------------------------------------------------
 
     /**
-     * Reinicializuje TurdflyProjectile na nové herné hodnoty.
-     * Volá sa ihneď po {@code ProjectilePool.getInstance().obtainTurdfly()}.
+     * Reinicializuje TurdflyProjectile na nove herne hodnoty.
+     * Vola sa ihned po {@code ProjectilePool.getInstance().obtainTurdfly()}.
      *
-     * <p>Poškodenie a rýchlosť sú fixné konštanty – reinicializujeme
-     * len pozíciu, smer a aktivitu.
+     * <p>Poskodenie a rychlost su fixne konstanty – reinicializujeme
+     * len poziciu, smer a aktivitu.
      */
     public void reset(Vector2D position, Vector2D direction) {
         this.damage    = TURDFLY_DAMAGE;

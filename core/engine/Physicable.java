@@ -25,7 +25,7 @@ public interface Physicable {
     Rectangle getHitbox();
 
     /**
-     * Synchronises the hitbox position with the object's current world position.
+     * Synchronizes the hitbox position with the object's current world position.
      * Must be called after any position change.
      */
     void      updateHitbox();

@@ -30,7 +30,7 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
     private static final float AOE_RADIUS     = 80f;
     private static final int   BLAST_DAMAGE   = 30;
 
-    // Rozmery v závislosti od stavu
+    // Rozmery v zavislosti od stavu
     private static final float BOMB_W  = 32f;
     private static final float BOMB_H  = 32f;
     private static final float BLAST_W = 64f;
@@ -69,7 +69,7 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
                     eggState   = EggState.BLASTING;
                     stateTimer = BLAST_DURATION;
                     animationManager.play("blast");
-                    log.info("EggProjectile state: TICKING → BLASTING, pos=({},{})",
+                    log.info("EggProjectile state: TICKING -> BLASTING, pos=({},{})",
                         String.format("%.1f", position.getX()),
                         String.format("%.1f", position.getY()));
                 }
@@ -87,7 +87,7 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
         }
     }
 
-    /** EggProjectile je stacionárny – kolízie so stenami ho nezaujímajú. */
+    /** EggProjectile is stationary, so no collision handling is needed. */
     @Override
     public void onCollision(Object other) {}
 
@@ -99,7 +99,7 @@ public class EggProjectile extends Projectile implements AoeProjectile, Renderab
     @Override public int   getDamage()    { return damage; }
 
     // -------------------------------------------------------------------------
-    //  Renderable – rozmery a offset sa menia podľa stavu
+    //  Renderable – rozmery a offset sa menia podla stavu
     // -------------------------------------------------------------------------
 
     @Override public AnimationManager getAnimationManager() { return animationManager; }

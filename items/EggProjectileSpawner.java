@@ -30,13 +30,13 @@ public class EggProjectileSpawner extends Item {
     }
 
     /**
-     * Zablokuj pickup – vajce sa neda zobrat, iba spawnuje vybuch.
+     * Blocks pick-up. It just spawns an explosion.
      */
     @Override
     public String getIconPath() { return null; }
 
     @Override
     public boolean onPickup(PlayerCharacter character, Inventory inventory) {
-        return false;   // vajce sa nedá zdvihnúť
+        return false;   // vajce sa nedá zdvihnut
     }
 }

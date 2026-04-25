@@ -148,12 +148,6 @@ public abstract class PlayerCharacter extends Character {
             startDeathAnimation();
             updateDeathTimer(ctx.deltaTime);
             getAnimationManager().update(ctx.deltaTime);
-
-            if (isDeathAnimationDone()) {
-                if (ctx.inventory.getActive() == this && !ctx.inventory.switchToNextAlive()) {
-                    // No living characters remain – PlayingState will detect isPartyDefeated().
-                }
-            }
             return;
         }
 

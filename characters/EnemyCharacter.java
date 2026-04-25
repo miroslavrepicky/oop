@@ -39,7 +39,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     /** The attack strategy used by this enemy. Must be set before the first {@link #triggerAttack()}. */
     protected Attack attack;
 
-    // ── Attack state ─────────────────────────────────────────────────────────
+    //  Attack state
     /** Remaining cooldown in seconds before the next attack may be triggered. */
     protected float   attackCooldown              = 0f;
     private static final float ATTACK_COOLDOWN_MAX = 1.5f;
@@ -103,7 +103,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
     public boolean wasLastMoveBlocked() { return lastMoveBlocked; }
 
     /**
-     * Initialises the {@link AIController} with patrol boundaries and combat ranges.
+     * Initializes the {@link AIController} with patrol boundaries and combat ranges.
      *
      * @param patrolStart   left the patrol waypoint
      * @param patrolEnd     right patrol waypoint

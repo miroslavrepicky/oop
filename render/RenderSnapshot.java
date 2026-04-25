@@ -15,28 +15,28 @@ import java.util.List;
  */
 public final class RenderSnapshot {
 
-    /** Aktívny hráč – null ak party porazená. */
+    /** Aktivny hrac – null ak party porazena. */
     public final EntityRenderData       player;
 
-    /** Všetci živí a mŕtvi (death anim) nepriatelia. */
+    /** Vsetci zivi a mrtvi (death anim) nepriatelia. */
     public final List<EntityRenderData> enemies;
 
-    /** Živé kačky. */
+    /** zive kacky. */
     public final List<EntityRenderData> ducks;
 
-    /** Itemy na zemi – pozícia + iconPath. */
+    /** Itemy na zemi – pozicia + iconPath. */
     public final List<ItemRenderData>   items;
 
-    /** Aktívne projektily. */
+    /** Aktivne projektily. */
     public final List<EntityRenderData> projectiles;
 
-    /** Mapa – null ak nie je načítaná. */
+    /** Mapa – null ak nie je nacitana. */
     public final MapRenderData          map;
 
-    /** true = zobraziť debug hitboxy (F1). */
+    /** true = zobrazit debug hitboxy (F1). */
     public final boolean debugHitboxes;
 
-    /** true = v blízkosti je item → HUD "[E] PICK-UP". */
+    /** true = v blizkosti je item -> HUD "[E] PICK-UP". */
     public final boolean nearbyItemAvailable;
 
     public final HUDSnapshot            hud;
@@ -166,7 +166,7 @@ public final class RenderSnapshot {
 
 
     // -------------------------------------------------------------------------
-    //  Vnorené DTO pre itemy (ikonka + pozícia)
+    //  Vnorene DTO pre itemy (ikonka + pozicia)
     // -------------------------------------------------------------------------
 
     public static final class ItemRenderData {
@@ -179,13 +179,13 @@ public final class RenderSnapshot {
     }
 
     // -------------------------------------------------------------------------
-    //  Vnorené DTO pre mapu
-    //  Obaľuje OrthogonalTiledMapRenderer bez toho, aby View vedelo o MapManager.
+    //  Vnorene DTO pre mapu
+    //  Obaluje OrthogonalTiledMapRenderer bez toho, aby View vedelo o MapManager.
     //  Render sa deleguje cez lambda / functional interface.
     // -------------------------------------------------------------------------
 
     public static final class MapRenderData {
-        /** Volá mapRenderer.render(camera) – lambda vykonaná v GameRenderer. */
+        /** Vola mapRenderer.render(camera) – lambda vykonana v GameRenderer. */
         public final MapRenderCallback renderCallback;
         /** Debug hitboxy mapy – list Rectangle-ov pre ShapeRenderer. */
         public final List<com.badlogic.gdx.math.Rectangle> hitboxes;

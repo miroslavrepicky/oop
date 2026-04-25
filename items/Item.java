@@ -22,7 +22,7 @@ import com.badlogic.gdx.math.Rectangle;
  * </ol>
  *
  * <p>The {@code level} parameter in {@link #use(PlayerCharacter, Level, Inventory)} lets the item
- * interact with the game world (e.g. spawn projectiles) without calling {@code GameManager}.
+ * interact with the game world (e.g., spawn projectiles) without calling {@code GameManager}.
  */
 public abstract class Item implements Pickable, Updatable {
     protected int slotCost;
@@ -58,7 +58,7 @@ public abstract class Item implements Pickable, Updatable {
 
     @Override
     public void update(UpdateContext ctx) {
-        // predmety sa nehýbu, override ak treba
+        // items dont move, override if necessary
     }
 
     public int      getSlotsRequired() { return slotCost; }

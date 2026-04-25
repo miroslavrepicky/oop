@@ -14,7 +14,7 @@ package sk.stuba.fiit.core.states;
  *   each frame:
  *     currentState.update(dt)
  *     currentState.render(dt)
- *     if currentState.next() != null → handleTransition(next)
+ *     if currentState.next() != null -> handleTransition(next)
  * </pre>
  */
 public interface IGameState {

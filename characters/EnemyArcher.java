@@ -7,7 +7,7 @@ import sk.stuba.fiit.physics.NormalGravity;
 import sk.stuba.fiit.util.Vector2D;
 
 public class EnemyArcher extends EnemyCharacter {
-    private static final int ARMOR = 5; // łucznik ma len malu obranu
+    private static final int ARMOR = 5;
 
     private int arrowCount;
     private AnimationManager animationManager;

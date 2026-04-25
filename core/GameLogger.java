@@ -38,7 +38,7 @@ public final class GameLogger {
      */
     public static void structured(Logger logger, String message, Object... keyValues) {
         if (!logger.isInfoEnabled()) return;
-        // StructuredArguments.kv() pridá pár ako samostatné JSON pole
+        // StructuredArguments.kv() prida par ako samostatne JSON pole
         Object[] args = new Object[keyValues.length / 2];
         for (int i = 0; i < keyValues.length - 1; i += 2) {
             args[i / 2] = StructuredArguments.kv(
