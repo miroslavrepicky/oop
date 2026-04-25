@@ -3,6 +3,7 @@ package sk.stuba.fiit.physics;
 import com.badlogic.gdx.math.Rectangle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import sk.stuba.fiit.characters.*;
 import sk.stuba.fiit.characters.Character;
 import sk.stuba.fiit.core.AnimationManager;
@@ -296,6 +297,74 @@ class CollisionManagerTest {
         level.projectiles.add(p);
         cm.update(level, player);
         assertEquals(0, e.damageTaken);
+    }
+
+    @Test
+    void nearbyItem_isDetected_whenPlayerClose() {
+        // Vytvoríme item a položíme ho k hráčovi (hráč je na 50, 50)
+        Item mockItem = Mockito.mock(Item.class);
+        Rectangle itemHitbox = new Rectangle(55, 55, 20, 20);
+        Mockito.when(mockItem.getHitbox()).thenReturn(itemHitbox);
+        level.items.add(mockItem);
+
+        cm.update(level, player);
+
+        assertEquals(mockItem, cm.getNearbyItem(), "Manažér by mal nájsť predmet v blízkosti hráča.");
+    }
+
+    @Test
+    void projectile_hitsWall_becomesInactive() {
+        // Nastavíme stenu v mape
+        sk.stuba.fiit.world.MapManager mockMap = Mockito.mock(sk.stuba.fiit.world.MapManager.class);
+        Rectangle wall = new Rectangle(200, 200, 100, 100);
+        Mockito.when(mockMap.getHitboxes()).thenReturn(List.of(wall));
+
+        // Musíme zabezpečiť, aby level vracal náš mock mapy
+        level = new FakeLevel() {
+            @Override public sk.stuba.fiit.world.MapManager getMapManager() { return mockMap; }
+        };
+
+        // Projektil letiaci do steny
+        StubProjectile p = proj(10, 210, 210, ProjectileOwner.PLAYER);
+        level.projectiles.add(p);
+
+        cm.update(level, player);
+
+        assertFalse(p.isActive(), "Projektil by mal po náraze do steny zaniknúť.");
+    }
+
+    @Test
+    void eggProjectile_inBlastingState_dealsDamageOnce() {
+        // 1. Príprava nepriateľa
+        StubEnemy enemy = new StubEnemy(100, 100);
+        // Nastavíme hitbox manuálne, aby sme mali istotu, že sa prekrýva
+        enemy.getHitbox().setPosition(100, 100);
+        enemy.getHitbox().setSize(32, 64);
+        level.getEnemies().add(enemy);
+
+        // 2. Príprava Mock vajíčka
+        EggProjectile eggMock = Mockito.mock(EggProjectile.class);
+        Vector2D eggPos = new Vector2D(100, 100); // Pozícia výbuchu
+
+        // Definujeme správanie mocku (Stubbing)
+        Mockito.when(eggMock.isActive()).thenReturn(true);
+        Mockito.when(eggMock.getEggState()).thenReturn(EggProjectile.EggState.BLASTING);
+        Mockito.when(eggMock.isDamageDealt()).thenReturn(false);
+        Mockito.when(eggMock.getPosition()).thenReturn(eggPos); // FIX: Toto rieši NPE
+        Mockito.when(eggMock.getAoeRadius()).thenReturn(100f);
+        Mockito.when(eggMock.getDamage()).thenReturn(50);
+
+        // Pridáme vajíčko do zoznamu v leveli
+        level.getProjectiles().add(eggMock);
+
+        // 3. Vykonanie testovanej logiky
+        cm.update(level, player);
+
+        // 4. Overenie výsledkov
+        assertTrue(enemy.damageTaken > 0, "Nepriateľ mal dostať damage z AOE výbuchu");
+
+        // Overíme, že CollisionManager zavolal metódu na označenie, že damage bol udelený
+        Mockito.verify(eggMock).markDamageDealt();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

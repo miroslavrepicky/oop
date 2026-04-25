@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import sk.stuba.fiit.core.engine.Physicable;
 import sk.stuba.fiit.util.Vector2D;
 import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class FlyingGravityTest {
@@ -80,4 +82,92 @@ class FlyingGravityTest {
         g.apply(body, 0.1f, Collections.emptyList());
         assertEquals(body.pos.getY(), body.hitbox.y, 0.5f);
     }
+
+    @Test
+    void hitCeiling_zerosVelocityAndStopsAscent() {
+        FlyingGravity g = new FlyingGravity();
+        // Telo letiace nahor (vy = 100)
+        StubBody body = new StubBody(0, 185, 100f);
+        // Platforma nad ním (strop) na y=200
+        Rectangle ceiling = new Rectangle(-10, 200, 100, 10);
+
+        g.apply(body, 0.1f, List.of(ceiling));
+
+        // Mal by sa zastaviť o spodok stropu (200 - výška hitboxu 32)
+        assertEquals(0f, body.vy, 0.001f, "Vertikálna rýchlosť pri náraze do stropu musí byť 0.");
+        assertEquals(200 - 32, body.pos.getY(), 0.001f, "Pozícia by mala byť zarovnaná pod strop.");
+        assertFalse(body.onGround, "Pri náraze do stropu nesmie byť onGround true.");
+    }
+
+    @Test
+    void randomVelocity_staysWithinBounds() {
+        FlyingGravity g = new FlyingGravity();
+        StubBody body = new StubBody(0, 500, 0f);
+
+        // Simulujeme viacero krokov, aby sme preverili náhodný pohyb
+        for (int i = 0; i < 100; i++) {
+            g.apply(body, 1.0f, Collections.emptyList());
+            assertTrue(body.vy >= -150f && body.vy <= 150f,
+                "Rýchlosť " + body.vy + " prekročila limity MAX_DIFFERENCE.");
+        }
+    }
+
+    @Test
+    void horizontalOverlap_isIgnoredByVerticalLogic() {
+        FlyingGravity g = new FlyingGravity();
+        // Telo je vedľa platformy, ale v kóde je podmienka overlapY <= overlapX
+        // Chceme dosiahnuť stav, kedy overlapX je menší, takže kód s vertikálnou korekciou neprebehne
+        StubBody body = new StubBody(95, 100, -10f); // Hitbox x=95 až 127
+        Rectangle sideWall = new Rectangle(120, 90, 50, 50); // Prekrytie na X je malé (7px)
+
+        float initialY = body.pos.getY();
+        g.apply(body, 0.1f, List.of(sideWall));
+
+        // Pretože overlapX (7) < overlapY (veľké), vetva pre vertikálnu korekciu sa preskočí
+        assertNotEquals(initialY, body.pos.getY(), "Pozícia Y by sa mala pohnúť, keďže bočná kolízia nie je v FlyingGravity implementovaná.");
+    }
+
+    @Test
+    void hitCeiling_stopsMovementAndVelocity() {
+        FlyingGravity g = new FlyingGravity();
+        // Telo letí nahor (vy = 100)
+        StubBody body = new StubBody(0, 190, 100f);
+        // Strop je na y=200, hrúbka 10 (spodok je na 200)
+        Rectangle ceiling = new Rectangle(-10, 200, 100, 10);
+
+        g.apply(body, 0.1f, List.of(ceiling));
+
+        // Po náraze do stropu (vy > 0) by mal byť posunutý pod neho
+        assertEquals(0f, body.vy, 0.001f, "Rýchlosť nahor by sa mala vynulovať.");
+        assertEquals(200 - body.getHitbox().height, body.pos.getY(), 0.001f);
+    }
+
+    @Test
+    void horizontalCollision_isIgnored() {
+        FlyingGravity g = new FlyingGravity();
+        // Telo je vedľa steny, nie pod/nad ňou
+        StubBody body = new StubBody(100, 100, 0f);
+        // Stena z boku (veľký overlap na Y, malý na X)
+        Rectangle wall = new Rectangle(130, 80, 20, 100);
+
+        float startY = body.pos.getY();
+        g.apply(body, 0.1f, List.of(wall));
+
+        // FlyingGravity rieši len vertikálne kolízie (overlapY <= overlapX)
+        // Ak je to bočný náraz, Y pozícia by sa nemala korigovať
+        assertFalse(body.onGround);
+    }
+
+    @Test
+    void velocityLimits_areEnforced() {
+        FlyingGravity g = new FlyingGravity();
+        // Extrémne vysoká rýchlosť
+        StubBody body = new StubBody(0, 500, 1000f);
+
+        g.apply(body, 0.1f, Collections.emptyList());
+
+        // Mala by byť orezaná (clamp) na MAX_DIFFERENCE (150)
+        assertTrue(body.vy <= 150f, "Rýchlosť musí byť orezaná na 150.");
+    }
+
 }
