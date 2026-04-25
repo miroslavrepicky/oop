@@ -45,20 +45,33 @@ public class MapManager {
      * @throws GameStateException  if the required {@code "hitbox"} layer is absent
      */
     public MapManager(String mapPath) {
-        try {
-            map = new TmxMapLoader().load(mapPath);
-            log.info("Map loaded: path={}", mapPath);
-        } catch (Exception e) {
-            log.error("Failed to load map: path={}", mapPath, e);
-            throw new AssetLoadException(mapPath, e);
-        }
-        renderer = new OrthogonalTiledMapRenderer(map);
+        this(loadMapSafe(mapPath));
+    }
+
+    public MapManager(TiledMap map) {
+        this.map = map;
+        //this.renderer = new OrthogonalTiledMapRenderer(map);
+        this.entities = new ArrayList<>();
+        this.hitboxes = new ArrayList<>();
         loadEntities();
         loadHitboxes();
     }
 
+    private static TiledMap loadMapSafe(String path) {
+        try {
+            return new TmxMapLoader().load(path);
+        } catch (Exception e) {
+            throw new AssetLoadException(path, e);
+        }
+    }
+
     private void loadEntities() {
-        if (map.getLayers().get("entities") == null) return;
+        if (map.getLayers().get("entities") == null) {
+            log.error("Map is missing required layer: layer=entities");
+            throw new GameStateException(
+                "Missing 'entities' layer",
+                "MapManager.loadEntities");
+        }
 
         for (MapObject object : map.getLayers().get("entities").getObjects()) {
             MapProperties props = object.getProperties();
@@ -91,6 +104,9 @@ public class MapManager {
      * @param camera the active orthographic camera
      */
     public void render(com.badlogic.gdx.graphics.OrthographicCamera camera) {
+        if (renderer == null) {
+            renderer = new OrthogonalTiledMapRenderer(map);
+        }
         renderer.setView(camera);
         renderer.render();
     }
@@ -99,7 +115,7 @@ public class MapManager {
     public List<Map<String, Object>> getEntities() { return entities; }
 
     public void dispose() {
-        map.dispose();
-        renderer.dispose();
+        if (map != null) map.dispose();
+        if (renderer != null) renderer.dispose();
     }
 }

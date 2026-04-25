@@ -173,7 +173,7 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
      *
      * @param deltaTime elapsed time since the last frame, in seconds
      */
-    protected void tickEffects(float deltaTime) {
+    public void tickEffects(float deltaTime) {
         if (dotRemaining > 0f && isAlive()) {
             dotRemaining    -= deltaTime;
             dotAccumulator  += dotDps * deltaTime;

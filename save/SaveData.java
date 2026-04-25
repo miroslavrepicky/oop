@@ -66,16 +66,13 @@ public final class SaveData implements Serializable {
     /** Živé kačky v leveli pri uložení. */
     public final List<DuckData>       ducks;
 
-    // -------------------------------------------------------------------------
-    //  Konštruktor – volá iba SaveManager
-    // -------------------------------------------------------------------------
 
     SaveData(int currentLevel,
-             List<CharacterData>  characters,
-             List<ItemData>       inventoryItems,
-             List<EnemyData>      enemies,
-             List<GroundItemData> groundItems,
-             List<DuckData>       ducks) {
+                    List<CharacterData> characters,
+                    List<ItemData> inventoryItems,
+                    List<EnemyData> enemies,
+                    List<GroundItemData> groundItems,
+                    List<DuckData> ducks) {
         this.saveVersion    = SAVE_VERSION;
         this.savedAt        = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

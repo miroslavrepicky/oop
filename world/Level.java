@@ -86,7 +86,12 @@ public class Level implements Updatable {
      * @param mapPath relative path to the {@code .tmx} file
      */
     public void load(String mapPath, PlayerCharacter active) {
-        mapManager = new MapManager(mapPath);
+        load(new MapManager(mapPath), active); // Volá novú metódu
+    }
+
+
+    public void load(MapManager mapManager, PlayerCharacter active) {
+        this.mapManager = mapManager;
         for (Map<String, Object> entity : mapManager.getEntities()) {
             String type = (String) entity.get("type");
             float  x    = (float) entity.get("x");
