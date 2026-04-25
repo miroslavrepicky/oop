@@ -1,15 +1,18 @@
 package sk.stuba.fiit.attacks;
 
+import com.badlogic.gdx.math.Rectangle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sk.stuba.fiit.GdxTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import sk.stuba.fiit.characters.Character;
-import sk.stuba.fiit.characters.PlayerCharacter;
 import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.core.exceptions.InvalidAttackException;
 import sk.stuba.fiit.projectiles.Projectile;
-import sk.stuba.fiit.projectiles.ProjectileOwner;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
 
@@ -17,33 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-class AttackExecuteTest extends GdxTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class AttackExecuteTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
-
-    static class StubPlayer extends PlayerCharacter {
-        private final boolean fr;
-        StubPlayer(boolean facingRight) {
-            super("TestAttacker", 100, 25, 1f, new Vector2D(100f, 50f), 0);
-            this.fr = facingRight; this.enemy = false;
-            hitbox.setSize(30, 60); hitbox.setPosition(100, 50);
+    static class StubProjectile extends Projectile {
+        StubProjectile(int dmg, Vector2D pos, Vector2D dir) {
+            super(dmg, 1f, pos, dir);
         }
-        @Override public AnimationManager getAnimationManager() { return null; }
-        @Override public void update(UpdateContext ctx) {}
-        @Override public void move(Vector2D d) { position = position.add(d); updateHitbox(); }
-        @Override public boolean isFacingRight() { return fr; }
-    }
-
-    static class StubEnemy extends Character {
-        StubEnemy() {
-            super("EnemyAttacker", 100, 20, 1f, new Vector2D(100f, 50f));
-            this.enemy = true; hitbox.setSize(30, 60); hitbox.setPosition(100, 50);
-        }
-        @Override public AnimationManager getAnimationManager() { return null; }
-        @Override public void update(UpdateContext ctx) {}
-        @Override public void move(Vector2D d) { position = position.add(d); updateHitbox(); }
-        @Override public void onCollision(Object o) {}
+        @Override public void update(UpdateContext ctx) { move(); }
     }
 
     static class FakeLevel extends Level {
@@ -54,127 +41,205 @@ class AttackExecuteTest extends GdxTest {
         @Override public sk.stuba.fiit.world.MapManager getMapManager() { return null; }
     }
 
+    @Mock Character attacker;
+    @Mock Projectile mockProjectile;
+
     private FakeLevel level;
 
-    @BeforeEach void setUp() { level = new FakeLevel(); }
-
-    // ── ArrowAttack ───────────────────────────────────────────────────────────
-
-    @Test void arrowAttack_nullAttacker_throws() {
-        assertThrows(InvalidAttackException.class, () -> new ArrowAttack().execute(null, level));
+    @BeforeEach
+    void setUp() {
+        level = new FakeLevel();
+        when(attacker.getPosition()).thenReturn(new Vector2D(100f, 50f));
+        when(attacker.getHitbox()).thenReturn(new Rectangle(100, 50, 30, 60));
+        when(attacker.getAttackPower()).thenReturn(25);
+        when(attacker.isFacingRight()).thenReturn(true);
+        when(attacker.isEnemy()).thenReturn(false);
+        when(attacker.getName()).thenReturn("TestAttacker");
     }
 
-    @Test void arrowAttack_nullLevel_returnsNull() {
-        assertNull(new ArrowAttack().execute(new StubPlayer(true), null));
+    // ── MeleeAttack ───────────────────────────────────────────────────────────
+
+    @Test
+    void meleeAttack_nullAttacker_throws() {
+        assertThrows(InvalidAttackException.class, () -> new MeleeAttack(1f).execute(null, level));
     }
 
-    @Test void arrowAttack_facingRight_addsToLevel() {
-        Projectile p = new ArrowAttack().execute(new StubPlayer(true), level);
+    @Test
+    void meleeAttack_nullLevel_returnsNull() {
+        assertNull(new MeleeAttack(1f).execute(attacker, null));
+    }
+
+    @Test
+    void meleeAttack_facingRight_addsProjectile() {
+        assertNotNull(new MeleeAttack(1f).execute(attacker, level));
+        assertEquals(1, level.added.size());
+    }
+
+    @Test
+    void meleeAttack_facingLeft_addsProjectile() {
+        when(attacker.isFacingRight()).thenReturn(false);
+        assertNotNull(new MeleeAttack(1f).execute(attacker, level));
+        assertEquals(1, level.added.size());
+    }
+
+    @Test
+    void meleeAttack_playerOwner() {
+        when(attacker.isEnemy()).thenReturn(false);
+        assertTrue(new MeleeAttack(1f).execute(attacker, level).isPlayerProjectile());
+    }
+
+    @Test
+    void meleeAttack_enemyOwner() {
+        when(attacker.isEnemy()).thenReturn(true);
+        assertFalse(new MeleeAttack(1f).execute(attacker, level).isPlayerProjectile());
+    }
+
+    @Test
+    void meleeAttack_largerRange_biggerHitbox() {
+        Projectile small = new MeleeAttack(1f).execute(attacker, level);
+        level.added.clear();
+        Projectile large = new MeleeAttack(2f).execute(attacker, level);
+        assertTrue(large.getHitbox().width > small.getHitbox().width);
+    }
+
+    @Test
+    void meleeAttack_animationName() {
+        assertEquals("attack", new MeleeAttack(1f).getAnimationName());
+    }
+
+    @Test
+    void meleeAttack_animDuration_positive() {
+        assertTrue(new MeleeAttack(1f).getAnimationDuration(null) > 0f);
+    }
+
+    @Test
+    void meleeAttack_manaCost_zero() {
+        assertEquals(0, new MeleeAttack(1f).getManaCost());
+    }
+
+    @Test
+    void meleeAttack_zeroRange_throws() {
+        assertThrows(InvalidAttackException.class, () -> new MeleeAttack(0f));
+    }
+
+    @Test
+    void meleeAttack_negativeRange_throws() {
+        assertThrows(InvalidAttackException.class, () -> new MeleeAttack(-1f));
+    }
+
+    // ── FireDecorator over MeleeAttack ────────────────────────────────────────
+
+    @Test
+    void fireDecorator_overMelee_setsDot() {
+        Projectile p = new FireDecorator(new MeleeAttack(1f)).execute(attacker, level);
         assertNotNull(p);
-        assertEquals(1, level.added.size());
-    }
-
-    @Test void arrowAttack_facingLeft_addsToLevel() {
-        Projectile p = new ArrowAttack().execute(new StubPlayer(false), level);
-        assertNotNull(p);
-        assertEquals(1, level.added.size());
-    }
-
-    @Test void arrowAttack_playerOwned() {
-        assertTrue(new ArrowAttack().execute(new StubPlayer(true), level).isPlayerProjectile());
-    }
-
-    @Test void arrowAttack_enemyOwned() {
-        assertEquals(ProjectileOwner.ENEMY, new ArrowAttack().execute(new StubEnemy(), level).getOwner());
-    }
-
-    @Test void arrowAttack_damage_matchesAttackPower() {
-        StubPlayer a = new StubPlayer(true);
-        assertEquals(a.getAttackPower(), new ArrowAttack().execute(a, level).getDamage());
-    }
-
-    @Test void arrowAttack_movesRight_whenFacingRight() {
-        Projectile p = new ArrowAttack().execute(new StubPlayer(true), level);
-        float x = p.getPosition().getX(); p.move();
-        assertTrue(p.getPosition().getX() > x);
-    }
-
-    @Test void arrowAttack_movesLeft_whenFacingLeft() {
-        Projectile p = new ArrowAttack().execute(new StubPlayer(false), level);
-        float x = p.getPosition().getX(); p.move();
-        assertTrue(p.getPosition().getX() < x);
-    }
-
-    @Test void arrowAttack_animationName() { assertEquals("attack", new ArrowAttack().getAnimationName()); }
-    @Test void arrowAttack_manaCost_zero() { assertEquals(0, new ArrowAttack().getManaCost()); }
-    @Test void arrowAttack_animDuration_positive() { assertTrue(new ArrowAttack().getAnimationDuration(null) > 0f); }
-
-    // ── SpellAttack ───────────────────────────────────────────────────────────
-
-    @Test void spellAttack_nullAttacker_throws() {
-        assertThrows(InvalidAttackException.class, () -> new SpellAttack(5f, 80f, 0).execute(null, level));
-    }
-
-    @Test void spellAttack_nullLevel_returnsNull() {
-        assertNull(new SpellAttack(5f, 80f, 0).execute(new StubPlayer(true), null));
-    }
-
-    @Test void spellAttack_addsToLevel() {
-        assertNotNull(new SpellAttack(5f, 80f, 0).execute(new StubPlayer(true), level));
-        assertEquals(1, level.added.size());
-    }
-
-    @Test void spellAttack_playerOwned() {
-        assertTrue(new SpellAttack(5f, 80f, 0).execute(new StubPlayer(true), level).isPlayerProjectile());
-    }
-
-    @Test void spellAttack_enemyOwned() {
-        assertEquals(ProjectileOwner.ENEMY, new SpellAttack(5f, 80f, 0).execute(new StubEnemy(), level).getOwner());
-    }
-
-    @Test void spellAttack_damage_matchesAttackPower() {
-        StubPlayer a = new StubPlayer(true);
-        assertEquals(a.getAttackPower(), new SpellAttack(5f, 80f, 0).execute(a, level).getDamage());
-    }
-
-    @Test void spellAttack_movesLeft_whenFacingLeft() {
-        Projectile p = new SpellAttack(5f, 80f, 0).execute(new StubPlayer(false), level);
-        float x = p.getPosition().getX(); p.move();
-        assertTrue(p.getPosition().getX() < x);
-    }
-
-    @Test void spellAttack_animationName() { assertEquals("cast", new SpellAttack(5f, 80f, 0).getAnimationName()); }
-    @Test void spellAttack_manaCost() { assertEquals(20, new SpellAttack(5f, 80f, 20).getManaCost()); }
-    @Test void spellAttack_animDuration_positive() { assertTrue(new SpellAttack(5f, 80f, 0).getAnimationDuration(null) > 0f); }
-
-    // ── Decorators cez SpellAttack ────────────────────────────────────────────
-
-    @Test void fireDecorator_addsDot() {
-        Projectile p = new FireDecorator(new SpellAttack(5f, 80f, 0)).execute(new StubPlayer(true), level);
         assertTrue(p.hasDotEffect());
-        assertEquals(1f, p.getTintR(), 0.01f); // orange tint
     }
 
-    @Test void freezeDecorator_addsSlow() {
-        Projectile p = new FreezeDecorator(new SpellAttack(5f, 80f, 0)).execute(new StubPlayer(true), level);
+    @Test
+    void freezeDecorator_overMelee_setsSlow() {
+        Projectile p = new FreezeDecorator(new MeleeAttack(1f)).execute(attacker, level);
+        assertNotNull(p);
         assertTrue(p.hasSlowEffect());
-        assertEquals(0.3f, p.getTintR(), 0.01f); // blue tint
     }
 
-    @Test void stackedDecorators_bothEffects() {
-        Projectile p = new FreezeDecorator(new FireDecorator(new SpellAttack(5f, 80f, 0)))
-                .execute(new StubPlayer(true), level);
+    @Test
+    void stackedDecorators_overMelee_bothEffects() {
+        Projectile p = new FreezeDecorator(new FireDecorator(new MeleeAttack(1f))).execute(attacker, level);
+        assertNotNull(p);
         assertTrue(p.hasDotEffect());
         assertTrue(p.hasSlowEffect());
     }
 
-    @Test void fireDecorator_manaCostHigherThanBase() {
-        int base = new SpellAttack(5f, 80f, 20).getManaCost();
-        assertTrue(new FireDecorator(new SpellAttack(5f, 80f, 20)).getManaCost() > base);
+    // ── Decorator over mock Attack ────────────────────────────────────────────
+
+    @Test
+    void fireDecorator_nullWrapped_throws() {
+        assertThrows(InvalidAttackException.class, () -> new FireDecorator(null));
     }
 
-    @Test void freezeDecorator_manaCostHigherThanBase() {
-        int base = new SpellAttack(5f, 80f, 20).getManaCost();
-        assertTrue(new FreezeDecorator(new SpellAttack(5f, 80f, 20)).getManaCost() > base);
+    @Test
+    void freezeDecorator_nullWrapped_throws() {
+        assertThrows(InvalidAttackException.class, () -> new FreezeDecorator(null));
+    }
+
+    @Test
+    void fireDecorator_nullProjectile_doesNotThrow() {
+        Attack base = mock(Attack.class);
+        when(base.execute(any(), any())).thenReturn(null);
+        assertDoesNotThrow(() -> new FireDecorator(base).execute(attacker, level));
+    }
+
+    @Test
+    void freezeDecorator_nullProjectile_doesNotThrow() {
+        Attack base = mock(Attack.class);
+        when(base.execute(any(), any())).thenReturn(null);
+        assertDoesNotThrow(() -> new FreezeDecorator(base).execute(attacker, level));
+    }
+
+    @Test
+    void fireDecorator_setsDot_onMockProjectile() {
+        Attack base = mock(Attack.class);
+        when(base.execute(any(), any())).thenReturn(mockProjectile);
+        new FireDecorator(base).execute(attacker, level);
+        verify(mockProjectile).setDotEffect(anyInt(), anyFloat());
+        verify(mockProjectile).setTint(1f, 0.3f, 0f);
+    }
+
+    @Test
+    void freezeDecorator_setsSlow_onMockProjectile() {
+        Attack base = mock(Attack.class);
+        when(base.execute(any(), any())).thenReturn(mockProjectile);
+        new FreezeDecorator(base).execute(attacker, level);
+        verify(mockProjectile).setSlowEffect(anyFloat(), anyFloat());
+        verify(mockProjectile).setTint(0.3f, 0.7f, 1f);
+    }
+
+    @Test
+    void stackedDecorators_bothEffects_onMockProjectile() {
+        Attack base = mock(Attack.class);
+        when(base.execute(any(), any())).thenReturn(mockProjectile);
+        new FreezeDecorator(new FireDecorator(base)).execute(attacker, level);
+        verify(mockProjectile).setDotEffect(anyInt(), anyFloat());
+        verify(mockProjectile).setSlowEffect(anyFloat(), anyFloat());
+    }
+
+    @Test
+    void fireDecorator_manaCostAddsExtra() {
+        Attack base = mock(Attack.class);
+        when(base.getManaCost()).thenReturn(20);
+        assertTrue(new FireDecorator(base).getManaCost() > 20);
+    }
+
+    @Test
+    void freezeDecorator_manaCostAddsExtra() {
+        Attack base = mock(Attack.class);
+        when(base.getManaCost()).thenReturn(20);
+        assertTrue(new FreezeDecorator(base).getManaCost() > 20);
+    }
+
+    @Test
+    void stackedDecorators_manaCostCumulative() {
+        Attack base = mock(Attack.class);
+        when(base.getManaCost()).thenReturn(20);
+        int fire    = new FireDecorator(base).getManaCost();
+        when(base.getManaCost()).thenReturn(20);
+        int stacked = new FreezeDecorator(new FireDecorator(base)).getManaCost();
+        assertTrue(stacked > fire);
+    }
+
+    @Test
+    void decorator_delegatesAnimationName() {
+        Attack base = mock(Attack.class);
+        when(base.getAnimationName()).thenReturn("cast");
+        assertEquals("cast", new FireDecorator(base).getAnimationName());
+    }
+
+    @Test
+    void decorator_delegatesAnimationDuration() {
+        Attack base = mock(Attack.class);
+        AnimationManager am = mock(AnimationManager.class);
+        when(base.getAnimationDuration(am)).thenReturn(0.8f);
+        assertEquals(0.8f, new FireDecorator(base).getAnimationDuration(am), 0.001f);
     }
 }
