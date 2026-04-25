@@ -26,55 +26,67 @@ import java.util.Map;
 /**
  * Singleton responsible for saving and loading {@link SaveData} to and from disk.
  *
- * <p>Serialisation strategy: Java {@link ObjectOutputStream}/{@link ObjectInputStream}
- * writing to {@value #SAVE_FILE}. {@link SaveData} is a pure DTO (only primitives
- * and Strings) – no LibGDX or OpenGL dependencies.
+ * <h2>Serialisation strategy</h2>
+ * <p>Java {@link ObjectOutputStream}/{@link ObjectInputStream} writing to
+ * {@value #SAVE_FILE}. {@link SaveData} is a pure DTO (only primitives and Strings)
+ * with no LibGDX or OpenGL dependencies, so it serialises cleanly without a
+ * running engine context.
  *
- * <p>Compatibility guard: on load, {@link SaveData#saveVersion} is compared to
- * {@link SaveData#SAVE_VERSION}. A mismatch causes the file to be ignored and
- * {@code -1} to be returned.
+ * <h2>Compatibility guard</h2>
+ * <p>On load, {@link SaveData#saveVersion} is compared to
+ * {@link SaveData#SAVE_VERSION}. A version mismatch causes the file to be
+ * silently ignored and {@code null} returned to the caller, which then falls
+ * back to starting a new game.
  *
- * <p>Save procedure:
+ * <h2>Save procedure</h2>
  * <ol>
  *   <li>Reads the current {@link Inventory} from {@link GameManager}.</li>
  *   <li>Converts each character to {@link SaveData.CharacterData}.</li>
  *   <li>Groups items by class and converts them to {@link SaveData.ItemData}.</li>
- *   <li>Serialises the {@link SaveData} object.</li>
+ *   <li>Snapshots living enemies, ground items, and ducks from the current level.</li>
+ *   <li>Serialises the complete {@link SaveData} object to disk.</li>
  * </ol>
  *
- * <p>Load procedure:
+ * <h2>Load procedure</h2>
  * <ol>
- *   <li>Deserialises {@link SaveData}.</li>
- *   <li>Resets {@link GameManager}.</li>
- *   <li>Reconstructs characters and items into a new {@link Inventory}.</li>
- *   <li>Returns the saved level number for {@link GameManager} to start.</li>
+ *   <li>Deserialises {@link SaveData} from disk.</li>
+ *   <li>Validates the version number; discards mismatches.</li>
+ *   <li>Calls {@link GameManager#resetGame()} to start from a clean state.</li>
+ *   <li>Reconstructs characters and items into a fresh {@link Inventory}.</li>
+ *   <li>Returns the {@link SaveData} object to the caller
+ *       ({@link GameManager#startLevelFromSave(SaveData)}) which restores the level.</li>
  * </ol>
  */
 public final class SaveManager {
 
     private static SaveManager instance;
 
-    /** Cesta k suboru ulozenej hry – relativna k working directory. */
+    /** Path to the save file, relative to the working directory. */
     public static final String SAVE_FILE = "shadowquest.save";
 
     private static final Logger log = GameLogger.get(SaveManager.class);
 
     private SaveManager() {}
 
+    /**
+     * Returns the single shared instance, creating it on the first call.
+     *
+     * @return the singleton {@code SaveManager}
+     */
     public static SaveManager getInstance() {
         if (instance == null) instance = new SaveManager();
         return instance;
     }
 
     // -------------------------------------------------------------------------
-    //  Ulozenie
+    //  Save
     // -------------------------------------------------------------------------
 
     /**
-     * Saves the current game state to disk.
+     * Saves the current game state to {@value #SAVE_FILE}.
      *
-     * @param currentLevelNumber the level currently active (1-based)
-     * @throws SaveException if the write fails
+     * @param currentLevelNumber the 1-based number of the level currently active
+     * @throws SaveException if the file cannot be written
      */
     public void save(int currentLevelNumber) {
         SaveData data = buildSaveData(currentLevelNumber);
@@ -86,11 +98,17 @@ public final class SaveManager {
             SAVE_FILE);
     }
 
+    /**
+     * Builds a {@link SaveData} snapshot from the current runtime state.
+     *
+     * @param levelNumber 1-based number of the active level
+     * @return a fully populated {@link SaveData} instance
+     */
     private SaveData buildSaveData(int levelNumber) {
-        Inventory inv        = GameManager.getInstance().getInventory();
+        Inventory inv          = GameManager.getInstance().getInventory();
         PlayerCharacter active = inv.getActive();
 
-        // Postavy v inventári
+        // Party members
         List<SaveData.CharacterData> chars = new ArrayList<>();
         for (PlayerCharacter pc : inv.getCharacters()) {
             chars.add(new SaveData.CharacterData(
@@ -103,7 +121,7 @@ public final class SaveManager {
             ));
         }
 
-        // Inventory itemy (zoskupene)
+        // Inventory items (grouped by type)
         Map<String, Integer> itemCounts = new LinkedHashMap<>();
         for (Item item : inv.getItems()) {
             itemCounts.merge(item.getClass().getSimpleName(), 1, Integer::sum);
@@ -113,7 +131,7 @@ public final class SaveManager {
             itemData.add(new SaveData.ItemData(e.getKey(), e.getValue()));
         }
 
-        // Nepriatelia v leveli
+        // Living enemies in the level
         List<SaveData.EnemyData> enemyData = new ArrayList<>();
         Level level = GameManager.getInstance().getCurrentLevel();
         if (level != null) {
@@ -127,12 +145,12 @@ public final class SaveManager {
             }
         }
 
-        // Predmety na zemi
+        // Items on the ground
         List<SaveData.GroundItemData> groundItems = new ArrayList<>();
         if (level != null) {
             for (Item item : level.getItems()) {
                 String type = item.getClass().getSimpleName();
-                if ("EggProjectileSpawner".equals(type)) continue;
+                if ("EggProjectileSpawner".equals(type)) continue; // not restorable
                 groundItems.add(new SaveData.GroundItemData(
                     type,
                     item.getPosition().getX(), item.getPosition().getY()
@@ -140,6 +158,7 @@ public final class SaveManager {
             }
         }
 
+        // Living ducks
         List<SaveData.DuckData> duckData = new ArrayList<>();
         if (level != null) {
             for (Duck duck : level.getDucks()) {
@@ -155,6 +174,12 @@ public final class SaveManager {
         return new SaveData(levelNumber, chars, itemData, enemyData, groundItems, duckData);
     }
 
+    /**
+     * Writes the given {@link SaveData} to {@value #SAVE_FILE} using Java serialisation.
+     *
+     * @param data the snapshot to persist
+     * @throws SaveException if the write fails
+     */
     private void writeToDisk(SaveData data) {
         File file = new File(SAVE_FILE);
         try (ObjectOutputStream oos =
@@ -162,10 +187,24 @@ public final class SaveManager {
             oos.writeObject(data);
         } catch (IOException e) {
             log.error("Failed to write save file: path={}", file.getAbsolutePath(), e);
-            throw new SaveException("Ulozenie hry zlyhalo: " + e.getMessage(), e);
+            throw new SaveException("Game save failed: " + e.getMessage(), e);
         }
     }
 
+    // -------------------------------------------------------------------------
+    //  Load
+    // -------------------------------------------------------------------------
+
+    /**
+     * Loads and validates the save file from {@value #SAVE_FILE}.
+     *
+     * <p>After a successful load the inventory is restored immediately
+     * (characters and items). The level itself is restored later by the caller
+     * via {@link GameManager#startLevelFromSave(SaveData)}.
+     *
+     * @return the loaded {@link SaveData}, or {@code null} if no valid save file
+     *         exists or the version is incompatible
+     */
     public SaveData load() {
         File file = new File(SAVE_FILE);
         if (!file.exists()) {
@@ -182,16 +221,22 @@ public final class SaveManager {
             return null;
         }
 
-        // Obnov inventár (postavy + inventory itemy)
         applyInventoryToGameManager(data);
 
         log.info("Game loaded: level={}, chars={}, enemies={}, groundItems={}, savedAt={}",
             data.currentLevel, data.characters.size(),
             data.enemies.size(), data.groundItems.size(), data.savedAt);
 
-        return data;  // <-- caller odovzdá do GameManager.startLevelFromSave()
+        return data;
     }
 
+    /**
+     * Resets {@link GameManager} and reconstructs the inventory from the saved data.
+     * Characters are recreated via factory methods and have their stats restored.
+     * Items are recreated and added to the inventory in the saved order.
+     *
+     * @param data the validated save data to apply
+     */
     private void applyInventoryToGameManager(SaveData data) {
         GameManager gm = GameManager.getInstance();
         gm.resetGame();
@@ -204,7 +249,6 @@ public final class SaveManager {
                 log.warn("Unknown character type in save – skipped: type={}", cd.characterType);
                 continue;
             }
-            // Pouzijeme restoreStats() namiesto serie takeDamage()
             pc.restoreStats(cd.hp, cd.armor);
             inv.addCharacter(pc);
             if (cd.isActive) activeChar = pc;
@@ -227,6 +271,12 @@ public final class SaveManager {
         }
     }
 
+    /**
+     * Reads and deserialises a {@link SaveData} object from the given file.
+     *
+     * @param file the save file to read
+     * @return the deserialised {@link SaveData}, or {@code null} on any error
+     */
     private SaveData readFromDisk(File file) {
         try (ObjectInputStream ois =
                  new ObjectInputStream(new FileInputStream(file))) {
@@ -243,14 +293,19 @@ public final class SaveManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Factory metody – mapovanie String -> konkretna trieda
+    //  Factory methods – String class name → concrete class
     // -------------------------------------------------------------------------
 
     /**
-     * Vytvori postavu podla názvu triedy ulozeneho v {@link SaveData.CharacterData#characterType}.
+     * Creates a new character instance from the class name stored in
+     * {@link SaveData.CharacterData#characterType}.
      *
-     * <p>Pozicia je pri rekonstrukcii (0,0) – Level.load() ju prepise
-     * z Tiled mapy ked sa level spusti.
+     * <p>The position is set to {@code (0, 0)} during reconstruction; the correct
+     * spawn position is applied later by {@code Level.loadFromSave()} from the
+     * saved {@link SaveData.CharacterData} coordinates.
+     *
+     * @param type simple class name, e.g. {@code "Knight"}
+     * @return a freshly constructed character, or {@code null} if the type is unknown
      */
     private PlayerCharacter createCharacter(String type) {
         return switch (type) {
@@ -262,7 +317,11 @@ public final class SaveManager {
     }
 
     /**
-     * Vytvori item podla názvu triedy ulozeneho v {@link SaveData.ItemData#itemType}.
+     * Creates a new item instance from the class name stored in
+     * {@link SaveData.ItemData#itemType}.
+     *
+     * @param type simple class name, e.g. {@code "HealingPotion"}
+     * @return a freshly constructed item, or {@code null} if the type is unknown
      */
     private Item createItem(String type) {
         return switch (type) {
@@ -273,15 +332,22 @@ public final class SaveManager {
     }
 
     // -------------------------------------------------------------------------
-    //  Pomocne verejne metody
+    //  Public utility methods
     // -------------------------------------------------------------------------
 
-    /** @return {@code true} if a save file exists on disk */
+    /**
+     * Returns {@code true} if a save file currently exists on disk.
+     *
+     * @return {@code true} when {@value #SAVE_FILE} exists
+     */
     public boolean hasSave() {
         return new File(SAVE_FILE).exists();
     }
 
-    /** Deletes the save file from the disk (e.g., when starting a new game). */
+    /**
+     * Deletes the save file from disk.
+     * Called when the player starts a new game to prevent a stale "Continue" option.
+     */
     public void deleteSave() {
         File file = new File(SAVE_FILE);
         if (file.delete()) {
@@ -290,6 +356,4 @@ public final class SaveManager {
             log.warn("Could not delete save file (may not exist): path={}", file.getAbsolutePath());
         }
     }
-
-
 }

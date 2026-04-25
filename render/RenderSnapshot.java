@@ -6,39 +6,55 @@ import java.util.List;
  * Immutable data transfer object describing the complete visual state of the
  * game scene for a single frame.
  *
- * <p>After refactoring to clean MVC, {@link GameRenderer} imports ONLY classes
+ * <h2>MVC role</h2>
+ * <p>After the clean-MVC refactor, {@link GameRenderer} imports <em>only</em> classes
  * from the {@code render} package. No model classes ({@code characters},
  * {@code items}, {@code projectiles}, {@code world}) are referenced by the renderer.
+ * This snapshot is the boundary between the Controller and the View.
  *
  * <p>Who builds the snapshot: {@link SnapshotBuilder} (Controller layer).
- * The controller may know the model; the View ({@code GameRenderer}) may not.
+ * The controller may import model classes; the View ({@code GameRenderer}) must not.
+ *
+ * <h2>Contents</h2>
+ * <ul>
+ *   <li>{@link #player} – active player render data; {@code null} if the party is defeated.</li>
+ *   <li>{@link #enemies} – all enemies currently in the level (alive and in death animation).</li>
+ *   <li>{@link #ducks}   – all living ducks.</li>
+ *   <li>{@link #items}   – items lying on the ground (position + icon path).</li>
+ *   <li>{@link #projectiles} – all active projectiles.</li>
+ *   <li>{@link #map}     – map render callback and hitbox list; {@code null} if no map is loaded.</li>
+ *   <li>{@link #debugHitboxes} – whether the debug hitbox overlay is enabled (F1 toggle).</li>
+ *   <li>{@link #nearbyItemAvailable} – whether the "[E] PICK-UP" hint should be shown.</li>
+ *   <li>{@link #hud}     – complete HUD data snapshot.</li>
+ * </ul>
  */
 public final class RenderSnapshot {
 
-    /** Aktivny hrac – null ak party porazena. */
+    /** Active player; {@code null} if the party is defeated. */
     public final EntityRenderData       player;
 
-    /** Vsetci zivi a mrtvi (death anim) nepriatelia. */
+    /** All enemies – alive and playing their death animation. */
     public final List<EntityRenderData> enemies;
 
-    /** zive kacky. */
+    /** Living ducks. */
     public final List<EntityRenderData> ducks;
 
-    /** Itemy na zemi – pozicia + iconPath. */
+    /** Items on the ground – position and icon path. */
     public final List<ItemRenderData>   items;
 
-    /** Aktivne projektily. */
+    /** Active projectiles. */
     public final List<EntityRenderData> projectiles;
 
-    /** Mapa – null ak nie je nacitana. */
+    /** Map render data; {@code null} if no map is loaded. */
     public final MapRenderData          map;
 
-    /** true = zobrazit debug hitboxy (F1). */
+    /** {@code true} = draw debug hitbox outlines (F1 toggle). */
     public final boolean debugHitboxes;
 
-    /** true = v blizkosti je item -> HUD "[E] PICK-UP". */
+    /** {@code true} = a nearby item is within pick-up range; show the "[E] PICK-UP" hint. */
     public final boolean nearbyItemAvailable;
 
+    /** HUD snapshot containing character stats and inventory slot data. */
     public final HUDSnapshot            hud;
 
     public RenderSnapshot(
@@ -62,16 +78,32 @@ public final class RenderSnapshot {
         this.hud                 = hud;
     }
 
-    // -------------------------------------------------------------------------
-    //  DTO pre HUD
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    //  Nested DTO – HUD
+    // =========================================================================
 
+    /**
+     * Snapshot of all data required to render the HUD for one frame.
+     * Built by {@link SnapshotBuilder} and consumed by {@link HUDRenderer}.
+     */
     public static final class HUDSnapshot {
+
+        /** Status data for each party member, in party order. */
         public final List<CharacterHUDData> characters;
+
+        /** Zero-based index of the currently selected inventory slot. */
         public final int                    selectedSlot;
+
+        /** Descriptor for each item currently in the inventory, in slot order. */
         public final List<ItemSlotData>     itemSlots;
+
+        /** Number of inventory slots currently in use. */
         public final int                    usedSlots;
+
+        /** Total number of inventory slots available. */
         public final int                    totalSlots;
+
+        /** {@code true} when a nearby item is within pick-up range. */
         public final boolean                nearbyItemAvailable;
 
         public HUDSnapshot(List<CharacterHUDData> characters,
@@ -88,12 +120,27 @@ public final class RenderSnapshot {
             this.nearbyItemAvailable = nearbyItemAvailable;
         }
 
+        // -----------------------------------------------------------------------
+        //  Nested DTO – per-character HUD row
+        // -----------------------------------------------------------------------
+
+        /**
+         * HUD data for a single party member.
+         *
+         * <p>Resource fields ({@code mana}, {@code maxMana}, {@code arrows},
+         * {@code maxArrows}) use {@code -1} to signal "not applicable".
+         * {@link HUDRenderer} skips the corresponding bar or counter when it
+         * encounters a {@code -1} value, so no conditional logic on concrete
+         * character types is needed in the renderer.
+         */
         public static final class CharacterHUDData {
+            /** Display name shown in the character list. */
             public final String  name;
             public final int     hp;
             public final int     maxHp;
             public final int     armor;
             public final int     maxArmor;
+            /** {@code true} when this is the currently controlled character. */
             public final boolean isActive;
 
             /**
@@ -114,7 +161,7 @@ public final class RenderSnapshot {
             public final int arrows;
 
             /**
-             * Maximum arrows, or {@code -1} if this character has no arrow limit.
+             * Maximum arrow capacity, or {@code -1} if this character has no arrow limit.
              */
             public final int maxArrows;
 
@@ -140,21 +187,30 @@ public final class RenderSnapshot {
                                     int     maxMana,
                                     int     arrows,
                                     int     maxArrows) {
-                this.name     = name;
-                this.hp       = hp;
-                this.maxHp    = maxHp;
-                this.armor    = armor;
-                this.maxArmor = maxArmor;
-                this.isActive = isActive;
-                this.mana     = mana;
-                this.maxMana  = maxMana;
-                this.arrows   = arrows;
+                this.name      = name;
+                this.hp        = hp;
+                this.maxHp     = maxHp;
+                this.armor     = armor;
+                this.maxArmor  = maxArmor;
+                this.isActive  = isActive;
+                this.mana      = mana;
+                this.maxMana   = maxMana;
+                this.arrows    = arrows;
                 this.maxArrows = maxArrows;
             }
         }
 
+        // -----------------------------------------------------------------------
+        //  Nested DTO – inventory slot
+        // -----------------------------------------------------------------------
+
+        /**
+         * Render descriptor for a single occupied inventory slot.
+         */
         public static final class ItemSlotData {
+            /** Relative path to the item icon texture, e.g. {@code "icons/potion.png"}. */
             public final String iconPath;
+            /** Number of inventory slots this item occupies. */
             public final int    slotsRequired;
 
             public ItemSlotData(String iconPath, int slotsRequired) {
@@ -164,13 +220,20 @@ public final class RenderSnapshot {
         }
     }
 
+    // =========================================================================
+    //  Nested DTO – ground item
+    // =========================================================================
 
-    // -------------------------------------------------------------------------
-    //  Vnorene DTO pre itemy (ikonka + pozicia)
-    // -------------------------------------------------------------------------
-
+    /**
+     * Render descriptor for an item lying on the ground.
+     * Contains only a world position and an icon path – no model class reference.
+     */
     public static final class ItemRenderData {
-        public final float  x, y;
+        /** World X position of the item hitbox. */
+        public final float  x;
+        /** World Y position of the item hitbox. */
+        public final float  y;
+        /** Relative path to the item icon texture; {@code null} = no icon, skip rendering. */
         public final String iconPath;
 
         public ItemRenderData(float x, float y, String iconPath) {
@@ -178,16 +241,25 @@ public final class RenderSnapshot {
         }
     }
 
-    // -------------------------------------------------------------------------
-    //  Vnorene DTO pre mapu
-    //  Obaluje OrthogonalTiledMapRenderer bez toho, aby View vedelo o MapManager.
-    //  Render sa deleguje cez lambda / functional interface.
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    //  Nested DTO – map
+    // =========================================================================
 
+    /**
+     * Wraps the map renderer behind a functional callback so the View never
+     * imports {@code MapManager} directly.
+     *
+     * <p>The render lambda is created in {@link SnapshotBuilder} as
+     * {@code mapManager::render} and is invoked by {@link GameRenderer}
+     * with the active camera. Debug hitboxes are provided as a separate
+     * rectangle list so {@code GameRenderer} can draw them with its
+     * {@link com.badlogic.gdx.graphics.glutils.ShapeRenderer}.
+     */
     public static final class MapRenderData {
-        /** Vola mapRenderer.render(camera) – lambda vykonana v GameRenderer. */
+        /** Calls {@code mapRenderer.render(camera)} when invoked by the View. */
         public final MapRenderCallback renderCallback;
-        /** Debug hitboxy mapy – list Rectangle-ov pre ShapeRenderer. */
+
+        /** Wall/platform rectangles used for debug hitbox drawing. */
         public final List<com.badlogic.gdx.math.Rectangle> hitboxes;
 
         public MapRenderData(MapRenderCallback renderCallback,
@@ -196,8 +268,17 @@ public final class RenderSnapshot {
             this.hitboxes       = hitboxes;
         }
 
+        /**
+         * Functional interface for the map rendering callback.
+         * Implemented as {@code mapManager::render} in {@link SnapshotBuilder}.
+         */
         @FunctionalInterface
         public interface MapRenderCallback {
+            /**
+             * Renders the tile map using the provided camera.
+             *
+             * @param camera the active orthographic camera
+             */
             void render(com.badlogic.gdx.graphics.OrthographicCamera camera);
         }
     }

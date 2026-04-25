@@ -53,10 +53,25 @@ public final class AnimationRenderer {
     }
 
     /**
-     * Rozsirena verzia s moznostou otocenia strany kotvenia.
+     * Draws the current animation frame at its native packed size, optionally
+     * anchoring the sprite to the opposite side of the hitbox.
      *
-     * @param anchorOpposite ak {@code true}, sprite sa ukotvuje na opacnu stranu hitboxu.
-     *                       Pouziva sa pri utocnych animaciach kde sprite „vycnieva" dopredu.
+     * <p>Characters are normally anchored so that the sprite's right edge aligns
+     * with the right edge of the hitbox (facing right) or the left edge aligns
+     * with the left edge (facing left). During an attack animation the sprite
+     * "reaches forward" beyond the hitbox, so {@code anchorOpposite} reverses
+     * the anchor point to keep the body part of the sprite inside the hitbox
+     * while the weapon extends outward.
+     *
+     * @param batch          active {@link SpriteBatch}
+     * @param am             the object's {@link AnimationManager}
+     * @param x              hitbox left edge in world coordinates
+     * @param y              hitbox bottom edge in world coordinates
+     * @param hitboxW        width of the character's hitbox, used to compute alignment
+     * @param flipX          {@code true} to mirror the sprite horizontally
+     * @param anchorOpposite when {@code true}, anchors the sprite to the side of the hitbox
+     *                       opposite to the character's facing direction; use {@code true}
+     *                       during attack animations so the weapon extends beyond the hitbox
      */
     public static void renderActualSize(SpriteBatch batch, AnimationManager am,
                                         float x, float y, float hitboxW,

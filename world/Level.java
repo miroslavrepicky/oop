@@ -84,12 +84,21 @@ public class Level implements Updatable {
      * {@code dark_knight}.
      *
      * @param mapPath relative path to the {@code .tmx} file
+     * @param active  the active player character whose position will be set from
+     *                the map's {@code "player"} entity; may be {@code null}
      */
     public void load(String mapPath, PlayerCharacter active) {
         load(new MapManager(mapPath), active); // Volá novu metodu
     }
 
 
+    /**
+     * Loads entities from the provided {@link MapManager}'s entity layer.
+     * Shared implementation used by {@link #load(String, PlayerCharacter)}.
+     *
+     * @param mapManager pre-constructed map manager; stored for the level's lifetime
+     * @param active     the active player character; may be {@code null}
+     */
     public void load(MapManager mapManager, PlayerCharacter active) {
         this.mapManager = mapManager;
         for (Map<String, Object> entity : mapManager.getEntities()) {
@@ -199,8 +208,9 @@ public class Level implements Updatable {
     }
 
     /**
-     * Returns all inactive poolable projectiles to their respective {@link sk.stuba.fiit.projectiles.ProjectilePool}.
-     * Called at the start of each update before the inactive projectiles are removed.
+     * Returns all inactive poolable projectiles to their respective pool.
+     * Called at the start of each update cycle before inactive projectiles
+     * are removed from the list.
      */
     private void returnInactiveProjectilesToPool() {
         for (Projectile p : projectiles) {
@@ -211,8 +221,27 @@ public class Level implements Updatable {
     }
 
     /**
-     * Nacita mapu (len geometriu + hitboxy) a obnovi entity zo SaveData
-     * namiesto spawnovania z TMX vrstvy "entities".
+     * Loads map geometry from {@code mapPath} and restores all level entities from
+     * the provided {@link SaveData} instead of reading the Tiled {@code "entities"} layer.
+     *
+     * <p>This method is called by {@link sk.stuba.fiit.core.GameManager#startLevelFromSave}
+     * when continuing a saved game. The following entities are restored:
+     * <ul>
+     *   <li>Active player position and facing direction (from
+     *       {@link SaveData.CharacterData#isActive}).</li>
+     *   <li>Living enemies with their saved HP, armour, AI, and movement resolver.</li>
+     *   <li>Living ducks with their saved HP.</li>
+     *   <li>Ground items (healing potions and armour).</li>
+     * </ul>
+     *
+     * <p>{@link sk.stuba.fiit.items.EggProjectileSpawner} items are intentionally skipped
+     * because an in-flight egg bomb is not safely restorable.
+     *
+     * @param mapPath    relative path to the {@code .tmx} file; only geometry and
+     *                   hitboxes are read – the {@code "entities"} layer is ignored
+     * @param savedState the validated {@link SaveData} to restore entities from
+     * @param active     the active player character whose position will be restored;
+     *                   may be {@code null}
      */
     public void loadFromSave(String mapPath, SaveData savedState, PlayerCharacter active) {
         mapManager = new MapManager(mapPath);
@@ -249,6 +278,15 @@ public class Level implements Updatable {
             levelNumber, enemies.size(), ducks.size(), items.size());
     }
 
+    /**
+     * Reconstructs an enemy from a {@link SaveData.EnemyData} record.
+     * Initialises the AI and movement resolver using the same parameters as
+     * {@link #load(MapManager, PlayerCharacter)}. Stats are restored via
+     * {@link sk.stuba.fiit.characters.Character#restoreStats(int, int)}.
+     *
+     * @param ed the saved enemy record
+     * @return a fully initialised enemy, or {@code null} if the type is unknown
+     */
     private EnemyCharacter createEnemyFromSave(SaveData.EnemyData ed) {
         Vector2D pos = new Vector2D(ed.x, ed.y);
         EnemyCharacter enemy;
@@ -291,6 +329,12 @@ public class Level implements Updatable {
         return enemy;
     }
 
+    /**
+     * Reconstructs a ground item from a {@link SaveData.GroundItemData} record.
+     *
+     * @param gd the saved ground-item record
+     * @return a freshly constructed item, or {@code null} if the type is unknown
+     */
     private Item createGroundItemFromSave(SaveData.GroundItemData gd) {
         Vector2D pos = new Vector2D(gd.x, gd.y);
         switch (gd.type) {

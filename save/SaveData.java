@@ -7,72 +7,80 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Serialisable DTO that captures the complete state of a saved game.
+ * Serialisable data-transfer object that captures the complete state of a saved game.
  *
- * <p>Why a dedicated DTO instead of serialising game classes directly:
+ * <h2>Why a dedicated DTO</h2>
  * <ul>
- *   <li>Game classes depend on LibGDX objects ({@code TextureAtlas}, {@code Rectangle}…)
- *       which are not serialisable and belong only to the runtime.</li>
- *   <li>{@code SaveData} contains only primitives and Strings – it can be saved,
- *       loaded and validated without a LibGDX context (e.g. in unit tests).</li>
- *   <li>The format version {@link #SAVE_VERSION} protects against loading stale files.</li>
+ *   <li>Game classes depend on LibGDX objects ({@code TextureAtlas}, {@code Rectangle}, …)
+ *       which are not {@link Serializable} and belong only to the runtime.</li>
+ *   <li>{@code SaveData} contains only primitives and {@link String}s – it can be saved,
+ *       loaded, and validated without a LibGDX context (e.g. in unit tests).</li>
+ *   <li>The format version {@link #SAVE_VERSION} protects against loading stale files
+ *       written by an older version of the game.</li>
  * </ul>
  *
- * <p>Structure:
+ * <h2>Structure</h2>
  * <pre>
  *   SaveData
- *   ├ saveVersion      – guards against incompatible old files
- *   ├ savedAt          – ISO timestamp for the UI
- *   ├ currentLevel     – 1-based level number where the player saved
- *   ├ characters[]     – party snapshot (type, HP, armor, position, facing…)
+ *   ├ saveVersion      – guards against incompatible older files
+ *   ├ savedAt          – ISO timestamp shown in the UI
+ *   ├ currentLevel     – 1-based level number at the time of saving
+ *   ├ characters[]     – party snapshot (type, HP, armour, position, facing…)
  *   ├ inventoryItems[] – item snapshot (type + count, grouped by class)
- *   ├ enemies[]        – live enemies in the level (type, position, HP, armor)
- *   ├ groundItems[]    – items lying on the ground (type, position)
- *   └ ducks[]          – live ducks in the level (position, HP)
+ *   ├ enemies[]        – living enemies in the level at save time
+ *   ├ groundItems[]    – items lying on the ground at save time
+ *   └ ducks[]          – living ducks in the level at save time
  * </pre>
  */
 public final class SaveData implements Serializable {
 
-    /** Zvysit pri kazdej zmene struktury ktora je nekompatibilná so starymi subormi. */
+    /**
+     * Increment this constant whenever the structure changes in a way that is
+     * incompatible with previously written save files. {@link SaveManager#load()}
+     * discards files whose {@link #saveVersion} does not match.
+     */
     public static final int SAVE_VERSION = 3;
 
     private static final long serialVersionUID = 3L;
 
     // -------------------------------------------------------------------------
-    //  Polia ulozeneho stavu
+    //  Saved-state fields
     // -------------------------------------------------------------------------
 
-    /** Verzia formátu – porovnaná pri nacitani so {@link #SAVE_VERSION}. */
+    /** Format version – compared against {@link #SAVE_VERSION} on load. */
     public final int    saveVersion;
 
-    /** ISO dátum a cas ulozenia, napr. "2025-04-19 14:32:01". */
+    /** ISO date and time of the save, e.g. {@code "2025-04-19 14:32:01"}. */
     public final String savedAt;
 
-    /** cislo levelu, ktory bol aktivny pri ulozeni (1-based). */
+    /** 1-based level number that was active when the game was saved. */
     public final int    currentLevel;
 
-    /** Stav kazdej postavy v inventári. */
+    /** Snapshot of every character in the inventory at save time. */
     public final List<CharacterData>  characters;
 
-    /** Itemy v inventári (skupinove – jeden záznam na typ + pocet). */
+    /**
+     * Items in the inventory at save time, grouped by class.
+     * One entry per distinct item type; the {@code count} field records how many
+     * of that type were present.
+     */
     public final List<ItemData>       inventoryItems;
 
-    /** zivi nepriatelia v leveli pri ulozeni. */
+    /** Living enemies in the level at save time. */
     public final List<EnemyData>      enemies;
 
-    /** Predmety leziace na zemi pri ulozeni. */
+    /** Items lying on the ground at save time. */
     public final List<GroundItemData> groundItems;
 
-    /** zive kacky v leveli pri ulozeni. */
+    /** Living ducks in the level at save time. */
     public final List<DuckData>       ducks;
 
-
     SaveData(int currentLevel,
-                    List<CharacterData> characters,
-                    List<ItemData> inventoryItems,
-                    List<EnemyData> enemies,
-                    List<GroundItemData> groundItems,
-                    List<DuckData> ducks) {
+             List<CharacterData>  characters,
+             List<ItemData>       inventoryItems,
+             List<EnemyData>      enemies,
+             List<GroundItemData> groundItems,
+             List<DuckData>       ducks) {
         this.saveVersion    = SAVE_VERSION;
         this.savedAt        = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -85,27 +93,28 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorene DTO pre postavu
+    //  Nested DTO – character
     // =========================================================================
 
     /**
-     * Serializovatelny snapshot jednej postavy v inventári.
+     * Serialisable snapshot of a single party member at save time.
      */
     public static final class CharacterData implements Serializable {
         private static final long serialVersionUID = 2L;
 
-        /** Trieda postavy, napr. "Knight", "Wizzard", "Archer". */
+        /** Simple class name of the character, e.g. {@code "Knight"}, {@code "Wizzard"}, {@code "Archer"}. */
         public final String  characterType;
-        /** Aktuálne HP pri ulozeni. */
+        /** HP at the time of saving. */
         public final int     hp;
-        /** Aktuálny armor pri ulozeni. */
+        /** Armour value at the time of saving. */
         public final int     armor;
-        /** True = táto postava je base (Knight) a nemoze byt odstránená. */
+        /** {@code true} if this character is the base character (Knight) and cannot be removed. */
         public final boolean isBase;
-        /** True = táto postava bola aktivna pri ulozeni. */
+        /** {@code true} if this character was the active (player-controlled) character at save time. */
         public final boolean isActive;
-        /** Pozicia vo svete – relevantná najma pre aktivnu postavu. */
+        /** World position at save time – most relevant for the active character. */
         public final float   x, y;
+        /** Facing direction at save time. */
         public final boolean facingRight;
 
         public CharacterData(String characterType, int hp, int armor,
@@ -132,19 +141,19 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorene DTO pre inventárovy item
+    //  Nested DTO – inventory item
     // =========================================================================
 
     /**
-     * Serializovatelny snapshot jedneho druhu itemu v inventári.
-     * Itemy rovnakeho druhu sa skupinuju (count).
+     * Serialisable snapshot of one item type in the inventory.
+     * Items of the same type are grouped into a single entry with a {@code count}.
      */
     public static final class ItemData implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        /** Trieda itemu, napr. "HealingPotion", "Armour". */
+        /** Simple class name of the item, e.g. {@code "HealingPotion"}, {@code "Armour"}. */
         public final String itemType;
-        /** Pocet itemov tohto druhu. */
+        /** Number of items of this type in the inventory at save time. */
         public final int    count;
 
         public ItemData(String itemType, int count) {
@@ -159,16 +168,20 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorene DTO pre nepriatela v leveli
+    //  Nested DTO – enemy in the level
     // =========================================================================
 
-    /** Snapshot jedneho ziveho nepriatela v leveli. */
+    /**
+     * Snapshot of a single living enemy in the level at save time.
+     */
     public static final class EnemyData implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        /** Jednoduchy názov triedy, napr. "EnemyKnight", "DarkKnight". */
+        /** Simple class name, e.g. {@code "EnemyKnight"}, {@code "DarkKnight"}. */
         public final String type;
+        /** World position at save time. */
         public final float  x, y;
+        /** HP and armour at save time. */
         public final int    hp, armor;
 
         public EnemyData(String type, float x, float y, int hp, int armor) {
@@ -188,15 +201,18 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorene DTO pre predmet na zemi
+    //  Nested DTO – ground item
     // =========================================================================
 
-    /** Snapshot jedneho predmetu leziaceho na zemi v leveli. */
+    /**
+     * Snapshot of a single item lying on the ground in the level at save time.
+     */
     public static final class GroundItemData implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        /** Jednoduchy názov triedy, napr. "HealingPotion", "Armour". */
+        /** Simple class name, e.g. {@code "HealingPotion"}, {@code "Armour"}. */
         public final String type;
+        /** World position at save time. */
         public final float  x, y;
 
         public GroundItemData(String type, float x, float y) {
@@ -212,15 +228,21 @@ public final class SaveData implements Serializable {
     }
 
     // =========================================================================
-    //  Vnorene DTO pre kacku
+    //  Nested DTO – duck
     // =========================================================================
 
-    /** Snapshot jednej zivej kacky v leveli. */
+    /**
+     * Snapshot of a single living duck in the level at save time.
+     */
     public static final class DuckData implements Serializable {
         private static final long serialVersionUID = 1L;
 
+        /** World position at save time. */
         public final float x, y;
-        /** Aktuálne HP kacky pri ulozeni (zvycajne plne, ale moze byt poskodená AOE). */
+        /**
+         * HP at save time. Normally full, but may be reduced if the duck was
+         * caught in an AOE explosion before the game was saved.
+         */
         public final int   hp;
 
         public DuckData(float x, float y, int hp) {

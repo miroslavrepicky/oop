@@ -12,16 +12,28 @@ import sk.stuba.fiit.core.AnimationManager;
 /**
  * Renders the complete game scene from a {@link RenderSnapshot} DTO.
  *
- * <p>Key architectural constraints after the clean-MVC refactor:
+ * <h2>Architectural constraints (clean MVC)</h2>
  * <ol>
  *   <li>Zero imports from model packages ({@code characters}, {@code items},
  *       {@code projectiles}, {@code world}, {@code inventory}).</li>
  *   <li>Map rendered via {@code MapRenderData.renderCallback} – a lambda supplied
  *       by the controller. The renderer has no knowledge of {@code MapManager}.</li>
- *   <li>Items rendered via {@code ItemRenderData.iconPath} (a String primitive).</li>
- *   <li>Projectiles rendered via {@code EntityRenderData} ({@code FIXED_RECT} type)
- *       – no {@code instanceof} checks, no {@code Renderable} imports.</li>
- *   <li>HP/Armor bars driven by {@code int} primitives in {@code EntityRenderData}.</li>
+ *   <li>Items rendered via {@code ItemRenderData.iconPath} (a plain String).</li>
+ *   <li>Projectiles rendered via {@code EntityRenderData} with type
+ *       {@code FIXED_RECT} – no {@code instanceof} checks, no {@code Renderable} imports.</li>
+ *   <li>HP/Armour bars driven by {@code int} primitives in {@code EntityRenderData}.</li>
+ * </ol>
+ *
+ * <h2>Render order per frame</h2>
+ * <ol>
+ *   <li>Clear screen.</li>
+ *   <li>Render tiled map.</li>
+ *   <li>Render fallback shapes for entities without an animation manager.</li>
+ *   <li>Render animated sprites (player, enemies, ducks, items, projectiles).</li>
+ *   <li>Render HP/armour bars above enemies.</li>
+ *   <li>Render the cyan triangle indicator above the active player.</li>
+ *   <li>Optionally render debug hitbox outlines (toggled by {@link #toggleDebugHitboxes()}).</li>
+ *   <li>Render the HUD overlay.</li>
  * </ol>
  */
 public class GameRenderer {
@@ -40,6 +52,10 @@ public class GameRenderer {
     private static final float BAR_GAP     = 8f;
     private static final float BAR_SPACING = 2f;
 
+    /**
+     * Creates all rendering resources. Must be called on the LibGDX render thread
+     * after the OpenGL context is ready.
+     */
     public GameRenderer() {
         camera        = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
@@ -50,9 +66,20 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Hlavny vstupny bod
+    //  Main entry point
     // -------------------------------------------------------------------------
 
+    /**
+     * Renders one complete frame from the provided snapshot.
+     *
+     * <p>The camera is centred on the player's position (if available) before
+     * any rendering begins. All sub-renderers share the same {@code camera.combined}
+     * projection matrix.
+     *
+     * @param snapshot immutable DTO describing the scene; must not be {@code null}
+     * @param deltaTime time elapsed since the last frame in seconds; forwarded to
+     *                  sub-renderers that drive their own animation timers
+     */
     public void render(RenderSnapshot snapshot, float deltaTime) {
         clearScreen();
 
@@ -79,21 +106,36 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  ciastkove kroky
+    //  Render steps
     // -------------------------------------------------------------------------
 
+    /**
+     * Clears the colour buffer with a dark background colour.
+     */
     private void clearScreen() {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
+    /**
+     * Delegates map rendering to the callback stored in the snapshot.
+     * Has no effect when no map is loaded ({@code snapshot.map == null}).
+     *
+     * @param snapshot the current render snapshot
+     */
     private void renderMap(RenderSnapshot snapshot) {
         if (snapshot.map != null) {
             snapshot.map.renderCallback.render(camera);
         }
     }
 
-    /** Fallback pre objekty bez animacie (AnimationManager == null). */
+    /**
+     * Draws plain coloured rectangles for entities that have no
+     * {@link AnimationManager} (e.g. placeholder enemies during development).
+     * Enemies without an animation manager are drawn in red; the player in green.
+     *
+     * @param snapshot the current render snapshot
+     */
     private void renderFallbackShapes(RenderSnapshot snapshot) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -113,6 +155,13 @@ public class GameRenderer {
         shapeRenderer.end();
     }
 
+    /**
+     * Draws all animated entities: player, enemies, ducks, ground items,
+     * and projectiles. Uses the world-space camera projection.
+     *
+     * @param snapshot  the current render snapshot
+     * @param deltaTime time elapsed since the last frame in seconds
+     */
     private void renderSprites(RenderSnapshot snapshot, float deltaTime) {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
@@ -138,6 +187,15 @@ public class GameRenderer {
         batch.end();
     }
 
+    /**
+     * Draws a single character entity at its actual (native) frame size.
+     * During attack animations the sprite is anchored to the opposite edge of
+     * the hitbox so the weapon extends outward correctly.
+     *
+     * @param data      render descriptor for this entity
+     * @param deltaTime unused here; present for future per-entity updates
+     * @param isPlayer  reserved for player-specific rendering adjustments
+     */
     private void renderEntity(EntityRenderData data, float deltaTime, boolean isPlayer) {
         AnimationManager am = data.animationManager;
         if (am == null) return;
@@ -145,16 +203,34 @@ public class GameRenderer {
         renderEntityActualSize(am, data.x, data.y, data.hitboxWidth, data.flipX, anchorOpposite);
     }
 
+    /**
+     * Delegates to {@link AnimationRenderer#renderActualSize} with the supplied parameters.
+     *
+     * @param am       animation manager providing the current frame
+     * @param x        hitbox left edge in world coordinates
+     * @param y        hitbox bottom edge in world coordinates
+     * @param hitboxW  hitbox width used to compute sprite alignment
+     * @param flipX    {@code true} to mirror the sprite horizontally
+     * @param anchorOpposite {@code true} to anchor the sprite on the side opposite
+     *                       to the character's facing direction (used for attacks)
+     */
     private void renderEntityActualSize(AnimationManager am, float x, float y,
                                         float hitboxW, boolean flipX, boolean anchorOpposite) {
         if (am == null) return;
         AnimationRenderer.renderActualSize(batch, am, x, y, hitboxW, flipX, anchorOpposite);
     }
 
+    /**
+     * Draws a single projectile, applying its RGB tint before drawing and
+     * resetting the batch colour to white afterwards so subsequent sprites
+     * are unaffected.
+     *
+     * @param proj render descriptor for this projectile
+     */
     private void renderProjectile(EntityRenderData proj) {
         if (proj.animationManager == null) return;
 
-        batch.setColor(proj.tintR, proj.tintG, proj.tintB, 1f); // nove
+        batch.setColor(proj.tintR, proj.tintG, proj.tintB, 1f);
         AnimationRenderer.render(
             batch, proj.animationManager,
             proj.x + proj.renderOffsetX,
@@ -163,13 +239,20 @@ public class GameRenderer {
             proj.renderHeight,
             proj.flipX
         );
-        batch.setColor(1f, 1f, 1f, 1f); // reset aby ostatne sprite-y neboli ovplyvnene
+        batch.setColor(1f, 1f, 1f, 1f);
     }
 
     // -------------------------------------------------------------------------
-    //  HP / Armor bary nepriatelov
+    //  HP / Armour bars for enemies
     // -------------------------------------------------------------------------
 
+    /**
+     * Draws HP and (optionally) armour bars above each enemy.
+     * The HP bar colour transitions from green (above 50 %) to orange (25–50 %)
+     * to red (below 25 %). Enemies with {@code maxHp == 0} are skipped.
+     *
+     * @param snapshot the current render snapshot
+     */
     private void renderEnemyBars(RenderSnapshot snapshot) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -203,9 +286,15 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Indikator aktivneho hraca
+    //  Active player indicator
     // -------------------------------------------------------------------------
 
+    /**
+     * Draws a small downward-pointing cyan triangle above the active player to
+     * make them easy to identify at a glance.
+     *
+     * @param player render data for the currently controlled character
+     */
     private void renderPlayerIndicator(EntityRenderData player) {
         float hitboxTop = player.y + player.hitboxHeight;
         float margin = 6f;
@@ -223,9 +312,16 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Debug hitboxy
+    //  Debug hitboxes (F1 toggle)
     // -------------------------------------------------------------------------
 
+    /**
+     * Draws wireframe outlines for all entity and map hitboxes.
+     * Colour coding: green = player, red = enemies, yellow = items,
+     * cyan = projectiles, orange = ducks, white = map walls.
+     *
+     * @param snapshot the current render snapshot
+     */
     private void renderHitboxes(RenderSnapshot snapshot) {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -267,21 +363,43 @@ public class GameRenderer {
     }
 
     // -------------------------------------------------------------------------
-    //  Verejne API
+    //  Public API
     // -------------------------------------------------------------------------
 
+    /**
+     * Updates the camera viewport to match the new window dimensions.
+     * Called by {@code GameScreen.resize()}.
+     *
+     * @param width  new window width in pixels
+     * @param height new window height in pixels
+     */
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
     }
 
+    /**
+     * Toggles the debug hitbox overlay on or off.
+     * Bound to the {@code F1} key in {@code GameScreen}.
+     */
     public void toggleDebugHitboxes() {
         debugHitboxes = !debugHitboxes;
     }
 
+    /**
+     * Returns {@code true} when debug hitbox outlines are currently visible.
+     * Forwarded to {@link sk.stuba.fiit.render.SnapshotBuilder} so it can
+     * include the flag in the snapshot.
+     *
+     * @return {@code true} if hitboxes are being drawn
+     */
     public boolean isDebugHitboxes() {
         return debugHitboxes;
     }
 
+    /**
+     * Releases all LibGDX rendering resources owned by this renderer.
+     * Must be called from {@code GameScreen.dispose()}.
+     */
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();

@@ -6,21 +6,29 @@ import sk.stuba.fiit.core.ObjectPool;
 import sk.stuba.fiit.util.Vector2D;
 
 /**
- * Centralny spravca {@link ObjectPool} instancii pre vsetky typy projektilov.
+ * Central manager for {@link ObjectPool} instances covering all pooled projectile types.
  *
- * <p>Preco singleton: pool musi prezit cez cely level, ale nie cez resetGame().
- * Singleton zaisti, ze kazdy Attack dostane ten isty pool bez predavania
- * referencie cez konstruktory.
+ * <p>Projectiles are created and destroyed many times per second; allocating a
+ * {@code new Arrow(…)} on every shot puts pressure on the garbage collector.
+ * This singleton recycles instances from fixed-size pools instead of allocating
+ * new objects, keeping GC pauses short during gameplay.
  *
- * <p>Vzor pouzitia v ArrowAttack.execute():
+ * <h2>Lifecycle</h2>
+ * <p>The pool must outlive an entire level but must be reset between game sessions.
+ * Call {@link #clearAll()} from {@code GameManager.resetGame()} to discard stale
+ * instances before starting a new game.
+ *
+ * <h2>Usage pattern</h2>
  * <pre>
+ *   // Obtain a pre-warmed instance
  *   Arrow arrow = ProjectilePool.getInstance().obtainArrow();
- *   arrow.reset(damage, speed, spawnPos, direction, piercing);
+ *   // Reinitialise with real game values
+ *   arrow.reset(damage, speed, spawnPos, direction);
  *   level.addProjectile(arrow);
  *
- *   // ked projektil skonci (v Level.update):
- *   if (!p.isActive()) {
- *       ProjectilePool.getInstance().free(p);
+ *   // When the projectile becomes inactive (Level.update):
+ *   if (!p.isActive() &amp;&amp; p instanceof Poolable) {
+ *       ((Poolable) p).returnToPool();
  *   }
  * </pre>
  */
@@ -32,7 +40,7 @@ public final class ProjectilePool {
     private final ObjectPool<MagicSpell>      spellPool;
     private final ObjectPool<TurdflyProjectile> turdflyPool;
 
-    // Predvolena (neplatna) pozicia pre factory instancie – ihned sa prepise reset()
+    /** Placeholder position used for factory instances; overwritten immediately by {@code reset()}. */
     private static final Vector2D ZERO      = new Vector2D(0, 0);
     private static final Vector2D RIGHT     = new Vector2D(1, 0);
     private static final float    POOL_SPEED = 1f;
@@ -43,7 +51,6 @@ public final class ProjectilePool {
         arrowPool = new ObjectPool<>(
             // factory: vytvori "prazdnu" sablonu – hodnoty sa prepisu v reset()
             () -> new Arrow(0, POOL_SPEED, ZERO, RIGHT),
-            // resetAction: pred opatovnym pouzitim znovu aktivujeme projektil
             arrow -> arrow.setActive(true),
             /* maxSize */ 30
         );
@@ -71,50 +78,79 @@ public final class ProjectilePool {
     }
 
     // -------------------------------------------------------------------------
-    //  Obtain – vratia pripraveny objekt s resetovanym stavom
+    //  Obtain – return a pre-warmed object ready for use
     // -------------------------------------------------------------------------
 
     /**
-     * Vrati Arrow z poolu. Volajuci musi ihned zavolat
-     * {@link Arrow#reset(int, float, Vector2D, Vector2D)}
-     * aby nastavil skutocne herne hodnoty.
+     * Returns an {@link Arrow} from the pool.
+     * The caller must immediately call {@link Arrow#reset(int, float, Vector2D, Vector2D)}
+     * to configure real game values before adding it to the level.
+     *
+     * @return a pooled (or freshly created) {@link Arrow} instance
      */
     public Arrow obtainArrow() {
         return arrowPool.obtain();
     }
 
     /**
-     * Vrati MagicSpell z poolu. Volajuci musi ihned zavolat
+     * Returns a {@link MagicSpell} from the pool.
+     * The caller must immediately call
      * {@link MagicSpell#reset(int, float, Vector2D, Vector2D, float)}
-     * aby nastavil skutocne herne hodnoty.
+     * to configure real game values before adding it to the level.
+     *
+     * @return a pooled (or freshly created) {@link MagicSpell} instance
      */
     public MagicSpell obtainSpell() {
         return spellPool.obtain();
     }
 
     /**
-     * Vrati TurdflyProjectile z poolu. Volajuci musi ihned zavolat
-     * {@link TurdflyProjectile#reset(Vector2D, Vector2D)}
-     * aby nastavil skutocne herne hodnoty.
+     * Returns a {@link TurdflyProjectile} from the pool.
+     * The caller must immediately call {@link TurdflyProjectile#reset(Vector2D, Vector2D)}
+     * to configure real game values before adding it to the level.
+     *
+     * @return a pooled (or freshly created) {@link TurdflyProjectile} instance
      */
     public TurdflyProjectile obtainTurdfly() {
         return turdflyPool.obtain();
     }
 
     // -------------------------------------------------------------------------
-    //  Free – vratenie objektu spat do poolu
-    // -------------------------------------------------------------------------
-
-    public void free(Arrow arrow)               { arrowPool.free(arrow); }
-    public void free(MagicSpell spell)          { spellPool.free(spell); }
-    public void free(TurdflyProjectile turdfly) { turdflyPool.free(turdfly); }
-
-    // -------------------------------------------------------------------------
-    //  Reset – vola sa pri resetGame() aby sme zahodili stare instancie
+    //  Free – return an object back to the pool
     // -------------------------------------------------------------------------
 
     /**
-     * Vyprazdni vsetky pooly. Volat z {@code GameManager.resetGame()}.
+     * Returns an {@link Arrow} to the pool for future reuse.
+     * The caller must not use the object after this call.
+     *
+     * @param arrow the arrow to recycle
+     */
+    public void free(Arrow arrow)               { arrowPool.free(arrow); }
+
+    /**
+     * Returns a {@link MagicSpell} to the pool for future reuse.
+     * The caller must not use the object after this call.
+     *
+     * @param spell the spell to recycle
+     */
+    public void free(MagicSpell spell)          { spellPool.free(spell); }
+
+    /**
+     * Returns a {@link TurdflyProjectile} to the pool for future reuse.
+     * The caller must not use the object after this call.
+     *
+     * @param turdfly the projectile to recycle
+     */
+    public void free(TurdflyProjectile turdfly) { turdflyPool.free(turdfly); }
+
+    // -------------------------------------------------------------------------
+    //  Reset – called from GameManager.resetGame()
+    // -------------------------------------------------------------------------
+
+    /**
+     * Empties all three pools, discarding their cached instances.
+     * Must be called from {@code GameManager.resetGame()} before starting a new game
+     * so that stale projectile references do not leak across sessions.
      */
     public void clearAll() {
         logStats();
@@ -125,9 +161,13 @@ public final class ProjectilePool {
     }
 
     // -------------------------------------------------------------------------
-    //  Diagnostika
+    //  Diagnostics
     // -------------------------------------------------------------------------
 
+    /**
+     * Logs pool statistics (total created, reused, reuse ratio) for all three
+     * projectile types at INFO level. Called automatically by {@link #clearAll()}.
+     */
     public void logStats() {
         log.info("ProjectilePool stats: arrows=[created={}, reused={}, ratio={}]"
                 + " spells=[created={}, reused={}, ratio={}]"
@@ -137,8 +177,4 @@ public final class ProjectilePool {
             turdflyPool.getTotalCreated(), turdflyPool.getTotalReused(), turdflyPool.getReuseRatio()
         );
     }
-
-    public ObjectPool<Arrow>             getArrowPool()   { return arrowPool; }
-    public ObjectPool<MagicSpell>        getSpellPool()   { return spellPool; }
-    public ObjectPool<TurdflyProjectile> getTurdflyPool() { return turdflyPool; }
 }

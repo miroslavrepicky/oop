@@ -10,7 +10,8 @@ import sk.stuba.fiit.util.Vector2D;
  * Projectile fired when the player uses a {@link sk.stuba.fiit.items.FriendlyDuck} item.
  *
  * <p>Pooled via {@link ProjectilePool}. After {@code obtainTurdfly()}, callers
- * must call {@link #reset(Vector2D, Vector2D)} to configure position and direction.
+ * must call {@link #reset(Vector2D, Vector2D)} to configure position and direction
+ * before adding the projectile to the level.
  *
  * <p>Implements {@link Renderable} so {@code GameRenderer} does not need to know
  * this concrete type.
@@ -39,15 +40,22 @@ public class TurdflyProjectile extends Projectile implements Renderable, Poolabl
     }
 
     // -------------------------------------------------------------------------
-    //  Reset pre ObjectPool
+    //  Pool reset
     // -------------------------------------------------------------------------
 
     /**
-     * Reinicializuje TurdflyProjectile na nove herne hodnoty.
-     * Vola sa ihned po {@code ProjectilePool.getInstance().obtainTurdfly()}.
+     * Reinitialises this instance with new game values so it can be reused from
+     * the pool without allocating a new object.
      *
-     * <p>Poskodenie a rychlost su fixne konstanty – reinicializujeme
-     * len poziciu, smer a aktivitu.
+     * <p>Must be called immediately after
+     * {@link ProjectilePool#obtainTurdfly()} before adding the projectile to the level.
+     * Damage and speed are fixed constants and are restored automatically;
+     * only position, direction, and transient physics state are reset here.
+     * {@link #resetEffects()} is called to ensure no on-hit effects leak from a
+     * previous use of this instance.
+     *
+     * @param position  spawn position in world coordinates
+     * @param direction normalised direction vector; {@code (1, 0)} = right, {@code (-1, 0)} = left
      */
     public void reset(Vector2D position, Vector2D direction) {
         this.damage    = TURDFLY_DAMAGE;
