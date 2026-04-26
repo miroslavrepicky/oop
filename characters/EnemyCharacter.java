@@ -98,7 +98,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
     @Override
     public boolean detectPlayer(PlayerCharacter player) {
-        return position.distanceTo(player.getPosition()) <= detectionRange && abs(position.getY() - player.getPosition().getY()) < 30;
+        return position.distanceTo(player.getPosition()) <= detectionRange && abs(position.getY() - player.getPosition().getY()) < 50;
     }
 
     @Override

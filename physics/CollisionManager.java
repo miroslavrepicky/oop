@@ -222,12 +222,14 @@ public class CollisionManager {
                     String.format("%.1f", projectile.getPosition().getY()));
                 projectile.onCollision(player);
             } else if (hitsWall(projectile, level)) {
+                applyOnHitEffects(projectile, player);
                 projectile.setActive(false);
             }
 
             // Single-use projectile (e.g. enemy MeleeHitbox) must be deactivated
             // after one pass regardless of whether it connected or not.
             if (projectile.isSingleUse()) {
+                applyOnHitEffects(projectile, player);
                 projectile.setActive(false);
             }
         }

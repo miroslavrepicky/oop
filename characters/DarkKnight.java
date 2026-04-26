@@ -92,7 +92,7 @@ public class DarkKnight extends EnemyCharacter {
     //  Constructor
 
     public DarkKnight(Vector2D position) {
-        super("DarkKnight", 500, 50, 2.0f, position, 200f, 400f, ARMOR, ARMOR);
+        super("DarkKnight", 500, 30, 2.0f, position, 200f, 600f, ARMOR, ARMOR);
         this.gravityStrategy = new NormalGravity();
         initAnimations();
 
@@ -106,13 +106,13 @@ public class DarkKnight extends EnemyCharacter {
 
         meleeAttacks.add(new MeleeAttack(1.2f));
 
-        spellAttacks.add(new SpellAttack(5.0f, 0f, 0));
-        spellAttacks.add(new FireDecorator(new SpellAttack(5.0f, 0f, 0)));
-        spellAttacks.add(new FreezeDecorator(new SpellAttack(5.0f, 0f, 0)));
-        spellAttacks.add(new FreezeDecorator(new FireDecorator(new SpellAttack(5.0f, 0f, 0))));
+        spellAttacks.add(new SpellAttack(3.0f, 0f, 0));
+        spellAttacks.add(new FireDecorator(new SpellAttack(3.0f, 0f, 0)));
+        spellAttacks.add(new FreezeDecorator(new SpellAttack(3.0f, 0f, 0)));
+        spellAttacks.add(new FreezeDecorator(new FireDecorator(new SpellAttack(3.0f, 0f, 0))));
 
         // Required non-null initial value for the parent's null guard
-        this.attack = meleeAttacks.get(0);
+        this.attack = meleeAttacks.getFirst();
     }
 
     private void initAnimations() {

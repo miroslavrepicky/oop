@@ -199,6 +199,12 @@ public class Inventory {
                 }
                 return;
             }
+            if (!next.isAlive()){
+                if (log.isDebugEnabled()) {
+                    log.debug("switchCharacter is dead: name={}", next.getName());
+                }
+                return;
+            }
             log.info("Character switched: from={}, to={}, key={}",
                 activeCharacter.getName(), next.getName(), key);
             next.setPosition(activeCharacter.getPosition());

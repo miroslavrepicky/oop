@@ -139,7 +139,7 @@ public class Level implements Updatable {
                     break;
                 case "dark_knight":
                     DarkKnight dk = new DarkKnight(new Vector2D(x, y));
-                    dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y), 200f, 150f);
+                    dk.initAI(new Vector2D(x - 200, y), new Vector2D(x + 200, y), 600f, 550f);
                     dk.setMovementResolver(new MovementResolver(mapManager.getHitboxes()));
                     spawnEnemy(dk);
                     break;

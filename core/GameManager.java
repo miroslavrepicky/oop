@@ -64,6 +64,9 @@ public class GameManager {
                 "Cannot start level – no active player character",
                 "GameManager.startLevel");
         }
+        for (PlayerCharacter pc : inventory.getCharacters()) {
+            pc.resetState();
+        }
         if (levelNumber < 1 || levelNumber > MAX_LEVELS) {
             log.error("Invalid level number: level={}, max={}", levelNumber, MAX_LEVELS);
             throw new GameStateException(
@@ -72,7 +75,7 @@ public class GameManager {
         }
         log.info("Starting level: level={}", levelNumber);
         this.currentLevel = new Level(levelNumber);
-        this.currentLevel.load("level" + 2 + ".tmx", inventory.getActive());
+        this.currentLevel.load("level" + currentLevel.getLevelNumber() + ".tmx", inventory.getActive());
         log.info("Level loaded: level={}, enemies={}, items={}",
             levelNumber,
             currentLevel.getEnemies().size(),
@@ -90,6 +93,9 @@ public class GameManager {
         if (inventory.getActive() == null) {
             throw new GameStateException(
                 "Cannot start level – no active player", "GameManager.startLevelFromSave");
+        }
+        for (PlayerCharacter pc : inventory.getCharacters()) {
+            pc.resetState();
         }
         int levelNumber = savedState.currentLevel;
         log.info("Starting level from save: level={}", levelNumber);

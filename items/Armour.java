@@ -1,6 +1,8 @@
 package sk.stuba.fiit.items;
 
+import org.slf4j.Logger;
 import sk.stuba.fiit.characters.PlayerCharacter;
+import sk.stuba.fiit.core.GameLogger;
 import sk.stuba.fiit.inventory.Inventory;
 import sk.stuba.fiit.util.Vector2D;
 import sk.stuba.fiit.world.Level;
@@ -13,6 +15,7 @@ import sk.stuba.fiit.world.Level;
  */
 public class Armour extends Item {
     private final int defenseBonus;
+    private static final Logger log = GameLogger.get(HealingPotion.class);
 
     public Armour(int defenseBonus, Vector2D position) {
         super(1, position);
@@ -21,6 +24,11 @@ public class Armour extends Item {
 
     @Override
     public void use(PlayerCharacter character, Level level, Inventory inventory) {
+        if (character.getArmor() >= character.getMaxArmor()) {
+            log.warn("Armour used on full armor character: name={}, armor={}/{}",
+                character.getName(), character.getArmor(), character.getMaxArmor());
+            return;
+        }
         character.addArmor(defenseBonus);
         inventory.removeItem(this);
     }

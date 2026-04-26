@@ -148,6 +148,9 @@ public abstract class PlayerCharacter extends Character {
             startDeathAnimation();
             updateDeathTimer(ctx.deltaTime);
             getAnimationManager().update(ctx.deltaTime);
+            if (isDeathAnimationDone() && ctx.inventory != null) {
+                ctx.inventory.switchToNextAlive();
+            }
             return;
         }
 
@@ -199,6 +202,20 @@ public abstract class PlayerCharacter extends Character {
 
     @Override
     public void onCollision(Object other) { }
+
+    public void resetState() {
+        this.velocityY    = 0f;
+        this.velocityX    = 0f;
+        this.isOnGround   = false;
+        this.isAttacking  = false;
+        this.attackAnimTimer  = 0f;
+        this.currentAttack    = null;
+        this.projectileSpawned = false;
+        reset_dot_timer();
+
+        AnimationManager am = getAnimationManager();
+        if (am != null) am.play("idle");
+    }
 
     // -------------------------------------------------------------------------
     //  HUD data – subclasses with mana/arrows override these

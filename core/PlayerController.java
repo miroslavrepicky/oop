@@ -53,16 +53,23 @@ public class PlayerController {
     public void update(float deltaTime) {
         PlayerCharacter player = inventory.getActive();
         if (player == null) return;
-
         Level level = GameManager.getInstance().getCurrentLevel();
 
         // Fetch platforms once per frame for gravity and collision
         List<Rectangle> platforms = (level != null && level.getMapManager() != null)
             ? level.getMapManager().getHitboxes()
             : Collections.emptyList();
+        if (!player.isAlive()){
+            player.applyGravity(deltaTime, platforms);
+            UpdateContext ctx = new UpdateContext(deltaTime, platforms, level, player, inventory);
+            player.update(ctx);
+            player.updateAnimation(ctx);
+            return;
+        }
 
         // Apply gravity using the pre-fetched platform list
         player.applyGravity(deltaTime, platforms);
+        player.tickEffects(deltaTime);
 
         // Horizontal movement
         float moveX = 0f;
@@ -143,6 +150,7 @@ public class PlayerController {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) inventory.switchCharacter(3);
 
         UpdateContext ctx = new UpdateContext(deltaTime, platforms, level, player, inventory);
+        player.update(ctx);
         player.updateAnimation(ctx);
     }
 }

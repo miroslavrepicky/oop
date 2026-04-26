@@ -37,6 +37,7 @@ public class Wizzard extends PlayerCharacter {
     private int mana;
     private int maxMana;
     private AnimationManager animationManager;
+    private float manaRegenTimer = 0f;
 
     /**
      * @param position initial world position; overwritten by Tiled spawn data when the level loads
@@ -49,7 +50,7 @@ public class Wizzard extends PlayerCharacter {
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());
-        primaryAttack   = new SpellAttack(6.0f, 100f, 20);   // SPACE - rychle kuzlo
+        primaryAttack   = new SpellAttack(3.0f, 100f, 20);   // SPACE - rychle kuzlo
         secondaryAttack = new MeleeAttack(1);                // V - melee zaloha
     }
 
@@ -77,6 +78,7 @@ public class Wizzard extends PlayerCharacter {
     @Override
     protected void spendMana(int amount) {
         mana = Math.max(0, mana - amount);
+
     }
 
     /**
@@ -95,7 +97,11 @@ public class Wizzard extends PlayerCharacter {
      * @param deltaTime elapsed time in seconds
      */
     private void regenerateMana(float deltaTime) {
-        mana = Math.min(maxMana, mana + (int)(5 * deltaTime));
+        this.manaRegenTimer += deltaTime;
+        if (manaRegenTimer > 1f) {
+            mana = Math.min(maxMana, mana + (int) deltaTime);
+            manaRegenTimer = 0f;
+        }
     }
 
 

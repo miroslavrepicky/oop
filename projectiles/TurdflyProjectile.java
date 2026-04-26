@@ -19,7 +19,7 @@ import sk.stuba.fiit.util.Vector2D;
 public class TurdflyProjectile extends Projectile implements Renderable, Poolable {
 
     private static final int   TURDFLY_DAMAGE = 25;
-    private static final float TURDFLY_SPEED  = 7.0f;
+    private static final float TURDFLY_SPEED  = 2.5f;
     private static final float RENDER_W       = 46f;
     private static final float RENDER_H       = 33f;
 

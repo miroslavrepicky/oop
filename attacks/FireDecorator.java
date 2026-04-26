@@ -18,8 +18,8 @@ import sk.stuba.fiit.world.Level;
  */
 public class FireDecorator extends AttackDecorator {
 
-    private static final int   BURN_DPS      = 8;
-    private static final float BURN_DURATION = 3.0f;
+    private static final int   BURN_DPS      = 3;
+    private static final float BURN_DURATION = 5.0f;
     private static final int   EXTRA_MANA    = 15;
 
     public FireDecorator(Attack wrapped) { super(wrapped); }

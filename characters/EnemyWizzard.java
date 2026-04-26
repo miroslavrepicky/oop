@@ -14,7 +14,7 @@ public class EnemyWizzard extends EnemyCharacter {
     public EnemyWizzard(Vector2D position) {
         super("EnemyWizzard", 60, 35, 1.5f, position, 100f, 350f, ARMOR, ARMOR);
         this.gravityStrategy = new NormalGravity();
-        this.attack          = new SpellAttack(4.0f, 50.0f, 0); // mana cost 0 – enemy doesnt have mana
+        this.attack          = new SpellAttack(3.0f, 50.0f, 0); // mana cost 0 – enemy doesnt have mana
         initAnimations();
         Vector2D idleSize = animationManager.getFirstFrameSize("idle");
         this.hitbox.setSize(idleSize.getX(), idleSize.getY());

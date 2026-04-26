@@ -60,12 +60,13 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     // DOT state
     private int   dotDps         = 0;
     private float dotRemaining   = 0f;
-    private float dotAccumulator = 0f;
 
     // Slow state
     /** Speed before a slow was applied; {@code -1} when no slow is active. */
     private float originalSpeed  = -1f;
     private float slowRemaining  = 0f;
+
+    private float dotTickTimer = 0f;
 
     private static final Logger log = GameLogger.get(Character.class);
 
@@ -144,7 +145,6 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     public void applyDot(int dps, float duration) {
         this.dotDps         = dps;
         this.dotRemaining   = duration;
-        this.dotAccumulator = 0f;
         log.info("DOT applied: target={}, dps={}, duration={}", name, dps, duration);
     }
 
@@ -175,16 +175,18 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
      */
     public void tickEffects(float deltaTime) {
         if (dotRemaining > 0f && isAlive()) {
-            dotRemaining    -= deltaTime;
-            dotAccumulator  += dotDps * deltaTime;
-            int dmg = (int) dotAccumulator;
-            if (dmg > 0) {
-                takeDamage(dmg);
-                dotAccumulator -= dmg;
+            dotRemaining -= deltaTime;
+            dotTickTimer += deltaTime;
+
+            if (dotTickTimer >= 1.0f) {
+                takeDamage(dotDps);
+                dotTickTimer -= 1.0f; // nie = 0f, aby sa nestratil zvyšok
             }
+
             if (dotRemaining <= 0f) {
                 dotDps       = 0;
                 dotRemaining = 0f;
+                dotTickTimer = 0f;
             }
         }
 
@@ -271,6 +273,7 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
             speed         = originalSpeed;
             originalSpeed = -1f;
         }
+        this.dotTickTimer = 0f;
     }
 
     /**
@@ -344,6 +347,10 @@ public abstract class Character implements Updatable, Movable, Collidable, Physi
     public int       getArmor()           { return armor; }
     public int       getMaxArmor()        { return maxArmor; }
     public boolean   isEnemy() {return this.enemy;}
+
+    protected void reset_dot_timer() {
+        dotTickTimer = 0f;
+    }
 
     /** Returns the character's {@link AnimationManager}; must not return {@code null}. */
     public abstract AnimationManager getAnimationManager();
