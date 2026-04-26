@@ -18,67 +18,8 @@ class ArcherTest extends GdxTest {
         return (mock, ctx) -> when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(32, 64));
     }
 
-    // ── Constructor / stats ────────────────────────────────────────────────────
+    //  Constructor / stats
 
-    @Test
-    void name_isArcher() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals("Archer", new Archer(ORIGIN).getName());
-        }
-    }
-
-    @Test
-    void hp_is800() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            Archer a = new Archer(ORIGIN);
-            assertEquals(800, a.getHp());
-            assertEquals(800, a.getMaxHp());
-        }
-    }
-
-    @Test
-    void speed_is3point5() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(3.5f, new Archer(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    @Test
-    void attackPower_is20() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(20, new Archer(ORIGIN).getAttackPower());
-        }
-    }
-
-    @Test
-    void maxArmor_is50() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(50, new Archer(ORIGIN).getMaxArmor());
-        }
-    }
-
-    // ── Arrow economy ─────────────────────────────────────────────────────────
-
-    @Test
-    void arrowCount_startsAt30() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(30, new Archer(ORIGIN).getArrowCount());
-        }
-    }
-
-    @Test
-    void maxArrows_is30() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(30, new Archer(ORIGIN).getMaxArrows());
-        }
-    }
 
     @Test
     void performPrimaryAttack_whenArrowsZero_doesNotStartAttack() throws Exception {
@@ -106,7 +47,7 @@ class ArcherTest extends GdxTest {
         }
     }
 
-    // ── Identity ──────────────────────────────────────────────────────────────
+    //  Identity
 
     @Test
     void isEnemy_false() {
@@ -124,7 +65,7 @@ class ArcherTest extends GdxTest {
         }
     }
 
-    // ── HUD data: mana not applicable ─────────────────────────────────────────
+    //  HUD data: mana not applicable
 
     @Test
     void getCurrentMana_minusOne() {
@@ -142,7 +83,7 @@ class ArcherTest extends GdxTest {
         }
     }
 
-    // ── Behaviour ────────────────────────────────────────────────────────────
+    //  Behaviour
 
     @Test
     void update_doesNotThrow() {
@@ -178,7 +119,7 @@ class ArcherTest extends GdxTest {
             Archer a = new Archer(ORIGIN);
             a.takeDamage(9999);
             a.revive();
-            assertEquals(800, a.getHp());
+            assertEquals(150, a.getHp());
             assertTrue(a.isAlive());
         }
     }

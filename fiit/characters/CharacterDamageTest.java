@@ -36,7 +36,7 @@ class CharacterDamageTest {
         character = new TestChar(100, 20, 20);
     }
 
-    // ── Basic damage ──────────────────────────────────────────────────────────
+    //  Basic damage
 
     @Test
     void takeDamage_reducesHp() {
@@ -48,7 +48,7 @@ class CharacterDamageTest {
 
     @Test
     void takeDamage_armorAbsorbsPartially() {
-        character.takeDamage(30); // armor=20 absorbs 20, remaining=10 → hp=90
+        character.takeDamage(30); // armor=20 absorbs 20, remaining=10 -> hp=90
         assertEquals(90, character.getHp());
         assertEquals(0, character.getArmor());
     }
@@ -63,8 +63,8 @@ class CharacterDamageTest {
     @Test
     void takeDamage_negative_heals() {
         character.takeDamage(50); // hp = 70 (30 absorbed by armor, 20 hp)
-        // Actually: armor=20 absorbs 20, remaining=30 → hp=70
-        character.takeDamage(-20); // heals 20 → hp=90
+        // Actually: armor=20 absorbs 20, remaining=30 -> hp=70
+        character.takeDamage(-20); // heals 20 -> hp=90
         assertEquals(90, character.getHp());
     }
 
@@ -79,7 +79,7 @@ class CharacterDamageTest {
         assertTrue(character.isAlive());
     }
 
-    // ── Armor ─────────────────────────────────────────────────────────────────
+    //  Armor
 
     @Test
     void addArmor_increasesArmor() {
@@ -109,7 +109,7 @@ class CharacterDamageTest {
         assertEquals(20, character.getArmor());
     }
 
-    // ── Revive ────────────────────────────────────────────────────────────────
+    //  Revive
 
     @Test
     void revive_restoresFullHp() {
@@ -126,7 +126,7 @@ class CharacterDamageTest {
         assertEquals(0f, character.getVelocityY(), 0.001f);
     }
 
-    // ── Death timer ───────────────────────────────────────────────────────────
+    //  Death timer
 
     @Test
     void isDeathAnimationDone_falseWhileAlive() {
@@ -144,11 +144,11 @@ class CharacterDamageTest {
         assertTrue(character.isDeathAnimationDone());
     }
 
-    // ── DOT ───────────────────────────────────────────────────────────────────
+    //  DOT
 
     @Test
     void dot_dealsDamageOverTime() {
-        // No armor → direct damage
+        // No armor -> direct damage
         TestChar noArmor = new TestChar(100, 0, 0);
         noArmor.applyDot(10, 1.0f); // 10 dps for 1 second
         noArmor.tickEffects(1.0f);
@@ -174,7 +174,7 @@ class CharacterDamageTest {
         assertEquals(0, dead.getHp());
     }
 
-    // ── Slow ─────────────────────────────────────────────────────────────────
+    //  Slow
 
     @Test
     void slow_reducesSpeed() {
@@ -200,7 +200,7 @@ class CharacterDamageTest {
         assertEquals(base * 0.5f, character.getSpeed(), 0.001f);
     }
 
-    // ── Jump ─────────────────────────────────────────────────────────────────
+    //  Jump
 
     @Test
     void jump_setsVelocityY_whenOnGround() {
@@ -218,7 +218,7 @@ class CharacterDamageTest {
         assertEquals(100f, character.getVelocityY(), 0.001f);
     }
 
-    // ── Hitbox update ─────────────────────────────────────────────────────────
+    //  Hitbox update
 
     @Test
     void updateHitbox_syncsWithPosition() {
@@ -230,7 +230,7 @@ class CharacterDamageTest {
         assertEquals(75f, hb.y, 0.001f);
     }
 
-    // ── FacingRight / velocityX ───────────────────────────────────────────────
+    //  FacingRight / velocityX
 
     @Test
     void facingRight_defaultTrue() {

@@ -20,7 +20,7 @@ class GravityStrategyTest {
 
     @Mock Physicable body;
 
-    // ── NoGravity ─────────────────────────────────────────────────────────────
+    //  NoGravity
 
     @Test
     void noGravity_doesNotTouchBody() {
@@ -29,7 +29,7 @@ class GravityStrategyTest {
         verifyNoInteractions(body);
     }
 
-    // ── NormalGravity ─────────────────────────────────────────────────────────
+    //  NormalGravity
 
     @Test
     void normalGravity_decreasesVelocityY() {
@@ -60,7 +60,7 @@ class GravityStrategyTest {
         verify(body).setOnGround(false);
     }
 
-    // ── FloatingGravity ───────────────────────────────────────────────────────
+    //  FloatingGravity
 
     @Test
     void floatingGravity_appliesSmallGravity() {
@@ -73,7 +73,7 @@ class GravityStrategyTest {
 
         strategy.apply(body, 0.1f, Collections.emptyList());
 
-        // FloatingGravity: GRAVITY = -50, delta=0.1 → velocityY += -5
+        // FloatingGravity: GRAVITY = -50, delta=0.1 -> velocityY += -5
         verify(body).setVelocityY(-5f);
     }
 
@@ -89,16 +89,16 @@ class GravityStrategyTest {
         assertDoesNotThrow(() -> strategy.apply(body, 0.016f, null));
     }
 
-    // ── Rozšírené testy pre FloatingGravity na zvýšenie coverage ────────────────
+    //  Rozsirene testy pre FloatingGravity na zvysenie coverage
 
     @Test
     void floatingGravity_collisionFromAbove_resetsVelocityAndPosition() {
         GravityStrategy strategy = new FloatingGravity();
         Vector2D pos = new Vector2D(0f, 100f);
-        // Simulujeme pohyb hore (kladná rýchlosť)
+        // Simulujeme pohyb hore (kladna rychlost)
         when(body.getVelocityY()).thenReturn(50f);
         when(body.getPosition()).thenReturn(pos);
-        // Kačka má hitbox 32x32
+        // Kacka ma hitbox 32x32
         when(body.getHitbox()).thenReturn(new Rectangle(0, 100, 32, 32));
 
         // Platforma presne nad hlavou (strop)
@@ -106,10 +106,10 @@ class GravityStrategyTest {
 
         strategy.apply(body, 0.1f, List.of(ceiling));
 
-        // Overíme, že pri náraze do stropu sa rýchlosť vynulovala
+        // Overime, ze pri naraze do stropu sa rychlost vynulovala
         verify(body).setVelocityY(0f);
-        // Overíme, že pozícia Y bola upravená (vytlačená pod platformu)
-        // Strop je na y=105, výška postavy je 32 -> nová pozícia y by mala byť 105 - 32 = 73
+        // Overime, ze pozicia Y bola upravena (vytlacena pod platformu)
+        // Strop je na y=105, vyska postavy je 32 -> nova pozicia y by mala byt 105 - 32 = 73
         verify(body).setOnGround(false);
     }
 
@@ -118,25 +118,25 @@ class GravityStrategyTest {
         GravityStrategy strategy = new FloatingGravity();
         Vector2D pos = new Vector2D(0f, 50f);
 
-        // Nastavíme vyššiu pádovú rýchlosť, aby sme mali istotu, že vletíme do platformy
+        // Nastavime vyssiu padovu rychlost, aby sme mali istotu, ze vletime do platformy
         when(body.getVelocityY()).thenReturn(-100f);
         when(body.getPosition()).thenReturn(pos);
-        // Kačka má výšku 32
+        // Kacka ma vysku 32
         when(body.getHitbox()).thenReturn(new Rectangle(0, 50, 32, 32));
 
-        // Platforma pod nohami: horná hrana bude na y = 45
-        // Pri vy = -100 a gravitácii postava padne na y = 39.5, čo je vnútri platformy
+        // Platforma pod nohami: horna hrana bude na y = 45
+        // Pri vy = -100 a gravitácii postava padne na y = 39.5, co je vnutri platformy
         Rectangle floor = new Rectangle(0, 20, 100, 25);
 
         strategy.apply(body, 0.1f, List.of(floor));
 
-        // 1. Overíme, že pri dopade sa rýchlosť vynulovala
+        // 1. Overime, ze pri dopade sa rychlost vynulovala
         verify(body).setVelocityY(0f);
 
-        // 2. Overíme, že onGround je true
+        // 2. Overime, ze onGround je true
         verify(body).setOnGround(true);
 
-        // 3. Overíme, že pozícia Y bola zarovnaná na hornú hranu platformy (y=45)
+        // 3. Overime, ze pozicia Y bola zarovnaná na hornu hranu platformy (y=45)
         assertEquals(45f, pos.getY(), 0.01f);
     }
 
@@ -148,13 +148,13 @@ class GravityStrategyTest {
         when(body.getPosition()).thenReturn(pos);
         when(body.getHitbox()).thenReturn(new Rectangle(0, 100, 32, 32));
 
-        // Platforma zboku (stena) - overlapX bude väčší ako overlapY,
-        // alebo v tvojom kóde podmienka (overlapY <= overlapX) rozhodne
+        // Platforma zboku (stena) - overlapX bude vacsi ako overlapY,
+        // alebo v tvojom kode podmienka (overlapY <= overlapX) rozhodne
         Rectangle wall = new Rectangle(30, 100, 10, 100);
 
         strategy.apply(body, 0.1f, List.of(wall));
 
-        // Ak je to čisto horizontálna kolízia, kód v "if (overlapY <= overlapX)"
-        // by sa mal správať podľa toho, ako máš nastavené priority.
+        // Ak je to cisto horizontálna kolizia, kod v "if (overlapY <= overlapX)"
+        // by sa mal správat podla toho, ako más nastavene priority.
     }
 }

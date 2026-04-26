@@ -20,10 +20,10 @@ class LevelLoadTest extends GdxTest {
 
     @Test
     void load_correctlySpawnsEntitiesAndSetsPlayerPos() {
-        // Definujeme správanie pre každý vytvorený AnimationManager
+        // Definujeme spravanie pre kazdy vytvoreny AnimationManager
         try (MockedConstruction<AnimationManager> mocked = mockConstruction(AnimationManager.class,
             (mock, context) -> {
-                // Keď sa nepriateľ pýta na veľkosť animácie, vrátime mu dummy vektor namiesto null
+                // Ked sa nepriatel pyta na velkost animacie, vratime mu dummy vektor namiesto null
                 when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(32, 32));
             })) {
 
@@ -47,7 +47,7 @@ class LevelLoadTest extends GdxTest {
 
     @Test
     void load_coversAllSwitchCases() {
-        // Rovnaká oprava aj tu - (mock, context) lambda nastaví defaultné návratové hodnoty
+        // Rovnaka oprava aj tu - (mock, context) lambda nastavi defaultne navratove hodnoty
         try (MockedConstruction<AnimationManager> mocked = mockConstruction(AnimationManager.class,
             (mock, context) -> {
                 when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(32, 32));

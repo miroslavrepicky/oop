@@ -24,9 +24,9 @@ import static org.mockito.Mockito.*;
 /**
  * Unit testy pre PlayingState.
  *
- * Gdx.input je mockovaný aby isKeyJustPressed() a isKeyPressed() vrátili false
- * (žiadne klávesy nie sú stlačené) – tým sa obíde závislosť na reálnom InputProcessor.
- * GameRenderer a AppController sú mockované pretože potrebujú GL kontext / nav logiku.
+ * Gdx.input je mockovany aby isKeyJustPressed() a isKeyPressed() vratili false
+ * (ziadne klavesy nie su stlacene) – tym sa obide zavislost na realnom InputProcessor.
+ * GameRenderer a AppController su mockovane pretoze potrebuju GL kontext / nav logiku.
  */
 @ExtendWith(MockitoExtension.class)
 class PlayingStateTest extends GdxTest {
@@ -34,11 +34,11 @@ class PlayingStateTest extends GdxTest {
     @Mock AppController mockApp;
     @Mock GameRenderer  mockRenderer;
 
-    /** Mockujeme Gdx.input raz pre celú testovaciu triedu. */
+    /** Mockujeme Gdx.input raz pre celu testovaciu triedu. */
     @BeforeAll
     static void mockInput() {
         Gdx.input = mock(Input.class);
-        // Všetky isKeyJustPressed / isKeyPressed vrátia false (default Mockito)
+        // Vsetky isKeyJustPressed / isKeyPressed vratia false (default Mockito)
     }
 
     @BeforeEach
@@ -46,14 +46,14 @@ class PlayingStateTest extends GdxTest {
         GameManager.getInstance().resetGame();
     }
 
-    // ── Konštrukcia ───────────────────────────────────────────────────────────
+    //  Konstrukcia
 
     @Test
     void construction_doesNotThrow() {
         assertDoesNotThrow(this::buildState);
     }
 
-    // ── next() – základný kontrakt ────────────────────────────────────────────
+    //  next() – zakladny kontrakt
 
     @Test
     void next_returnsNull_beforeAnyUpdate() {
@@ -63,22 +63,22 @@ class PlayingStateTest extends GdxTest {
 
     @Test
     void next_returnsNull_afterUpdate_withNoGameState() {
-        // Prázdny GameManager (bez initGame) → isPartyDefeated() = true na prázdnej liste
-        // ale aj tak next() musí byť spotrebované cez next() po update()
+        // Prazdny GameManager (bez initGame) -> isPartyDefeated() = true na prazdnej liste
+        // ale aj tak next() musi byt spotrebovane cez next() po update()
         PlayingState state = buildState();
         state.update(0.016f);
-        // Zavoláme next() a ďalší next() – druhý call musí byť null
+        // Zavolame next() a dalsi next() – druhy call musi byt null
         state.next(); // consume whatever was set
-        assertNull(state.next(), "Druhý next() musí byť null – stav je spotrebovaný");
+        assertNull(state.next(), "Druhy next() musi byt null – stav je spotrebovany");
     }
 
-    // ── Prechod pri porazení party ────────────────────────────────────────────
+    //  Prechod pri porazeni party
 
     @Test
     void update_partyDefeated_schedulesGameOverDelayState() {
         withAnimMock(() -> {
             GameManager.getInstance().initGame();
-            // Zabijeme aktívneho hráča
+            // Zabijeme aktivneho hraca
             GameManager.getInstance().getInventory().getActive().takeDamage(9999);
             assertFalse(GameManager.getInstance().getInventory().getActive().isAlive());
 
@@ -86,7 +86,7 @@ class PlayingStateTest extends GdxTest {
             state.update(0.016f);
 
             IGameState next = state.next();
-            assertNotNull(next, "Po porazení party musí byť naplánovaný ďalší stav");
+            assertNotNull(next, "Po porazeni party musi byt naplanovany dalsi stav");
             assertInstanceOf(GameOverDelayState.class, next);
         });
     }
@@ -100,19 +100,19 @@ class PlayingStateTest extends GdxTest {
             PlayingState state = buildState();
             state.update(0.016f);
             assertNotNull(state.next());
-            assertNull(state.next(), "Stav sa má spotrebovať – druhý next() = null");
+            assertNull(state.next(), "Stav sa ma spotrebovat – druhy next() = null");
         });
     }
 
-    // ── Prechod pri dokončení levelu ──────────────────────────────────────────
+    //  Prechod pri dokonceni levelu
 
     @Test
     void update_levelComplete_schedulesTerminalState() {
         withAnimMock(() -> {
             GameManager.getInstance().initGame();
-            // Level s dokončeným flag-om (žiaden enemy, isCompleted sa nastaví pri update)
-            // Simulujeme cez level s jedným zabitým nepriateľom cez LevelUpdateTest.TestLevel
-            // Najjednoduchšie: priamo nastavíme level cez TestLevel
+            // Level s dokoncenym flag-om (ziaden enemy, isCompleted sa nastavi pri update)
+            // Simulujeme cez level s jednym zabitym nepriatelom cez LevelUpdateTest.TestLevel
+            // Najjednoduchsie: priamo nastavime level cez TestLevel
             FakeCompletedLevel level = new FakeCompletedLevel();
             setCurrentLevel(level);
 
@@ -120,20 +120,20 @@ class PlayingStateTest extends GdxTest {
             state.update(0.016f);
 
             IGameState next = state.next();
-            // Môže byť WinState alebo LevelCompleteState – oboje sú TerminalState
+            // Moze byt WinState alebo LevelCompleteState – oboje su TerminalState
             if (next != null) {
                 assertInstanceOf(TerminalState.class, next);
             }
-            // Ak next == null znamená, že sme party defeated check prešli pred level check
+            // Ak next == null znamena, ze sme party defeated check presli pred level check
             // (lebo initGame + live player)
         });
     }
 
-    // ── Update bez level / bez hráča ─────────────────────────────────────────
+    //  Update bez level / bez hráca
 
     @Test
     void update_withNoLevelAndNoPlayer_doesNotThrow() {
-        // Prázdny GameManager – žiaden level, žiaden hráč
+        // Prázdny GameManager – ziaden level, ziaden hrác
         PlayingState state = buildState();
         assertDoesNotThrow(() -> state.update(0.016f));
     }
@@ -150,16 +150,16 @@ class PlayingStateTest extends GdxTest {
         });
     }
 
-    // ── Pomocné triedy a metódy ───────────────────────────────────────────────
+    //  Pomocne triedy a metody
 
-    /** Level, ktorý má isCompleted() == true hneď od začiatku. */
+    /** Level, ktory má isCompleted() == true hned od zaciatku. */
     static class FakeCompletedLevel extends sk.stuba.fiit.world.Level {
         FakeCompletedLevel() { super(1); }
         @Override public boolean isCompleted() { return true; }
         @Override public sk.stuba.fiit.world.MapManager getMapManager() { return null; }
     }
 
-    /** Nastaví currentLevel v GameManager cez reflexiu (inak len cez startLevel()). */
+    /** Nastavi currentLevel v GameManager cez reflexiu (inak len cez startLevel()). */
     private static void setCurrentLevel(sk.stuba.fiit.world.Level level) {
         try {
             var f = GameManager.class.getDeclaredField("currentLevel");

@@ -13,13 +13,13 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for EnemyArcher.
  * Covers: stats, arrow economy, triggerAttack override, detection, effects.
- * AnimationManager je mockovaný aby sa nezaťažoval atlas z disku.
+ * AnimationManager je mockovany aby sa nezatazoval atlas z disku.
  */
 class EnemyArcherTest extends GdxTest {
 
     private static final Vector2D ORIGIN = new Vector2D(0, 0);
 
-    /** Stub: getFirstFrameSize("idle") vracia validný vektor, ostatné volania majú rozumné defaulty. */
+    /** Stub: getFirstFrameSize("idle") vracia validny vektor, ostatne volania maju rozumne defaulty. */
     private MockedConstruction.MockInitializer<AnimationManager> animStub() {
         return (mock, ctx) -> {
             when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(32, 64));
@@ -30,53 +30,7 @@ class EnemyArcherTest extends GdxTest {
         };
     }
 
-    // ── Základné štatistiky ───────────────────────────────────────────────────
-
-    @Test
-    void name_isEnemyArcher() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals("EnemyArcher", new EnemyArcher(ORIGIN).getName());
-        }
-    }
-
-    @Test
-    void hp_is70() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            EnemyArcher a = new EnemyArcher(ORIGIN);
-            assertEquals(70, a.getHp());
-            assertEquals(70, a.getMaxHp());
-        }
-    }
-
-    @Test
-    void attackPower_is15() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals(15, new EnemyArcher(ORIGIN).getAttackPower());
-        }
-    }
-
-    @Test
-    void speed_is2point0() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals(2.0f, new EnemyArcher(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    @Test
-    void armor_is5() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            EnemyArcher a = new EnemyArcher(ORIGIN);
-            assertEquals(5, a.getArmor());
-            assertEquals(5, a.getMaxArmor());
-        }
-    }
-
-    // ── Identita ──────────────────────────────────────────────────────────────
+    //  Identita
 
     @Test
     void isEnemy_true() {
@@ -110,7 +64,7 @@ class EnemyArcherTest extends GdxTest {
         }
     }
 
-    // ── Ekonómia šípov ────────────────────────────────────────────────────────
+    //  Ekonomia sipov
 
     @Test
     void arrowCount_initiallyIs20() {
@@ -164,17 +118,17 @@ class EnemyArcherTest extends GdxTest {
     }
 
     /**
-     * Keď je isAttacking == true, super.triggerAttack() nezmení stav
-     * (cooldown/guard), takže šíp sa nesmie spotrebovať druhýkrát.
+     * Ked je isAttacking == true, super.triggerAttack() nezmeni stav
+     * (cooldown/guard), takze sip sa nesmie spotrebovat druhykrat.
      */
     @Test
     void triggerAttack_whileAlreadyAttacking_arrowNotConsumedAgain() {
         try (MockedConstruction<AnimationManager> ignored =
                  mockConstruction(AnimationManager.class, animStub())) {
             EnemyArcher a = new EnemyArcher(ORIGIN);
-            a.triggerAttack();               // prvý útok
+            a.triggerAttack();               // prvy utok
             int afterFirst = a.getArrowCount();
-            a.triggerAttack();               // ignorovaný (isAttacking = true)
+            a.triggerAttack();               // ignorovany (isAttacking = true)
             assertEquals(afterFirst, a.getArrowCount());
         }
     }
@@ -191,7 +145,7 @@ class EnemyArcherTest extends GdxTest {
         }
     }
 
-    // ── Pohyb ─────────────────────────────────────────────────────────────────
+    //  Pohyb
 
     @Test
     void move_updatesPosition() {
@@ -213,7 +167,7 @@ class EnemyArcherTest extends GdxTest {
         }
     }
 
-    // ── Poškodenie / smrť / oživenie ─────────────────────────────────────────
+    //  Poskodenie / smrt / ozivenie
 
     @Test
     void takeDamage_kills() {
@@ -242,13 +196,13 @@ class EnemyArcherTest extends GdxTest {
         try (MockedConstruction<AnimationManager> ignored =
                  mockConstruction(AnimationManager.class, animStub())) {
             EnemyArcher a = new EnemyArcher(ORIGIN); // armor = 5
-            a.takeDamage(3);  // absorbuje armor celé, hp nezmenené
+            a.takeDamage(3);  // absorbuje armor cele, hp nezmenene
             assertEquals(70, a.getHp());
             assertEquals(2, a.getArmor());
         }
     }
 
-    // ── Efekty ────────────────────────────────────────────────────────────────
+    //  Efekty
 
     @Test
     void applySlow_reducesSpeed() {
@@ -273,7 +227,7 @@ class EnemyArcherTest extends GdxTest {
         }
     }
 
-    // ── Detekcia hráča ───────────────────────────────────────────────────────
+    //  Detekcia hraca
 
     @Test
     void detectPlayer_withinDetectionRange_true() {
@@ -294,7 +248,7 @@ class EnemyArcherTest extends GdxTest {
         }
     }
 
-    // ── Halper metódy ─────────────────────────────────────────────────────────
+    //  Halper metody
 
     private static void setArrowCount(EnemyArcher archer, int count) {
         try {

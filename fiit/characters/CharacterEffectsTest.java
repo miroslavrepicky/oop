@@ -48,10 +48,10 @@ class CharacterEffectsTest {
     @Test
     void tickEffects_dotAccumulates_overMultipleFrames() {
         TC c = new TC();
-        c.applyDot(10, 5f); // 10 dps
-        c.tickEffects(0.05f); // 0.5 dmg — not enough for int
-        c.tickEffects(0.05f); // 1.0 total — should deal 1 damage
-        assertTrue(c.getHp() < 100);
+        c.applyDot(10, 5f);
+        c.tickEffects(1f);
+        c.tickEffects(1f);
+        assertTrue(c.getHp() == 80);
     }
 
     static class TCWithArmor extends Character {

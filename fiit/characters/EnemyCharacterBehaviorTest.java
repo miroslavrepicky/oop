@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class EnemyCharacterBehaviorTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
     static class StubAttack implements Attack {
         int executeCount = 0;
@@ -69,7 +69,7 @@ class EnemyCharacterBehaviorTest {
         level = new FakeLevel();
     }
 
-    // ── Basic state ───────────────────────────────────────────────────────────
+    //  Basic state
 
     @Test
     void isAlive_initiallyTrue() {
@@ -101,7 +101,7 @@ class EnemyCharacterBehaviorTest {
         assertEquals(2f, enemy.getSpeed(), 0.001f);
     }
 
-    // ── triggerAttack ─────────────────────────────────────────────────────────
+    //  triggerAttack
 
     @Test
     void triggerAttack_noStrategy_doesNotThrow() {
@@ -146,7 +146,7 @@ class EnemyCharacterBehaviorTest {
         assertFalse(enemy.isAttacking(), "Attack should be blocked by cooldown");
     }
 
-    // ── Attack animation timer ────────────────────────────────────────────────
+    //  Attack animation timer
 
     @Test
     void attackAnimTimer_decreasesOverTime() {
@@ -174,7 +174,7 @@ class EnemyCharacterBehaviorTest {
         assertFalse(enemy.isAttacking(), "Attack should end when timer expires");
     }
 
-    // ── Movement ─────────────────────────────────────────────────────────────
+    //  Movement
 
     @Test
     void move_changesPosition() {
@@ -201,7 +201,7 @@ class EnemyCharacterBehaviorTest {
             new sk.stuba.fiit.physics.MovementResolver(List.of(wall));
         enemy.setMovementResolver(resolver);
 
-        // Move toward wall (dx=20 → hitbox right would overlap wall)
+        // Move toward wall (dx=20 -> hitbox right would overlap wall)
         enemy.move(new Vector2D(20f, 0f));
 
         assertTrue(enemy.wasLastMoveBlocked(), "Move should be blocked by wall");
@@ -218,7 +218,7 @@ class EnemyCharacterBehaviorTest {
         assertFalse(enemy.wasLastMoveBlocked());
     }
 
-    // ── FacingRight ───────────────────────────────────────────────────────────
+    //  FacingRight
 
     @Test
     void setFacingRight_false() {
@@ -233,7 +233,7 @@ class EnemyCharacterBehaviorTest {
         assertTrue(enemy.isFacingRight());
     }
 
-    // ── Death ─────────────────────────────────────────────────────────────────
+    //  Death
 
     @Test
     void takeDamage_kills() {
@@ -256,7 +256,7 @@ class EnemyCharacterBehaviorTest {
         assertTrue(enemy.isDeathAnimationDone());
     }
 
-    // ── Effects ───────────────────────────────────────────────────────────────
+    //  Effects
 
     @Test
     void applyDot_ticksOnUpdate() {
@@ -287,11 +287,11 @@ class EnemyCharacterBehaviorTest {
         assertEquals(base, enemy.getSpeed(), 0.001f);
     }
 
-    // ── detectPlayer (via distanceTo) ─────────────────────────────────────────
+    //  detectPlayer (via distanceTo)
 
     @Test
     void detectPlayer_withinRange_true() {
-        // StubEnemy detectionRange = 200f, player at (150, 100) → dist=50
+        // StubEnemy detectionRange = 200f, player at (150, 100) -> dist=50
         PlayerCharacter fakePlayer = makeFakePlayer(150f, 100f);
         assertTrue(enemy.detectPlayer(fakePlayer));
     }
@@ -302,7 +302,7 @@ class EnemyCharacterBehaviorTest {
         assertFalse(enemy.detectPlayer(fakePlayer));
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
+    //  Helper
 
     private PlayerCharacter makeFakePlayer(float x, float y) {
         return new PlayerCharacter("P", 100, 10, 1f, new Vector2D(x, y), 0) {

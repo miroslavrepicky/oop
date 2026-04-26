@@ -12,17 +12,17 @@ import sk.stuba.fiit.world.Level;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Doplnkové testy pre PlayerCharacter – pokrýva časti nevypočítané v PlayerCharacterLogicTest:
+ * Doplnkove testy pre PlayerCharacter – pokryva casti nevypocitane v PlayerCharacterLogicTest:
  * – executeAttack s kontrolou many
  * – attack lifecycle (isAttacking flag, timer)
- * – template metódy getMana / spendMana pre subtriedu
- * – updateAnimation keď AnimationManager == null
+ * – template metody getMana / spendMana pre subtriedu
+ * – updateAnimation ked AnimationManager == null
  */
 class PlayerCharacterAttackTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
-    /** Hráč s neobmedzenou manou (default implementácia). */
+    /** Hrac s neobmedzenou manou (default implementacia). */
     static class UnlimitedManaPC extends PlayerCharacter {
         UnlimitedManaPC() { super("Hero", 100, 20, 2f, new Vector2D(0, 0), 0); enemy = false; }
         @Override public AnimationManager getAnimationManager() { return null; }
@@ -30,7 +30,7 @@ class PlayerCharacterAttackTest {
         @Override public void move(Vector2D d) { position = position.add(d); updateHitbox(); }
     }
 
-    /** Hráč s reálnou manou – testuje getMana / spendMana template. */
+    /** Hrac s realnou manou – testuje getMana / spendMana template. */
     static class ManaPC extends PlayerCharacter {
         int mana;
         ManaPC(int startMana) {
@@ -45,7 +45,7 @@ class PlayerCharacterAttackTest {
         @Override public void move(Vector2D d) { position = position.add(d); updateHitbox(); }
     }
 
-    /** Útok s nulovou manou – vracia null (melee-like). */
+    /** utok s nulovou manou – vracia null (melee-like). */
     static class FreeAttack implements Attack {
         int executeCount = 0;
         @Override public Projectile execute(Character attacker, Level level) { executeCount++; return null; }
@@ -54,7 +54,7 @@ class PlayerCharacterAttackTest {
         @Override public int    getManaCost() { return 0; }
     }
 
-    /** Útok s vyššou manou – testuje blokovanie. */
+    /** utok s vyssou manou – testuje blokovanie. */
     static class ExpensiveAttack implements Attack {
         @Override public Projectile execute(Character attacker, Level level) { return null; }
         @Override public String getAnimationName() { return "attack"; }
@@ -68,7 +68,7 @@ class PlayerCharacterAttackTest {
         @Override public sk.stuba.fiit.world.MapManager getMapManager() { return null; }
     }
 
-    // ── executeAttack – blokovanie ─────────────────────────────────────────────
+    //  executeAttack – blokovanie
 
     @Test
     void executeAttack_nullAttack_doesNotStart() {
@@ -82,42 +82,42 @@ class PlayerCharacterAttackTest {
         UnlimitedManaPC pc = new UnlimitedManaPC();
         FreeAttack atk = new FreeAttack();
         pc.executeAttack(atk, null);
-        assertFalse(pc.isAttacking, "Bez levelu nesmie útok začať");
+        assertFalse(pc.isAttacking, "Bez levelu nesmie utok zacat");
     }
 
     @Test
     void executeAttack_insufficientMana_blocked() {
         ManaPC pc = new ManaPC(10); // mana = 10
         pc.executeAttack(new ExpensiveAttack(), new FakeLevel()); // cost = 50
-        assertFalse(pc.isAttacking, "Útok sa nesmie spustiť bez dostatku many");
+        assertFalse(pc.isAttacking, "utok sa nesmie spustit bez dostatku many");
     }
 
     @Test
     void executeAttack_insufficientMana_manaNotConsumed() {
         ManaPC pc = new ManaPC(10);
         pc.executeAttack(new ExpensiveAttack(), new FakeLevel());
-        assertEquals(10, pc.mana, "Mana sa nesmie spotrebovať pri blokovanom útoku");
+        assertEquals(10, pc.mana, "Mana sa nesmie spotrebovat pri blokovanom utoku");
     }
 
     @Test
     void executeAttack_sufficientMana_consumed() {
         ManaPC pc = new ManaPC(100);
         pc.executeAttack(new ExpensiveAttack(), new FakeLevel()); // cost = 50
-        // AnimationManager je null → executeAttack na null AM preskočí bez isAttacking=true
-        // Ale keď AM je null, kód skontroluje: if (am != null) → false → isAttacking zostane false
-        // Takže mana sa spotrebuje iba keď AM nie je null? Overme to
-        // Podľa kódu: spendMana() sa volá PRED null-check AM:
+        // AnimationManager je null -> executeAttack na null AM preskoci bez isAttacking=true
+        // Ale ked AM je null, kod skontroluje: if (am != null) -> false -> isAttacking zostane false
+        // Takze mana sa spotrebuje iba ked AM nie je null? Overme to
+        // Podla kodu: spendMana() sa volá PRED null-check AM:
         //   spendMana(cost);
         //   if (level == null) return;
         //   AnimationManager am = getAnimationManager();
         //   if (am != null) { isAttacking = true; ... }
-        // Takže mana sa spotrebuje aj keď AM je null
-        assertEquals(50, pc.mana, "Mana sa má spotrebovať pred AM kontrolou");
+        // Takze mana sa spotrebuje aj ked AM je null
+        assertEquals(50, pc.mana, "Mana sa má spotrebovat pred AM kontrolou");
     }
 
-    // ── executeAttack – úspešný štart ─────────────────────────────────────────
+    //  executeAttack – uspesny start
 
-    /** Pomocný PC s mocknutým AnimationManager-om (bez Gdx). */
+    /** Pomocny PC s mocknutym AnimationManager-om (bez Gdx). */
     static class AnimatedPC extends PlayerCharacter {
         final StubAnimManager stubAm;
         AnimatedPC() {
@@ -133,7 +133,7 @@ class PlayerCharacterAttackTest {
     /** Minimálny stub AnimationManager bez atlasu. */
     static class StubAnimManager extends AnimationManager {
         String playedAnim = null;
-        StubAnimManager() { super(null); } // nulový atlas – žiaden Gdx.files
+        StubAnimManager() { super(null); } // nulovy atlas – ziaden Gdx.files
         @Override public void play(String name) { playedAnim = name; }
         @Override public void update(float dt) {}
         @Override public boolean hasAnimation(String name) { return true; }
@@ -142,8 +142,8 @@ class PlayerCharacterAttackTest {
         @Override public TextureAtlas.AtlasRegion getCurrentFrame() { return null; }
     }
 
-    // AnimationManager.TextureAtlasFrame nie je public API – použijeme inak.
-    // Namiesto toho overíme len isAttacking flag cez performPrimaryAttack.
+    // AnimationManager.TextureAtlasFrame nie je public API – pouzijeme inak.
+    // Namiesto toho overime len isAttacking flag cez performPrimaryAttack.
 
     @Test
     void executeAttack_whileAttacking_ignored() {
@@ -151,11 +151,11 @@ class PlayerCharacterAttackTest {
         pc.isAttacking = true; // simulate ongoing attack
         FreeAttack atk = new FreeAttack();
         pc.executeAttack(atk, new FakeLevel());
-        // Nesmie resetovať timer ani znovu zavolať execute
+        // Nesmie resetovat timer ani znovu zavolat execute
         assertEquals(0, atk.executeCount);
     }
 
-    // ── Template metódy mana ──────────────────────────────────────────────────
+    //  Template metody mana
 
     @Test
     void getMana_defaultImplementation_returnsMaxValue() {
@@ -166,7 +166,7 @@ class PlayerCharacterAttackTest {
     @Test
     void spendMana_defaultImplementation_noOp() {
         UnlimitedManaPC pc = new UnlimitedManaPC();
-        pc.spendMana(999); // nesmie vyhodiť ani zmeniť stav
+        pc.spendMana(999); // nesmie vyhodit ani zmenit stav
         assertEquals(Integer.MAX_VALUE, pc.getMana());
     }
 
@@ -190,7 +190,7 @@ class PlayerCharacterAttackTest {
         assertEquals(0, pc.getMana());
     }
 
-    // ── Attack state flag ─────────────────────────────────────────────────────
+    //  Attack state flag
 
     @Test
     void isAttacking_initiallyFalse() {
@@ -201,7 +201,7 @@ class PlayerCharacterAttackTest {
     @Test
     void performPrimaryAttack_nullPrimary_doesNotSetAttacking() {
         UnlimitedManaPC pc = new UnlimitedManaPC();
-        // primaryAttack je null keď sa nenastaví (v UnlimitedManaPC)
+        // primaryAttack je null ked sa nenastavi (v UnlimitedManaPC)
         pc.performPrimaryAttack(new FakeLevel());
         assertFalse(pc.isAttacking);
     }
@@ -213,7 +213,7 @@ class PlayerCharacterAttackTest {
         assertFalse(pc.isAttacking);
     }
 
-    // ── updateAnimation – null AnimationManager ───────────────────────────────
+    //  updateAnimation – null AnimationManager
 
     @Test
     void updateAnimation_nullAm_doesNotThrow() {
@@ -231,7 +231,7 @@ class PlayerCharacterAttackTest {
         assertDoesNotThrow(() -> pc.updateAnimation(ctx));
     }
 
-    // ── hasAnimation ─────────────────────────────────────────────────────────
+    //  hasAnimation
 
     @Test
     void hasAnimation_nullAm_returnsFalse() {
@@ -239,7 +239,7 @@ class PlayerCharacterAttackTest {
         assertFalse(pc.hasAnimation("jump"));
     }
 
-    // ── onCollision ───────────────────────────────────────────────────────────
+    //  onCollision
 
     @Test
     void onCollision_doesNotThrow() {

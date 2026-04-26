@@ -17,7 +17,7 @@ class MapManagerTest extends HeadlessGdxTest {
 
     @Test
     void mapManager_loadsEntitiesAndHitboxesCorrectly() {
-        // Príprava mapy v pamäti
+        // Priprava mapy v pamati
         TiledMap map = new TiledMap();
 
         // 1. Vrstva pre hitboxy
@@ -40,17 +40,17 @@ class MapManagerTest extends HeadlessGdxTest {
         MapManager manager = new MapManager(map);
 
         // Overenie
-        assertEquals(1, manager.getHitboxes().size(), "Mal by sa načítať jeden hitbox");
+        assertEquals(1, manager.getHitboxes().size(), "Mal by sa nacitat jeden hitbox");
         assertEquals(50f, manager.getHitboxes().get(0).width);
 
-        assertEquals(1, manager.getEntities().size(), "Mala by sa načítať jedna entita");
+        assertEquals(1, manager.getEntities().size(), "Mala by sa nacitat jedna entita");
         assertEquals("PLAYER", manager.getEntities().get(0).get("type"));
     }
 
     @Test
     void mapManager_missingHitboxLayer_throwsGameStateException() {
         TiledMap map = new TiledMap();
-        // Pridáme len entities vrstvu, hitbox chýba
+        // Pridame len entities vrstvu, hitbox chyba
         MapLayer entityLayer = new MapLayer();
         entityLayer.setName("entities");
         map.getLayers().add(entityLayer);
@@ -61,8 +61,8 @@ class MapManagerTest extends HeadlessGdxTest {
 
     @Test
     void mapManager_invalidPath_throwsAssetLoadException() {
-        // Testujeme ten statický factory konštruktor
-        // Cesta "non_existent.tmx" by mala zlyhať v TmxMapLoader
+        // Testujeme ten staticky factory konstruktor
+        // Cesta "non_existent.tmx" by mala zlyhat v TmxMapLoader
         AssetLoadException ex = assertThrows(AssetLoadException.class, () -> {
             new MapManager("non_existent.tmx");
         });
@@ -73,16 +73,16 @@ class MapManagerTest extends HeadlessGdxTest {
     void mapManager_loadsEntitiesCorrectly() {
         TiledMap map = new TiledMap();
 
-        // Pridáme povinnú hitbox vrstvu, aby konštruktor prešiel
+        // Pridame povinnu hitbox vrstvu, aby konstruktor presiel
         MapLayer hitboxLayer = new MapLayer();
         hitboxLayer.setName("hitbox");
         map.getLayers().add(hitboxLayer);
 
-        // Pridáme povinnú entities vrstvu
+        // Pridame povinnu entities vrstvu
         MapLayer entityLayer = new MapLayer();
         entityLayer.setName("entities");
 
-        // Vytvoríme testovací objekt (napr. spawn bod hráča)
+        // Vytvorime testovaci objekt (napr. spawn bod hraca)
         RectangleMapObject playerSpawn = new RectangleMapObject(100, 200, 32, 32);
         playerSpawn.getProperties().put("type", "PLAYER");
         playerSpawn.getProperties().put("x", 100f);
@@ -106,15 +106,15 @@ class MapManagerTest extends HeadlessGdxTest {
     void mapManager_missingEntitiesLayer_throwsGameStateException() {
         TiledMap map = new TiledMap();
 
-        // Pridáme hitbox (ok), ale entities nepridáme
+        // Pridame hitbox (ok), ale entities nepridame
         MapLayer hitboxLayer = new MapLayer();
         hitboxLayer.setName("hitbox");
         map.getLayers().add(hitboxLayer);
 
-        // Overenie, že vyhodí GameStateException
+        // Overenie, ze vyhodi GameStateException
         GameStateException ex = assertThrows(GameStateException.class, () -> new MapManager(map));
 
-        // Overíme aj správu, aby sme vedeli, že to padlo na entities a nie na hitboxe
+        // Overime aj spravu, aby sme vedeli, ze to padlo na entities a nie na hitboxe
         assertTrue(ex.getMessage().contains("entities"));
     }
 }

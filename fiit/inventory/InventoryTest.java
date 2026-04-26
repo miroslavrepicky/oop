@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class InventoryTest {
 
-    // ── Stub triedy bez LibGDX závislostí ─────────────────────────────────────
+    //  Stub triedy bez LibGDX zavislosti
 
-    /** Item stub – žiadny LibGDX, len sloty a ikona. */
+    /** Item stub – ziadny LibGDX, len sloty a ikona. */
     static class FakeItem extends Item {
         FakeItem(int slots) { super(slots, new Vector2D(0, 0)); }
         @Override public void use(PlayerCharacter c, Level l, Inventory inv) {}
@@ -25,9 +25,9 @@ public class InventoryTest {
     }
 
     /**
-     * Stub Knight-u – dedí od Knight (takže instanceof Knight == true),
+     * Stub Knight-u – dedi od Knight (takze instanceof Knight == true),
      * ale nepotrebuje AnimationManager ani LibGDX atlas.
-     * Všetky metódy volajúce OpenGL sú overridnuté na no-op / null.
+     * Vsetky metody volajuce OpenGL su overridnute na no-op / null.
      */
     public static class StubKnight extends PlayerCharacter {
         public StubKnight() {
@@ -40,7 +40,7 @@ public class InventoryTest {
     }
 
     /**
-     * Stub ne-Knightovej postavy – nie je Knight, takže stojí 3 sloty.
+     * Stub ne-Knightovej postavy – nie je Knight, takze stoji 3 sloty.
      */
     static class StubPlayer extends PlayerCharacter {
         StubPlayer() {
@@ -61,7 +61,7 @@ public class InventoryTest {
         inventory = new Inventory(10);
     }
 
-    // ── Základná inicializácia ────────────────────────────────────────────────
+    //  Zakladna inicializacia
 
     @Test
     void defaultTotalSlots_is10() {
@@ -78,7 +78,7 @@ public class InventoryTest {
         assertEquals(0, inventory.getUsedSlots());
     }
 
-    // ── Pridanie a odobranie itemov ───────────────────────────────────────────
+    //  Pridanie a odobranie itemov
 
     @Test
     void addItem_succeedsWhenSlotsFit() {
@@ -120,7 +120,7 @@ public class InventoryTest {
         assertEquals(6, inventory.getFreeSlots());
     }
 
-    // ── Výber slotu ───────────────────────────────────────────────────────────
+    //  Vyber slotu
 
     @Test
     void selectNext_advancesSlot() {
@@ -134,8 +134,8 @@ public class InventoryTest {
     void selectNext_wrapsAround() {
         inventory.addItem(new FakeItem(1));
         inventory.addItem(new FakeItem(1));
-        inventory.selectNext(); // → 1
-        inventory.selectNext(); // → 0 (wrap)
+        inventory.selectNext(); // -> 1
+        inventory.selectNext(); // -> 0 (wrap)
         assertEquals(0, inventory.getSelectedSlot());
     }
 
@@ -143,7 +143,7 @@ public class InventoryTest {
     void selectPrevious_wrapsAround() {
         inventory.addItem(new FakeItem(1));
         inventory.addItem(new FakeItem(1));
-        inventory.selectPrevious(); // 0 → 1 (wrap)
+        inventory.selectPrevious(); // 0 -> 1 (wrap)
         assertEquals(1, inventory.getSelectedSlot());
     }
 
@@ -164,17 +164,17 @@ public class InventoryTest {
         inventory.addItem(a);
         inventory.addItem(b);
         inventory.selectNext();          // slot = 1
-        inventory.removeItem(b);         // list shrinks → slot clamped to 0
+        inventory.removeItem(b);         // list shrinks -> slot clamped to 0
         assertEquals(0, inventory.getSelectedSlot());
     }
 
-    // ── Správa postáv ─────────────────────────────────────────────────────────
+    //  Sprava postav
 
     @Test
     void addCharacter_stubKnight_costs3Slots() {
         StubKnight knight = new StubKnight();
         inventory.addCharacter(knight);
-        // StubKnight nie je instanceof Knight → stojí 3 sloty
+        // StubKnight nie je instanceof Knight -> stoji 3 sloty
         assertEquals(3, inventory.getUsedSlots());
     }
 
@@ -204,7 +204,7 @@ public class InventoryTest {
     void removeCharacter_stubKnight_canBeRemoved() {
         StubKnight knight = new StubKnight();
         inventory.addCharacter(knight);
-        assertTrue(inventory.removeCharacter(knight)); // nie je base → dá sa odstrániť
+        assertTrue(inventory.removeCharacter(knight)); // nie je base -> da sa odstranit
     }
 
     @Test
@@ -244,7 +244,7 @@ public class InventoryTest {
         assertSame(knight, inventory.getActive());
     }
 
-    // ── isPartyDefeated ───────────────────────────────────────────────────────
+    //  isPartyDefeated
 
     @Test
     void isPartyDefeated_trueWhenAllDead() {
@@ -264,11 +264,11 @@ public class InventoryTest {
 
     @Test
     void isPartyDefeated_emptyParty_returnsTrue() {
-        // noneMatch on empty stream → true
+        // noneMatch on empty stream -> true
         assertTrue(inventory.isPartyDefeated());
     }
 
-    // ── switchCharacter ───────────────────────────────────────────────────────
+    //  switchCharacter
 
     @Test
     void switchCharacter_validIndex_changesActive() {

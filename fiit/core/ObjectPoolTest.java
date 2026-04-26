@@ -84,7 +84,7 @@ class ObjectPoolTest {
         Item item = pool.obtain(); // created
         pool.free(item);
         pool.obtain();             // reused
-        // total=2, reused=1 → ratio = 0.5
+        // total=2, reused=1 -> ratio = 0.5
         assertEquals(0.5f, pool.getReuseRatio(), 0.001f);
     }
 

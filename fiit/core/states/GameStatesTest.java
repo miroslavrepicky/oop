@@ -25,10 +25,10 @@ class GameStatesTest {
     @Mock GameManager   gameManager;
     @Mock Level         mockLevel;
 
-    // ── IGameState contract ───────────────────────────────────────────────────
+    //  IGameState contract
     // Helper: verifies all IGameState methods exist and don't throw for terminal states.
 
-    // ── GameOverState ─────────────────────────────────────────────────────────
+    //  GameOverState
 
     @Test
     void gameOverState_update_doesNotThrow() {
@@ -62,7 +62,7 @@ class GameStatesTest {
         verify(app).goToGameOverScreen(3);
     }
 
-    // ── WinState ──────────────────────────────────────────────────────────────
+    //  WinState
 
     @Test
     void winState_update_doesNotThrow() {
@@ -98,7 +98,7 @@ class GameStatesTest {
         verifyNoMoreInteractions(app);
     }
 
-    // ── ExitToMenuState ───────────────────────────────────────────────────────
+    //  ExitToMenuState
     // Package-private class – accessible because this test is in the same package.
 
     @Test
@@ -127,7 +127,7 @@ class GameStatesTest {
         verify(app).goToMainMenu();
     }
 
-    // ── LevelCompleteState ────────────────────────────────────────────────────
+    //  LevelCompleteState
     // Package-private constructor – accessible because this test is in the same package.
 
     @Test
@@ -169,7 +169,7 @@ class GameStatesTest {
         when(mockLevel.getLevelNumber()).thenReturn(1);
 
         new LevelCompleteState(gameManager).execute(app, 1, 5);
-        verify(app).goToInventory(2); // nextLevel = 2, maxLevels = 5 → not last
+        verify(app).goToInventory(2); // nextLevel = 2, maxLevels = 5 -> not last
     }
 
     @Test
@@ -177,7 +177,7 @@ class GameStatesTest {
         when(gameManager.getCurrentLevel()).thenReturn(mockLevel);
         when(mockLevel.getLevelNumber()).thenReturn(1);
 
-        // nextLevel = 2 > maxLevels = 1 → win
+        // nextLevel = 2 > maxLevels = 1 -> win
         new LevelCompleteState(gameManager).execute(app, 1, 1);
         verify(app).goToWinScreen();
     }
@@ -187,15 +187,15 @@ class GameStatesTest {
         when(gameManager.getCurrentLevel()).thenReturn(mockLevel);
         when(mockLevel.getLevelNumber()).thenReturn(2);
 
-        // nextLevel = 3, maxLevels = 3 → nextLevel == maxLevels, so goToInventory(3)
-        // 3 > 3 is false → goToInventory(3)
+        // nextLevel = 3, maxLevels = 3 -> nextLevel == maxLevels, so goToInventory(3)
+        // 3 > 3 is false -> goToInventory(3)
         new LevelCompleteState(gameManager).execute(app, 2, 3);
         verify(app).goToInventory(3);
     }
 
-    // ── GameOverDelayState – IGameState contract ───────────────────────────────
+    //  GameOverDelayState – IGameState contract
     // Full rendering test is skipped (needs GameRenderer/Level), but the state
-    // machine logic (timer countdown → next()) can be tested with mocks.
+    // machine logic (timer countdown -> next()) can be tested with mocks.
 
     @Test
     void gameOverDelayState_next_returnsNullWhileTimerActive() {

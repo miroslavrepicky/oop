@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import sk.stuba.fiit.GdxTest;
-import sk.stuba.fiit.core.AnimationManager;
 import sk.stuba.fiit.physics.CollisionManager;
 import sk.stuba.fiit.util.Vector2D;
 
@@ -17,19 +16,19 @@ import static org.mockito.Mockito.*;
 /**
  * Unit testy pre PlayerController.
  *
- * Gdx.input je mockovaný – všetky isKeyPressed / isKeyJustPressed vrátia false.
- * Testy pokrývajú:
- * – konštrukciu (bez NPE)
- * – update() keď nie je žiaden hráč (early return)
- * – update() keď existuje hráč (žiaden kláves nestlačený → len gravitácia)
- * – update() keď existuje level (žiadna kolízia)
+ * Gdx.input je mockovany – vsetky isKeyPressed / isKeyJustPressed vratia false.
+ * Testy pokryvaju:
+ * – konstrukciu (bez NPE)
+ * – update() ked nie je ziaden hrac (early return)
+ * – update() ked existuje hrac (ziaden klaves nestlaceny -> len gravitacia)
+ * – update() ked existuje level (ziadna kolizia)
  */
 class PlayerControllerTest extends GdxTest {
 
     @BeforeAll
     static void mockInput() {
         Gdx.input = mock(Input.class);
-        // Všetky key-check metódy vrátia false (default Mockito správanie pre boolean)
+        // Vsetky key-check metody vratia false (default Mockito spravanie pre boolean)
     }
 
     @BeforeEach
@@ -37,7 +36,7 @@ class PlayerControllerTest extends GdxTest {
         GameManager.getInstance().resetGame();
     }
 
-    // ── Konštrukcia ───────────────────────────────────────────────────────────
+    //  Konstrukcia
 
     @Test
     void construction_doesNotThrow() {
@@ -46,15 +45,15 @@ class PlayerControllerTest extends GdxTest {
 
     @Test
     void construction_withNullCollisionManager_doesNotThrow() {
-        // CollisionManager je len uložený – NPE nastane až pri pickupNearbyItem()
+        // CollisionManager je len ulozeny – NPE nastane az pri pickupNearbyItem()
         assertDoesNotThrow(() -> new PlayerController(null));
     }
 
-    // ── update() – bez hráča ─────────────────────────────────────────────────
+    //  update() – bez hraca
 
     @Test
     void update_withNoActivePlayer_doesNotThrow() {
-        // GameManager po resete nemá hráča
+        // GameManager po resete nema hraca
         PlayerController pc = new PlayerController(new CollisionManager());
         assertDoesNotThrow(() -> pc.update(0.016f));
     }
@@ -67,14 +66,14 @@ class PlayerControllerTest extends GdxTest {
         }
     }
 
-    // ── update() – s hráčom ───────────────────────────────────────────────────
+    //  update() – s hracom
 
     @Test
     void update_withActivePlayer_noKeyPressed_doesNotThrow() {
         withAnimMock(() -> {
             GameManager.getInstance().initGame();
             PlayerController pc = new PlayerController(new CollisionManager());
-            // Žiaden kláves nestlačený → update aplikuje len gravitáciu
+            // ziaden kláves nestlaceny -> update aplikuje len gravitáciu
             assertDoesNotThrow(() -> pc.update(0.016f));
         });
     }
@@ -85,7 +84,7 @@ class PlayerControllerTest extends GdxTest {
             GameManager.getInstance().initGame();
             PlayerController pc = new PlayerController(new CollisionManager());
             pc.update(0.016f);
-            // Samotný update bez kláves nesmie zabiť hráča
+            // Samotny update bez kláves nesmie zabit hráca
             assertTrue(GameManager.getInstance().getInventory().getActive().isAlive());
         });
     }
@@ -101,7 +100,7 @@ class PlayerControllerTest extends GdxTest {
         });
     }
 
-    // ── Pomocné metódy ────────────────────────────────────────────────────────
+    //  Pomocne metody
 
     private void withAnimMock(Runnable block) {
         try (MockedConstruction<AnimationManager> ignored =

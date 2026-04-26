@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AIControllerTest {
 
-    // ── Stub AIControllable ───────────────────────────────────────────────────
+    //  Stub AIControllable
 
     static class StubControllable implements AIControllable {
         Vector2D position;
@@ -81,7 +81,7 @@ class AIControllerTest {
         controller  = new AIController(enemy, patrolStart, patrolEnd, ATTACK, PREFERRED);
     }
 
-    // ── PATROL state ──────────────────────────────────────────────────────────
+    //  PATROL state
 
     @Test
     void patrol_enemyMoves_eachFrame() {
@@ -109,7 +109,7 @@ class AIControllerTest {
         // Player within detection range (distance < 200)
         StubPlayer nearPlayer = new StubPlayer(100f + 100f, 0f); // 100 units away
 
-        // Initially in PATROL; after one update with detectable player → CHASE
+        // Initially in PATROL; after one update with detectable player -> CHASE
         controller.update(0.016f, nearPlayer);
 
         // Verify transition happened by checking enemy movement direction
@@ -124,7 +124,7 @@ class AIControllerTest {
             "Enemy should move toward player or attack after detecting it");
     }
 
-    // ── CHASE state ───────────────────────────────────────────────────────────
+    //  CHASE state
 
     @Test
     void chase_movesTowardPlayer() {
@@ -149,7 +149,7 @@ class AIControllerTest {
 
         controller.update(0.016f, player); // detect
         controller.update(0.016f, player); // enter chase
-        controller.update(0.016f, player); // close enough → attack
+        controller.update(0.016f, player); // close enough -> attack
 
         assertTrue(enemy.attackCount > 0, "Enemy should attack when within preferred range");
     }
@@ -158,12 +158,12 @@ class AIControllerTest {
     void chase_toPatrol_whenPlayerLeavesRange() {
         // Detect player first
         StubPlayer player = new StubPlayer(100f + 100f, 0f);
-        controller.update(0.016f, player); // detect → chase
+        controller.update(0.016f, player); // detect -> chase
 
         // Move player far away
         player = new StubPlayer(9999f, 0f);
         float xBefore = enemy.position.getX();
-        controller.update(0.016f, player); // lose player → back to PATROL
+        controller.update(0.016f, player); // lose player -> back to PATROL
 
         // After losing player, enemy should resume patrolling
         // (either move differently or just not chase)
@@ -171,7 +171,7 @@ class AIControllerTest {
         assertDoesNotThrow(() -> controller.update(0.016f, finalPlayer));
     }
 
-    // ── ATTACK state ──────────────────────────────────────────────────────────
+    //  ATTACK state
 
     @Test
     void attack_triggersAttack_whenNotAlreadyAttacking() {
@@ -244,7 +244,7 @@ class AIControllerTest {
         }
     }
 
-    // ── Custom ranges ─────────────────────────────────────────────────────────
+    //  Custom ranges
 
     @Test
     void defaultConstructor_usesDefaultRanges() {

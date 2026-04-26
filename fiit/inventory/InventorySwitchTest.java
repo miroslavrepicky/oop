@@ -79,7 +79,7 @@ class InventorySwitchTest {
 
     @Test
     void useSelected_outOfRange_doesNotThrow() {
-        // selectedSlot=0, items empty → guard fires
+        // selectedSlot=0, items empty -> guard fires
         assertDoesNotThrow(() -> inv.useSelected(c1, null));
     }
 

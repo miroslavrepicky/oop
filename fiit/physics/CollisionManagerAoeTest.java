@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CollisionManagerAoeTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
     static class StubPlayer extends PlayerCharacter {
         int damageTaken = 0;
@@ -105,7 +105,7 @@ class CollisionManagerAoeTest {
         level  = new FakeLevel();
     }
 
-    // ── AOE hits multiple enemies ─────────────────────────────────────────────
+    //  AOE hits multiple enemies
 
     @Test
     void aoe_hitsMultipleEnemiesInRadius() {
@@ -172,7 +172,7 @@ class CollisionManagerAoeTest {
         // (resolveHit skips dead enemies, so direct hit doesn't count)
         // but AOE blast from nearby can still happen if it was triggered by wall hit
         // In our FakeLevel there are no walls, so aoe triggered by nothing
-        // AOE is only triggered if resolveHit returns something → with dead enemy, nothing returned
+        // AOE is only triggered if resolveHit returns something -> with dead enemy, nothing returned
         assertTrue(dead.damageTaken >= dmgBefore); // at minimum same (no crash)
     }
 
@@ -195,7 +195,7 @@ class CollisionManagerAoeTest {
         assertTrue(centre.damageTaken > 0);
     }
 
-    // ── Non-AOE single hits ───────────────────────────────────────────────────
+    //  Non-AOE single hits
 
     @Test
     void nonAoe_hitsOneEnemy_doesNotSplash() {
@@ -214,7 +214,7 @@ class CollisionManagerAoeTest {
         assertFalse(p.isActive());
     }
 
-    // ── Enemy projectile ──────────────────────────────────────────────────────
+    //  Enemy projectile
 
     @Test
     void enemyProjectile_hitsPlayer_not_enemies() {
@@ -239,7 +239,7 @@ class CollisionManagerAoeTest {
         assertFalse(ep.isActive());
     }
 
-    // ── Multiple frames ───────────────────────────────────────────────────────
+    //  Multiple frames
 
     @Test
     void inactiveOnSecondFrame_notProcessedAgain() {
@@ -257,7 +257,7 @@ class CollisionManagerAoeTest {
         assertEquals(dmgAfterFirst, e.damageTaken, "Inactive projectile should not deal damage again");
     }
 
-    // ── Dot/Slow on AOE ───────────────────────────────────────────────────────
+    //  Dot/Slow on AOE
 
     @Test
     void aoeWithDot_directHitEnemy_receivesDot() {

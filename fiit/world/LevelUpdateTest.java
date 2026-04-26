@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class LevelUpdateTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
     static class StubPlayer extends PlayerCharacter {
         StubPlayer() { super("P", 100, 10, 1f, new Vector2D(0, 0), 0); enemy = false; }
@@ -55,7 +55,7 @@ class LevelUpdateTest {
     @BeforeEach
     void setUp() { level = new TestLevel(); }
 
-    // ── Projectiles ───────────────────────────────────────────────────────────
+    //  Projectiles
 
     @Test
     void addProjectile_appearsInList() {
@@ -93,7 +93,7 @@ class LevelUpdateTest {
         assertFalse(level.getProjectiles().contains(inactive));
     }
 
-    // ── Enemies ───────────────────────────────────────────────────────────────
+    //  Enemies
 
     @Test
     void deadEnemy_animDone_removedOnUpdate() {
@@ -155,7 +155,7 @@ class LevelUpdateTest {
         assertTrue(level.isCompleted());
     }
 
-    // ── Items ─────────────────────────────────────────────────────────────────
+    //  Items
 
     @Test
     void addItem_appearsInList() {
@@ -172,7 +172,7 @@ class LevelUpdateTest {
         assertTrue(level.getItems().contains(item));
     }
 
-    // ── Level metadata ────────────────────────────────────────────────────────
+    //  Level metadata
 
     @Test
     void getLevelNumber_returnsConstructorValue() {

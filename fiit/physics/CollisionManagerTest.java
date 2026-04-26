@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CollisionManagerTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
     static class StubPlayer extends PlayerCharacter {
         int damageTaken = 0;
@@ -127,13 +127,13 @@ class CollisionManagerTest {
         level  = new FakeLevel();
     }
 
-    // ── Null guards ───────────────────────────────────────────────────────────
+    //  Null guards
 
     @Test void update_nullPlayer_doesNotThrow() { assertDoesNotThrow(() -> cm.update(level, null)); }
     @Test void update_nullLevel_doesNotThrow()  { assertDoesNotThrow(() -> cm.update(null, player)); }
     @Test void update_bothNull_doesNotThrow()   { assertDoesNotThrow(() -> cm.update(null, null)); }
 
-    // ── Nearby items ──────────────────────────────────────────────────────────
+    //  Nearby items
 
     @Test void getNearbyItem_nullWhenNoItems() {
         cm.update(level, player);
@@ -153,7 +153,7 @@ class CollisionManagerTest {
         assertNull(cm.getNearbyItem());
     }
 
-    // ── Pickup ────────────────────────────────────────────────────────────────
+    //  Pickup
 
     @Test void pickupNearbyItem_noNearby_doesNotThrow() {
         assertDoesNotThrow(() -> cm.pickupNearbyItem(player, level, new Inventory(10)));
@@ -176,7 +176,7 @@ class CollisionManagerTest {
         assertFalse(level.items.isEmpty());
     }
 
-    // ── Player projectile hits enemy ──────────────────────────────────────────
+    //  Player projectile hits enemy
 
     @Test void playerProjectile_hitsEnemy_dealsDamage() {
         StubEnemy e = enemy(50, 50);
@@ -217,7 +217,7 @@ class CollisionManagerTest {
         assertEquals(0, e.damageTaken); // enemy proj doesn't hit enemy
     }
 
-    // ── On-hit effects ────────────────────────────────────────────────────────
+    //  On-hit effects
 
     @Test void playerProjectile_withDot_appliesDot() {
         StubEnemy e = enemy(50, 50);
@@ -242,7 +242,7 @@ class CollisionManagerTest {
         assertTrue(e.getSpeed() < originalSpeed);
     }
 
-    // ── Enemy projectile hits player ──────────────────────────────────────────
+    //  Enemy projectile hits player
 
     @Test void enemyProjectile_hitsPlayer_dealsDamage() {
         level.projectiles.add(proj(15, 50, 50, ProjectileOwner.ENEMY));
@@ -257,7 +257,7 @@ class CollisionManagerTest {
         assertTrue(p.isActive());
     }
 
-    // ── Player vs enemy push ──────────────────────────────────────────────────
+    //  Player vs enemy push
 
     @Test void playerVsEnemy_overlap_playerPushed() {
         StubEnemy e = enemy(50, 50);
@@ -275,7 +275,7 @@ class CollisionManagerTest {
         assertEquals(startX, player.getPosition().getX(), 0.001f);
     }
 
-    // ── Multiple projectiles ──────────────────────────────────────────────────
+    //  Multiple projectiles
 
     @Test void multiplePlayerProjectiles_allProcessed() {
         StubEnemy e1 = enemy(50, 50);
@@ -301,7 +301,7 @@ class CollisionManagerTest {
 
     @Test
     void nearbyItem_isDetected_whenPlayerClose() {
-        // Vytvoríme item a položíme ho k hráčovi (hráč je na 50, 50)
+        // Vytvorime item a polozime ho k hracovi (hrac je na 50, 50)
         Item mockItem = Mockito.mock(Item.class);
         Rectangle itemHitbox = new Rectangle(55, 55, 20, 20);
         Mockito.when(mockItem.getHitbox()).thenReturn(itemHitbox);
@@ -309,17 +309,17 @@ class CollisionManagerTest {
 
         cm.update(level, player);
 
-        assertEquals(mockItem, cm.getNearbyItem(), "Manažér by mal nájsť predmet v blízkosti hráča.");
+        assertEquals(mockItem, cm.getNearbyItem(), "Manazer by mal najst predmet v blizkosti hraca.");
     }
 
     @Test
     void projectile_hitsWall_becomesInactive() {
-        // Nastavíme stenu v mape
+        // Nastavime stenu v mape
         sk.stuba.fiit.world.MapManager mockMap = Mockito.mock(sk.stuba.fiit.world.MapManager.class);
         Rectangle wall = new Rectangle(200, 200, 100, 100);
         Mockito.when(mockMap.getHitboxes()).thenReturn(List.of(wall));
 
-        // Musíme zabezpečiť, aby level vracal náš mock mapy
+        // Musime zabezpecit, aby level vracal nas mock mapy
         level = new FakeLevel() {
             @Override public sk.stuba.fiit.world.MapManager getMapManager() { return mockMap; }
         };
@@ -330,44 +330,44 @@ class CollisionManagerTest {
 
         cm.update(level, player);
 
-        assertFalse(p.isActive(), "Projektil by mal po náraze do steny zaniknúť.");
+        assertFalse(p.isActive(), "Projektil by mal po náraze do steny zaniknut.");
     }
 
     @Test
     void eggProjectile_inBlastingState_dealsDamageOnce() {
-        // 1. Príprava nepriateľa
+        // 1. Priprava nepriatela
         StubEnemy enemy = new StubEnemy(100, 100);
-        // Nastavíme hitbox manuálne, aby sme mali istotu, že sa prekrýva
+        // Nastavime hitbox manuálne, aby sme mali istotu, ze sa prekryva
         enemy.getHitbox().setPosition(100, 100);
         enemy.getHitbox().setSize(32, 64);
         level.getEnemies().add(enemy);
 
-        // 2. Príprava Mock vajíčka
+        // 2. Priprava Mock vajicka
         EggProjectile eggMock = Mockito.mock(EggProjectile.class);
-        Vector2D eggPos = new Vector2D(100, 100); // Pozícia výbuchu
+        Vector2D eggPos = new Vector2D(100, 100); // Pozicia vybuchu
 
         // Definujeme správanie mocku (Stubbing)
         Mockito.when(eggMock.isActive()).thenReturn(true);
         Mockito.when(eggMock.getEggState()).thenReturn(EggProjectile.EggState.BLASTING);
         Mockito.when(eggMock.isDamageDealt()).thenReturn(false);
-        Mockito.when(eggMock.getPosition()).thenReturn(eggPos); // FIX: Toto rieši NPE
+        Mockito.when(eggMock.getPosition()).thenReturn(eggPos); // FIX: Toto riesi NPE
         Mockito.when(eggMock.getAoeRadius()).thenReturn(100f);
         Mockito.when(eggMock.getDamage()).thenReturn(50);
 
-        // Pridáme vajíčko do zoznamu v leveli
+        // Pridáme vajicko do zoznamu v leveli
         level.getProjectiles().add(eggMock);
 
         // 3. Vykonanie testovanej logiky
         cm.update(level, player);
 
-        // 4. Overenie výsledkov
-        assertTrue(enemy.damageTaken > 0, "Nepriateľ mal dostať damage z AOE výbuchu");
+        // 4. Overenie vysledkov
+        assertTrue(enemy.damageTaken > 0, "Nepriatel mal dostat damage z AOE vybuchu");
 
-        // Overíme, že CollisionManager zavolal metódu na označenie, že damage bol udelený
+        // Overime, ze CollisionManager zavolal metodu na oznacenie, ze damage bol udeleny
         Mockito.verify(eggMock).markDamageDealt();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    //  Helpers
 
     private StubEnemy enemy(float x, float y) {
         StubEnemy e = new StubEnemy(x, y);

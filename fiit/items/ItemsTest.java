@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ItemsTest {
 
-    // ── Stub player bez LibGDX ────────────────────────────────────────────────
+    //  Stub player bez LibGDX
 
     static class StubPlayer extends PlayerCharacter {
         private int hp;
@@ -44,7 +44,7 @@ class ItemsTest {
         }
     }
 
-    // ── HealingPotion ─────────────────────────────────────────────────────────
+    //  HealingPotion
 
     @Test void healingPotion_healsCharacter() {
         StubPlayer p = new StubPlayer(50, 100, 0, 0);
@@ -109,7 +109,7 @@ class ItemsTest {
         assertFalse(new HealingPotion(30, new Vector2D(0,0)).onPickup(p, new Inventory(0)));
     }
 
-    // ── Armour ────────────────────────────────────────────────────────────────
+    //  Armour
 
     @Test void armour_increasesArmor() {
         StubPlayer p = new StubPlayer(100, 100, 0, 100);
@@ -146,7 +146,7 @@ class ItemsTest {
         assertFalse(new Armour(30, new Vector2D(0,0)).onPickup(p, new Inventory(0)));
     }
 
-    // ── EggProjectileSpawner ──────────────────────────────────────────────────
+    //  EggProjectileSpawner
 
     @Test void eggSpawner_onPickup_returnsFalse() {
         StubPlayer p = new StubPlayer(100, 100, 0, 0);
@@ -162,7 +162,7 @@ class ItemsTest {
         assertNull(new EggProjectileSpawner(new Vector2D(0,0)).getIconPath());
     }
 
-    // ── helper ────────────────────────────────────────────────────────────────
+    //  helper
 
     private Inventory inventoryWith(Item item) {
         Inventory inv = new Inventory(10);

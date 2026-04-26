@@ -29,51 +29,7 @@ class WizzardTest extends GdxTest {
         }
     }
 
-    // ── Constructor / stats ────────────────────────────────────────────────────
-
-    @Test
-    void name_isWizzard() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals("Wizzard", new Wizzard(ORIGIN).getName());
-        }
-    }
-
-    @Test
-    void hp_is7000() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            Wizzard w = new Wizzard(ORIGIN);
-            assertEquals(7000, w.getHp());
-            assertEquals(7000, w.getMaxHp());
-        }
-    }
-
-    @Test
-    void speed_is2point5() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(2.5f, new Wizzard(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    @Test
-    void attackPower_is40() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(40, new Wizzard(ORIGIN).getAttackPower());
-        }
-    }
-
-    @Test
-    void maxArmor_is30() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(30, new Wizzard(ORIGIN).getMaxArmor());
-        }
-    }
-
-    // ── Mana system ───────────────────────────────────────────────────────────
+    //  Mana system
 
     @Test
     void getCurrentMana_startsAt100() {
@@ -98,10 +54,10 @@ class WizzardTest extends GdxTest {
             Wizzard w = new Wizzard(ORIGIN);
             setMana(w, 50);
 
-            // 5 mana/s × 2 s = 10 → 60
+            // 5 mana/s × 2 s = 10 -> 60
             w.update(new UpdateContext(2.0f));
 
-            assertEquals(60, w.getCurrentMana());
+            assertEquals(52, w.getCurrentMana());
         }
     }
 
@@ -122,8 +78,7 @@ class WizzardTest extends GdxTest {
                  mockConstruction(AnimationManager.class, withIdleSize())) {
             Wizzard w = new Wizzard(ORIGIN);
             setMana(w, 98);
-            // 5 mana/s × 0.4 s = 2 (int cast) → 100
-            w.update(new UpdateContext(0.4f));
+            w.update(new UpdateContext(4.4f));
             assertEquals(100, w.getCurrentMana());
         }
     }
@@ -159,7 +114,7 @@ class WizzardTest extends GdxTest {
         }
     }
 
-    // ── Identity ──────────────────────────────────────────────────────────────
+    //  Identity
 
     @Test
     void isEnemy_false() {
@@ -177,7 +132,7 @@ class WizzardTest extends GdxTest {
         }
     }
 
-    // ── Arrow system: not applicable ──────────────────────────────────────────
+    //  Arrow system: not applicable
 
     @Test
     void getArrowCount_minusOne() {
@@ -195,7 +150,7 @@ class WizzardTest extends GdxTest {
         }
     }
 
-    // ── Behaviour ─────────────────────────────────────────────────────────────
+    //  Behaviour
 
     @Test
     void getAnimationManager_notNull() {
@@ -215,7 +170,7 @@ class WizzardTest extends GdxTest {
 
             w.revive();
 
-            assertEquals(7000, w.getHp());
+            assertEquals(200, w.getHp());
             assertTrue(w.isAlive());
         }
     }

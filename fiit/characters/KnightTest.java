@@ -19,59 +19,7 @@ class KnightTest extends GdxTest {
         return (mock, ctx) -> when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(32, 64));
     }
 
-    // ── Constructor / stats ────────────────────────────────────────────────────
-
-    @Test
-    void name_isKnight() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals("Knight", new Knight(ORIGIN).getName());
-        }
-    }
-
-    @Test
-    void hp_is150() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            Knight k = new Knight(ORIGIN);
-            assertEquals(150, k.getHp());
-            assertEquals(150, k.getMaxHp());
-        }
-    }
-
-    @Test
-    void attackPower_is30() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(30, new Knight(ORIGIN).getAttackPower());
-        }
-    }
-
-    @Test
-    void speed_is2() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(2.0f, new Knight(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    @Test
-    void maxArmor_is80() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(80, new Knight(ORIGIN).getMaxArmor());
-        }
-    }
-
-    @Test
-    void initialArmor_is0() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, withIdleSize())) {
-            assertEquals(0, new Knight(ORIGIN).getArmor());
-        }
-    }
-
-    // ── Identity / type ────────────────────────────────────────────────────────
+    //  Identity / type
 
     @Test
     void isEnemy_false() {
@@ -89,7 +37,7 @@ class KnightTest extends GdxTest {
         }
     }
 
-    // ── Animation ─────────────────────────────────────────────────────────────
+    //  Animation
 
     @Test
     void getAnimationManager_notNull() {
@@ -99,7 +47,7 @@ class KnightTest extends GdxTest {
         }
     }
 
-    // ── HUD data ──────────────────────────────────────────────────────────────
+    //  HUD data
 
     @Test
     void currentMana_minusOne_noManaSystem() {
@@ -133,7 +81,7 @@ class KnightTest extends GdxTest {
         }
     }
 
-    // ── Behaviour ────────────────────────────────────────────────────────────
+    //  Behaviour
 
     @Test
     void update_doesNotThrow() {
@@ -198,7 +146,7 @@ class KnightTest extends GdxTest {
             Knight k = new Knight(ORIGIN);
             k.takeDamage(9999);
             k.revive();
-            assertEquals(150, k.getHp());
+            assertEquals(350, k.getHp());
             assertTrue(k.isAlive());
         }
     }

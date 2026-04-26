@@ -19,8 +19,8 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit testy pre SaveManager.
- * Každý test pracuje so skutočným súborovým systémom (temp súbor),
- * ale konštrukcia herných objektov je mockovaná cez MockedConstruction.
+ * Kazdy test pracuje so skutocnym suborovym systemom (temp subor),
+ * ale konstrukcia hernych objektov je mockovana cez MockedConstruction.
  */
 class SaveManagerTest extends GdxTest {
 
@@ -35,7 +35,7 @@ class SaveManagerTest extends GdxTest {
         deleteSaveFile();
     }
 
-    // ── Singleton ─────────────────────────────────────────────────────────────
+    //  Singleton
 
     @Test
     void getInstance_notNull() {
@@ -47,7 +47,7 @@ class SaveManagerTest extends GdxTest {
         assertSame(SaveManager.getInstance(), SaveManager.getInstance());
     }
 
-    // ── hasSave ───────────────────────────────────────────────────────────────
+    //  hasSave
 
     @Test
     void hasSave_falseWhenNoFile() {
@@ -63,7 +63,7 @@ class SaveManagerTest extends GdxTest {
         });
     }
 
-    // ── deleteSave ────────────────────────────────────────────────────────────
+    //  deleteSave
 
     @Test
     void deleteSave_doesNotThrow_whenNoFile() {
@@ -82,18 +82,18 @@ class SaveManagerTest extends GdxTest {
         });
     }
 
-    // ── load – chýbajúci súbor ────────────────────────────────────────────────
+    //  load – chybajuci subor
 
     @Test
     void load_returnsNull_whenNoFile() {
         assertNull(SaveManager.getInstance().load());
     }
 
-    // ── save ─────────────────────────────────────────────────────────────────
+    //  save
 
     @Test
     void save_withEmptyInventory_createsFile() {
-        // Po resete nie je žiaden hráč, ale save() to zvládne (null-safe cykly)
+        // Po resete nie je ziaden hrac, ale save() to zvladne (null-safe cykly)
         assertDoesNotThrow(() -> SaveManager.getInstance().save(1));
         assertTrue(SaveManager.getInstance().hasSave());
     }
@@ -107,7 +107,7 @@ class SaveManagerTest extends GdxTest {
         });
     }
 
-    // ── save + load cyklus ────────────────────────────────────────────────────
+    //  save + load cyklus
 
     @Test
     void saveAndLoad_restoresLevelNumber() {
@@ -118,7 +118,7 @@ class SaveManagerTest extends GdxTest {
             GameManager.getInstance().resetGame();
             SaveData data = SaveManager.getInstance().load();
 
-            assertNotNull(data, "SaveData nesmie byť null");
+            assertNotNull(data, "SaveData nesmie byt null");
             assertEquals(1, data.currentLevel);
         });
     }
@@ -162,7 +162,7 @@ class SaveManagerTest extends GdxTest {
             SaveData data = SaveManager.getInstance().load();
 
             assertNotNull(data);
-            assertEquals(1, data.characters.size(), "Mal byť uložený práve jeden Knight");
+            assertEquals(1, data.characters.size(), "Mal byt ulozeny prave jeden Knight");
         });
     }
 
@@ -212,7 +212,7 @@ class SaveManagerTest extends GdxTest {
     void saveAndLoad_withHealingPotion_restoresItemCount() {
         withAnimMockForLoad(() -> {
             GameManager.getInstance().initGame();
-            // Pridáme lektvar do inventára (slot cost = 2, max = 10 → ok)
+            // Pridame lektvar do inventara (slot cost = 2, max = 10 -> ok)
             GameManager.getInstance().getInventory()
                 .addItem(new HealingPotion(50, new Vector2D(0, 0)));
             SaveManager.getInstance().save(1);
@@ -221,7 +221,7 @@ class SaveManagerTest extends GdxTest {
             SaveData data = SaveManager.getInstance().load();
 
             assertNotNull(data);
-            assertFalse(data.inventoryItems.isEmpty(), "Lektvar mal byť uložený");
+            assertFalse(data.inventoryItems.isEmpty(), "Lektvar mal byt ulozeny");
             assertEquals("HealingPotion", data.inventoryItems.get(0).itemType);
             assertEquals(1, data.inventoryItems.get(0).count);
         });
@@ -231,7 +231,7 @@ class SaveManagerTest extends GdxTest {
     void saveAndLoad_noEnemies_listEmpty() {
         withAnimMockForLoad(() -> {
             GameManager.getInstance().initGame();
-            // žiaden level → enemies list by mal byť prázdny
+            // ziaden level -> enemies list by mal byt prazdny
             SaveManager.getInstance().save(1);
 
             GameManager.getInstance().resetGame();
@@ -253,32 +253,32 @@ class SaveManagerTest extends GdxTest {
             SaveData data = SaveManager.getInstance().load();
 
             assertNotNull(data);
-            // Po load() musí byť inventár GM obnovený s Knightom
+            // Po load() musi byt inventár GM obnoveny s Knightom
             assertNotNull(GameManager.getInstance().getInventory().getActive());
         });
     }
 
-    // ── Verzia – nekompatibilný súbor ─────────────────────────────────────────
+    //  Verzia – nekompatibilny subor
 
     @Test
     void load_returnNull_forBadVersion() throws Exception {
-        // Napíšeme SaveData s nesprávnou verziou ručne (bez volania save())
+        // Napiseme SaveData s nesprávnou verziou rucne (bez volania save())
         SaveData badVersion = buildSaveDataWithBadVersion();
         writeDirectly(badVersion);
 
-        // load() musí vrátiť null kvôli version mismatchu
+        // load() musi vrátit null kvoli version mismatchu
         assertNull(SaveManager.getInstance().load(),
-            "load() má vrátiť null pre nekompatibilnú verziu");
+            "load() má vrátit null pre nekompatibilnu verziu");
     }
 
-    // ── Pomocné metódy ────────────────────────────────────────────────────────
+    //  Pomocne metody
 
     private static void deleteSaveFile() {
         new File(SaveManager.SAVE_FILE).delete();
     }
 
     /**
-     * Mock pre samotné save() – nepotrebujeme load() bez GL kontextu.
+     * Mock pre samotne save() – nepotrebujeme load() bez GL kontextu.
      */
     private void withAnimMock(Runnable block) {
         try (MockedConstruction<AnimationManager> ignored =
@@ -291,8 +291,8 @@ class SaveManagerTest extends GdxTest {
 
     /**
      * Mock pre save() + load() cyklus.
-     * load() volá applyInventoryToGameManager → createCharacter("Knight") → new Knight()
-     * → new AnimationManager() → musíme poskytnúť stub.
+     * load() volá applyInventoryToGameManager -> createCharacter("Knight") -> new Knight()
+     * -> new AnimationManager() -> musime poskytnut stub.
      */
     private void withAnimMockForLoad(Runnable block) {
         try (MockedConstruction<AnimationManager> ignored =
@@ -307,9 +307,9 @@ class SaveManagerTest extends GdxTest {
         }
     }
 
-    /** Vytvorí SaveData s nesprávnou verziou cez reflexiu na privátnom konštruktore. */
+    /** Vytvori SaveData s nesprávnou verziou cez reflexiu na privátnom konstruktore. */
     private SaveData buildSaveDataWithBadVersion() throws Exception {
-        // Použijeme konstruktor cez reflexiu, potom prepíšeme saveVersion
+        // Pouzijeme konstruktor cez reflexiu, potom prepiseme saveVersion
         var ctor = SaveData.class.getDeclaredConstructor(
             int.class,
             java.util.List.class, java.util.List.class,
@@ -322,24 +322,24 @@ class SaveManagerTest extends GdxTest {
             new ArrayList<>(), new ArrayList<>(),
             new ArrayList<>());
 
-        // Prepíšeme finálne pole saveVersion cez reflexiu
+        // Prepiseme finálne pole saveVersion cez reflexiu
         var field = SaveData.class.getDeclaredField("saveVersion");
         field.setAccessible(true);
-        // final field – potrebujeme removers v novších JVM (Java 12+)
-        // Alternatíva: priamo zapíšeme do súboru serialized byte[]
-        // Keď to nepôjde, test zostane anotovaný ako pass bez modifikácie
+        // final field – potrebujeme removers v novsich JVM (Java 12+)
+        // Alternativa: priamo zapiseme do suboru serialized byte[]
+        // Ked to nepojde, test zostane anotovany ako pass bez modifikácie
         return sd;
     }
 
-    /** Zapíše SaveData priamo cez ObjectOutputStream (obchádza SaveManager.save()). */
+    /** Zapise SaveData priamo cez ObjectOutputStream (obchádza SaveManager.save()). */
     private void writeDirectly(SaveData data) throws Exception {
-        // Zapíšeme FAKE SaveData – zmeníme saveVersion pole pred serializáciou
-        // Najjednoduchšia cesta: serializujeme celý objekt, modifikujeme bajty
-        // Ale to je príliš komplexné. Namiesto toho zapíšeme úplne odlišný objekt,
-        // aby load() padol na ClassCastException → vrátil null.
+        // Zapiseme FAKE SaveData – zmenime saveVersion pole pred serializáciou
+        // Najjednoduchsia cesta: serializujeme cely objekt, modifikujeme bajty
+        // Ale to je prilis komplexne. Namiesto toho zapiseme uplne odlisny objekt,
+        // aby load() padol na ClassCastException -> vrátil null.
         File file = new File(SaveManager.SAVE_FILE);
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            // Zapíšeme String namiesto SaveData → ClassCastException → load() vráti null
+            // Zapiseme String namiesto SaveData -> ClassCastException -> load() vráti null
             oos.writeObject("NOT_A_SAVE_DATA");
         }
     }

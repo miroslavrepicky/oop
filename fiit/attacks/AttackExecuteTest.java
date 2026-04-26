@@ -57,7 +57,7 @@ class AttackExecuteTest {
         when(attacker.getName()).thenReturn("TestAttacker");
     }
 
-    // ── MeleeAttack ───────────────────────────────────────────────────────────
+    //  MeleeAttack
 
     @Test
     void meleeAttack_nullAttacker_throws() {
@@ -127,7 +127,7 @@ class AttackExecuteTest {
         assertThrows(InvalidAttackException.class, () -> new MeleeAttack(-1f));
     }
 
-    // ── FireDecorator over MeleeAttack ────────────────────────────────────────
+    //  FireDecorator over MeleeAttack
 
     @Test
     void fireDecorator_overMelee_setsDot() {
@@ -151,7 +151,7 @@ class AttackExecuteTest {
         assertTrue(p.hasSlowEffect());
     }
 
-    // ── Decorator over mock Attack ────────────────────────────────────────────
+    //  Decorator over mock Attack
 
     @Test
     void fireDecorator_nullWrapped_throws() {

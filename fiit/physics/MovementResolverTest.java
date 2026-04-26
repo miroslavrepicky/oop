@@ -40,11 +40,11 @@ class MovementResolverTest {
 
     @Test
     void resolveX_wallToRight_blocksMovement() {
-        // hitbox right edge = 130; wall starts at 132 → overlap after dx=10 → x=110, right=140, wall x=132
+        // hitbox right edge = 130; wall starts at 132 -> overlap after dx=10 -> x=110, right=140, wall x=132
         Rectangle wall = new Rectangle(132, 50, 50, 60); // overlaps horizontally, same y-range
         MovementResolver resolver = new MovementResolver(List.of(wall));
-        // After dx=10: test box x=110, right=140 → overlap with wall x=132-182
-        // overlapX = 140-132 = 8, overlapY = min(110,110)-max(50,50) = 60 → overlapX < overlapY → blocked
+        // After dx=10: test box x=110, right=140 -> overlap with wall x=132-182
+        // overlapX = 140-132 = 8, overlapY = min(110,110)-max(50,50) = 60 -> overlapX < overlapY -> blocked
         float result = resolver.resolveX(hitbox, 10f);
         assertEquals(0f, result, 0.001f);
     }
@@ -60,7 +60,7 @@ class MovementResolverTest {
     void resolveX_wallBelowHitbox_allowsMovement() {
         // Wall is at y=0, hitbox at y=50 – vertical platform, not a side wall
         // After moving dx=10, hitbox x=110-140, wall x=112-162, y=0-30
-        // overlapY between y=50-110 and y=0-30 → 0 (no vertical overlap) → no collision
+        // overlapY between y=50-110 and y=0-30 -> 0 (no vertical overlap) -> no collision
         Rectangle wall = new Rectangle(112, 0, 50, 30);
         MovementResolver resolver = new MovementResolver(List.of(wall));
         assertEquals(10f, resolver.resolveX(hitbox, 10f), 0.001f);

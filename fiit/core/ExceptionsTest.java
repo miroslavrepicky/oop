@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ExceptionsTest {
 
-    // ── ShadowQuestException ──────────────────────────────────────────────────
+    //  ShadowQuestException
 
     @Test
     void shadowQuestException_message() {
@@ -23,7 +23,7 @@ class ExceptionsTest {
         assertSame(cause, ex.getCause());
     }
 
-    // ── AssetLoadException ────────────────────────────────────────────────────
+    //  AssetLoadException
 
     @Test
     void assetLoadException_storesPath() {
@@ -45,7 +45,7 @@ class ExceptionsTest {
         assertEquals("path", ex.getAssetPath());
     }
 
-    // ── GameStateException ────────────────────────────────────────────────────
+    //  GameStateException
 
     @Test
     void gameStateException_storesContext() {
@@ -68,7 +68,7 @@ class ExceptionsTest {
         assertEquals("ctx", ex.getContext());
     }
 
-    // ── InventoryException ────────────────────────────────────────────────────
+    //  InventoryException
 
     @Test
     void inventoryException_slots() {
@@ -84,7 +84,7 @@ class ExceptionsTest {
         assertEquals("inventory full", ex.getMessage());
     }
 
-    // ── InvalidAttackException ────────────────────────────────────────────────
+    //  InvalidAttackException
 
     @Test
     void invalidAttackException_storesFields() {
@@ -100,7 +100,7 @@ class ExceptionsTest {
         assertTrue(ex.getMessage().contains("bad range"));
     }
 
-    // ── SaveException ─────────────────────────────────────────────────────────
+    //  SaveException
 
     @Test
     void saveException_withCause() {

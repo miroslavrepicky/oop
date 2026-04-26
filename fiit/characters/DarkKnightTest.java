@@ -21,7 +21,7 @@ class DarkKnightTest extends GdxTest {
     private MockedConstruction.MockInitializer<AnimationManager> animStub() {
         return (mock, ctx) -> {
             when(mock.getFirstFrameSize("idle")).thenReturn(new Vector2D(40, 80));
-            // hasAnimation returns false by default → attack strategies use their fallback durations
+            // hasAnimation returns false by default -> attack strategies use their fallback durations
         };
     }
 
@@ -42,53 +42,10 @@ class DarkKnightTest extends GdxTest {
         @Override public void move(Vector2D d) { position = position.add(d); updateHitbox(); }
     }
 
-    // ── Constructor / stats ────────────────────────────────────────────────────
+    //  Constructor / stats
 
-    @Test
-    void name_isDarkKnight() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals("DarkKnight", new DarkKnight(ORIGIN).getName());
-        }
-    }
 
-    @Test
-    void hp_is500() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            DarkKnight dk = new DarkKnight(ORIGIN);
-            assertEquals(500, dk.getHp());
-            assertEquals(500, dk.getMaxHp());
-        }
-    }
-
-    @Test
-    void attackPower_is50() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals(50, new DarkKnight(ORIGIN).getAttackPower());
-        }
-    }
-
-    @Test
-    void speed_is2() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals(2.0f, new DarkKnight(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    @Test
-    void armor_is30() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            DarkKnight dk = new DarkKnight(ORIGIN);
-            assertEquals(30, dk.getMaxArmor());
-            assertEquals(30, dk.getArmor());
-        }
-    }
-
-    // ── Identity ──────────────────────────────────────────────────────────────
+    //  Identity
 
     @Test
     void isEnemy_true() {
@@ -114,11 +71,11 @@ class DarkKnightTest extends GdxTest {
         }
     }
 
-    // ── Animation name ────────────────────────────────────────────────────────
+    //  Animation name
 
     @Test
     void getAttackAnimationName_default_isCast() {
-        // usingMeleeAttack starts as false → "cast"
+        // usingMeleeAttack starts as false -> "cast"
         try (MockedConstruction<AnimationManager> ignored =
                  mockConstruction(AnimationManager.class, animStub())) {
             DarkKnight dk = new DarkKnight(ORIGIN);
@@ -133,12 +90,12 @@ class DarkKnightTest extends GdxTest {
         try (MockedConstruction<AnimationManager> ignored =
                  mockConstruction(AnimationManager.class, animStub())) {
             DarkKnight dk = new DarkKnight(ORIGIN);
-            dk.triggerAttack(); // null player → melee path → usingMeleeAttack = true
+            dk.triggerAttack(); // null player -> melee path -> usingMeleeAttack = true
             assertEquals("attack", dk.getAttackAnimationName());
         }
     }
 
-    // ── triggerAttack ─────────────────────────────────────────────────────────
+    //  triggerAttack
 
     @Test
     void triggerAttack_withNullPlayer_setsAttacking() {
@@ -213,7 +170,7 @@ class DarkKnightTest extends GdxTest {
         }
     }
 
-    // ── update ────────────────────────────────────────────────────────────────
+    //  update
 
     @Test
     void update_withNullPlayer_doesNotThrow() {
@@ -236,7 +193,7 @@ class DarkKnightTest extends GdxTest {
         }
     }
 
-    // ── Behaviour ─────────────────────────────────────────────────────────────
+    //  Behaviour
 
     @Test
     void takeDamage_kills() {

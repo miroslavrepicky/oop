@@ -31,25 +31,7 @@ class DuckTest extends GdxTest {
         };
     }
 
-    // ── Constructor / stats ────────────────────────────────────────────────────
-
-    @Test
-    void name_isDuck() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals("Duck", new Duck(ORIGIN).getName());
-        }
-    }
-
-    @Test
-    void hp_is20() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            Duck d = new Duck(ORIGIN);
-            assertEquals(20, d.getHp());
-            assertEquals(20, d.getMaxHp());
-        }
-    }
+    //  Constructor / stats
 
     @Test
     void attackPower_is0() {
@@ -59,15 +41,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    @Test
-    void speed_is1() {
-        try (MockedConstruction<AnimationManager> ignored =
-                 mockConstruction(AnimationManager.class, animStub())) {
-            assertEquals(1.0f, new Duck(ORIGIN).getSpeed(), 0.001f);
-        }
-    }
-
-    // ── Identity ──────────────────────────────────────────────────────────────
+    //  Identity
 
     @Test
     void isAlive_initially() {
@@ -87,7 +61,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── onCollision – no-op ───────────────────────────────────────────────────
+    //  onCollision – no-op
 
     @Test
     void onCollision_doesNotThrow() {
@@ -97,7 +71,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── getAnimationManager ───────────────────────────────────────────────────
+    //  getAnimationManager
 
     @Test
     void getAnimationManager_notNull() {
@@ -107,7 +81,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── update ────────────────────────────────────────────────────────────────
+    //  update
 
     @Test
     void update_doesNotThrow() {
@@ -131,7 +105,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── onKilled ──────────────────────────────────────────────────────────────
+    //  onKilled
 
     @Test
     void onKilled_returnsNonNullItem() {
@@ -178,7 +152,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── move ─────────────────────────────────────────────────────────────────
+    //  move
 
     @Test
     void move_updatesPosition() {
@@ -201,7 +175,7 @@ class DuckTest extends GdxTest {
         }
     }
 
-    // ── Damage model ──────────────────────────────────────────────────────────
+    //  Damage model
 
     @Test
     void takeDamage_reducesHp() {

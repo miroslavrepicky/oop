@@ -24,7 +24,7 @@ class MeleeAttackTest {
     @Mock Character attacker;
     @Mock Level level;
 
-    // ── Konštruktor ───────────────────────────────────────────────────────────
+    //  Konstruktor
 
     @Test
     void constructor_negativeRange_throwsInvalidAttack() {
@@ -41,7 +41,7 @@ class MeleeAttackTest {
         assertDoesNotThrow(() -> new MeleeAttack(1f));
     }
 
-    // ── execute() ─────────────────────────────────────────────────────────────
+    //  execute()
 
     @Test
     void execute_nullAttacker_throwsInvalidAttack() {
@@ -51,7 +51,7 @@ class MeleeAttackTest {
 
     @Test
     void execute_nullLevel_returnsNull() {
-        // getName() je volaná len pri warn logu – stub ho preventívne
+        // getName() je volana len pri warn logu – stub ho preventivne
         when(attacker.getName()).thenReturn("Knight");
         assertNull(new MeleeAttack(1f).execute(attacker, null));
     }
@@ -100,7 +100,7 @@ class MeleeAttackTest {
         assertTrue(large.getHitbox().width > small.getHitbox().width);
     }
 
-    // ── Metadata ──────────────────────────────────────────────────────────────
+    //  Metadata
 
     @Test
     void getAnimationName_returnsAttack() {
@@ -117,9 +117,9 @@ class MeleeAttackTest {
         assertEquals(0, new MeleeAttack(1f).getManaCost());
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
+    //  Helper
 
-    /** Nastaví mock attacker-a s bežnými hodnotami. */
+    /** Nastavi mock attacker-a s beznymi hodnotami. */
     private void setupAttacker(boolean facingRight) {
         when(attacker.isFacingRight()).thenReturn(facingRight);
         when(attacker.getPosition()).thenReturn(new Vector2D(100f, 50f));

@@ -59,7 +59,7 @@ class AttackDecoratorTest {
         assertEquals(20, new PassThrough(wrappedAttack).getManaCost());
     }
 
-    // ── FireDecorator ─────────────────────────────────────────────────────────
+    //  FireDecorator
 
     @Test
     void fireDecorator_addsDotEffect_toProjectile() {
@@ -88,7 +88,7 @@ class AttackDecoratorTest {
         assertTrue(new FireDecorator(wrappedAttack).getManaCost() > 20);
     }
 
-    // ── FreezeDecorator ───────────────────────────────────────────────────────
+    //  FreezeDecorator
 
     @Test
     void freezeDecorator_addsSlowEffect_toProjectile() {
@@ -116,7 +116,7 @@ class AttackDecoratorTest {
         assertTrue(new FreezeDecorator(wrappedAttack).getManaCost() > 20);
     }
 
-    // ── Stacking decorators ───────────────────────────────────────────────────
+    //  Stacking decorators
 
     @Test
     void stackedDecorators_bothEffectsApplied() {

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ArrowSpellAttackTest extends HeadlessGdxTest {
 
-    // ── Stubs ─────────────────────────────────────────────────────────────────
+    //  Stubs
 
     static class StubPlayer extends PlayerCharacter {
         StubPlayer(float x, float y, boolean facingRight) {
@@ -311,7 +311,7 @@ class ArrowSpellAttackTest extends HeadlessGdxTest {
         assertSame(first, second, "Pool should reuse the returned MagicSpell");
     }
 
-    // ── Stacking decorators ───────────────────────────────────────────────────
+    //  Stacking decorators
 
     @Test
     void stacked_fireFreeze_bothEffects_onSpell() {

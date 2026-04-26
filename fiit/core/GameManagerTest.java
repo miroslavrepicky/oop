@@ -12,19 +12,19 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit testy pre GameManager singleton.
- * Každý test začína resetom singletonu, aby boli testy na sebe nezávislé.
- * AtlasCache.dispose() je bezpečné keď cache je prázdna (žiaden dispose GL volania).
+ * Kazdy test zacina resetom singletonu, aby boli testy na sebe nezavisle.
+ * AtlasCache.dispose() je bezpecne ked cache je prazdna (ziaden dispose GL volania).
  */
 class GameManagerTest extends GdxTest {
 
     @BeforeEach
     void resetSingleton() {
-        // resetGame() čistí inventár, level, atlachy (prázdny cache = žiadny GL volanie)
+        // resetGame() cisti inventar, level, atlachy (prazdny cache = ziadny GL volanie)
         // a ProjectilePool (iba ArrayDeque.clear)
         GameManager.getInstance().resetGame();
     }
 
-    // ── Singleton ─────────────────────────────────────────────────────────────
+    //  Singleton
 
     @Test
     void getInstance_notNull() {
@@ -36,7 +36,7 @@ class GameManagerTest extends GdxTest {
         assertSame(GameManager.getInstance(), GameManager.getInstance());
     }
 
-    // ── resetGame ─────────────────────────────────────────────────────────────
+    //  resetGame
 
     @Test
     void resetGame_inventoryIsEmpty() {
@@ -64,7 +64,7 @@ class GameManagerTest extends GdxTest {
         });
     }
 
-    // ── initGame ─────────────────────────────────────────────────────────────
+    //  initGame
 
     @Test
     void initGame_addsKnightToParty() {
@@ -90,11 +90,11 @@ class GameManagerTest extends GdxTest {
         });
     }
 
-    // ── startLevel – validácia vstupu ─────────────────────────────────────────
+    //  startLevel – validacia vstupu
 
     @Test
     void startLevel_throwsGameStateException_whenNoActivePlayer() {
-        // Po resete nie je žiaden hráč
+        // Po resete nie je ziaden hrac
         assertThrows(GameStateException.class,
             () -> GameManager.getInstance().startLevel(1));
     }
@@ -127,14 +127,14 @@ class GameManagerTest extends GdxTest {
         });
     }
 
-    // ── getMaxLevels ─────────────────────────────────────────────────────────
+    //  getMaxLevels
 
     @Test
     void getMaxLevels_atLeastOne() {
         assertTrue(GameManager.getInstance().getMaxLevels() >= 1);
     }
 
-    // ── reviveParty ───────────────────────────────────────────────────────────
+    //  reviveParty
 
     @Test
     void reviveParty_restoresKnightHp() {
@@ -144,10 +144,10 @@ class GameManagerTest extends GdxTest {
 
             var active = gm.getInventory().getActive();
             active.takeDamage(9999);
-            assertFalse(active.isAlive(), "Hráč mal byť mŕtvy pred oživením");
+            assertFalse(active.isAlive(), "Hrac mal byt mrtvy pred ozivenim");
 
             gm.reviveParty();
-            assertTrue(active.isAlive(), "Hráč má byť živý po reviveParty()");
+            assertTrue(active.isAlive(), "Hrac ma byt zivy po reviveParty()");
         });
     }
 
@@ -166,11 +166,11 @@ class GameManagerTest extends GdxTest {
 
     @Test
     void reviveParty_withEmptyParty_doesNotThrow() {
-        // prázdna strana – forEach iba nič nerobí
+        // prázdna strana – forEach iba nic nerobi
         assertDoesNotThrow(() -> GameManager.getInstance().reviveParty());
     }
 
-    // ── getInventory ─────────────────────────────────────────────────────────
+    //  getInventory
 
     @Test
     void getInventory_notNull() {
@@ -182,18 +182,18 @@ class GameManagerTest extends GdxTest {
         assertTrue(GameManager.getInstance().getInventory().getItems().isEmpty());
     }
 
-    // ── getCurrentLevel ───────────────────────────────────────────────────────
+    //  getCurrentLevel
 
     @Test
     void getCurrentLevel_nullBeforeStartLevel() {
         assertNull(GameManager.getInstance().getCurrentLevel());
     }
 
-    // ── Pomocné metódy ────────────────────────────────────────────────────────
+    //  Pomocne metody
 
     /**
-     * Vykonáva blok kódu s mocknutým AnimationManager-om
-     * (interceptuje new AnimationManager(path) → stub).
+     * Vykonáva blok kodu s mocknutym AnimationManager-om
+     * (interceptuje new AnimationManager(path) -> stub).
      */
     private void withAnimMock(Runnable block) {
         try (MockedConstruction<AnimationManager> ignored =
