@@ -41,6 +41,7 @@ import sk.stuba.fiit.render.GameRenderer;
  */
 public class GameScreen implements Screen {
 
+
     private final AppController    app;
     private       IGameState       currentState;
     private final GameManager      gameManager;
@@ -80,11 +81,8 @@ public class GameScreen implements Screen {
             handleTransition(next);
             return;
         }
-
         currentState.render(deltaTime);
     }
-
-    //  Transition handling
 
     /**
      * Responds to a state-transition request produced by the current state.

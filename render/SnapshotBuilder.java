@@ -230,7 +230,7 @@ public class SnapshotBuilder {
      * @return render descriptor for the projectile
      */
     private static EntityRenderData buildProjectile(Projectile p) {
-        if (!(p instanceof Renderable)) {
+        if (!(p instanceof Renderable r)) {
             return EntityRenderData
                 .builder(p.getPosition().getX(), p.getPosition().getY(), null)
                 .renderType(EntityRenderData.RenderType.FIXED_RECT)
@@ -238,7 +238,6 @@ public class SnapshotBuilder {
                 .build();
         }
 
-        Renderable r = (Renderable) p;
         return EntityRenderData
             .builder(p.getPosition().getX(), p.getPosition().getY(), r.getAnimationManager())
             .renderType(EntityRenderData.RenderType.FIXED_RECT)

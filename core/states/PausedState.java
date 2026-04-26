@@ -86,6 +86,28 @@ public class PausedState implements IGameState {
     }
 
     /**
+     * Returns the next state to transition to:
+     * <ul>
+     *   <li>An {@link ExitToMenuState} if ESC was pressed.</li>
+     *   <li>The original {@link #resumeState} if P is pressed (resume).</li>
+     *   <li>{@code null} to remain in the paused state.</li>
+     * </ul>
+     */
+    @Override
+    public IGameState next() {
+        if (exitRequested) {
+            // ESC -> TerminalState
+            // Vratim TerminalState – GameScreen ho zachyti a zavola execute()
+            return new ExitToMenuState();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            dispose();
+            return resumeState; // P -> vráť sa do PlayingState
+        }
+        return null; // zostať v pauze
+    }
+
+    /**
      * Renders the live game scene and overlays the pause menu on top of it.
      *
      * @param deltaTime elapsed time since the last frame, in seconds
@@ -126,26 +148,6 @@ public class PausedState implements IGameState {
         batch.end();
     }
 
-    /**
-     * Returns the next state to transition to:
-     * <ul>
-     *   <li>An {@link ExitToMenuState} if ESC was pressed.</li>
-     *   <li>The original {@link #resumeState} if P is pressed (resume).</li>
-     *   <li>{@code null} to remain in the paused state.</li>
-     * </ul>
-     */
-    @Override
-    public IGameState next() {
-        if (exitRequested) {
-            // Vratim TerminalState – GameScreen ho zachyti a zavola execute()
-            return new ExitToMenuState();
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            dispose();
-            return resumeState;
-        }
-        return null;
-    }
 
     /** Releases LibGDX rendering resources owned by this state. */
     private void dispose() {

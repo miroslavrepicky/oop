@@ -13,3 +13,4 @@ public class ShadowQuestException extends RuntimeException {
         super(message, cause);
     }
 }
+

@@ -39,6 +39,7 @@ public class Inventory {
 
     /** The base character (Knight) that can never be removed. */
     private PlayerCharacter baseCharacter;
+
     private static final Logger log = GameLogger.get(Inventory.class);
 
     public Inventory(int totalSlots) {

@@ -101,7 +101,6 @@ public final class EntityRenderData {
      * @return a new builder instance
      */
     public static Builder builder(float x, float y, AnimationManager am) {
-
         return new Builder(x, y, am);
     }
 
@@ -136,6 +135,9 @@ public final class EntityRenderData {
             this.animationManager = am;
         }
 
+        /** Builds and returns the immutable {@link EntityRenderData} instance. */
+        public EntityRenderData build() { return new EntityRenderData(this); }
+
         /** Sets the hitbox dimensions used for debug rendering and bar placement. */
         public Builder hitbox(float w, float h)  { hitboxWidth = w; hitboxHeight = h; return this; }
         /** Sets whether the sprite should be flipped horizontally. */
@@ -160,7 +162,5 @@ public final class EntityRenderData {
             return this;
         }
 
-        /** Builds and returns the immutable {@link EntityRenderData} instance. */
-        public EntityRenderData build() { return new EntityRenderData(this); }
     }
 }

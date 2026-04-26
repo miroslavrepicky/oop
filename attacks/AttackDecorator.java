@@ -44,6 +44,11 @@ public abstract class AttackDecorator implements Attack {
     }
 
     @Override
+    public int getManaCost() {
+        return wrapped.getManaCost();
+    }
+
+    @Override
     public String getAnimationName() {
         return wrapped.getAnimationName();
     }
@@ -53,8 +58,5 @@ public abstract class AttackDecorator implements Attack {
         return wrapped.getAnimationDuration(am);
     }
 
-    @Override
-    public int getManaCost() {
-        return wrapped.getManaCost();
-    }
+
 }

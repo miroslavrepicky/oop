@@ -37,7 +37,7 @@ public class Archer extends PlayerCharacter {
     private AnimationManager animationManager;
 
     public Archer(Vector2D position) {
-        super("Archer", 800, 20, 3.5f, position, MAX_ARMOR);
+        super("Archer", 150, 20, 3.5f, position, MAX_ARMOR);
         this.arrowCount = 30;
         this.gravityStrategy = new NormalGravity();
         initAnimations();

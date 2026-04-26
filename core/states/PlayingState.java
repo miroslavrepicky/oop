@@ -76,7 +76,7 @@ public class PlayingState implements IGameState {
     public void update(float deltaTime) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             nextState = new PausedState(gameRenderer, this, app, gameManager);
-            return;
+            return; // zastaví ďalší update
         }
 
         playerController.update(deltaTime);
@@ -111,6 +111,17 @@ public class PlayingState implements IGameState {
     }
 
     /**
+     * Returns the pending next state and resets the field to {@code null}.
+     * Called once per frame by {@code GameScreen} after {@link #update(float)}.
+     */
+    @Override
+    public IGameState next() {
+        IGameState result = nextState;
+        nextState = null;  // reset — každý prechod sa vydá len raz
+        return result;
+    }
+
+    /**
      * Builds a {@link RenderSnapshot} from the current model state and passes it to
      * {@link GameRenderer}. No model classes are passed to the renderer directly.
      *
@@ -130,14 +141,4 @@ public class PlayingState implements IGameState {
         gameRenderer.render(snapshot, deltaTime);
     }
 
-    /**
-     * Returns the pending next state and resets the field to {@code null}.
-     * Called once per frame by {@code GameScreen} after {@link #update(float)}.
-     */
-    @Override
-    public IGameState next() {
-        IGameState result = nextState;
-        nextState = null;
-        return result;
-    }
 }

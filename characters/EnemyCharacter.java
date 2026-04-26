@@ -10,6 +10,8 @@ import sk.stuba.fiit.physics.MovementResolver;
 import sk.stuba.fiit.core.engine.UpdateContext;
 import sk.stuba.fiit.util.Vector2D;
 
+import static java.lang.Math.abs;
+
 /**
  * Base class for all AI-controlled enemy characters.
  *
@@ -96,7 +98,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
 
     @Override
     public boolean detectPlayer(PlayerCharacter player) {
-        return position.distanceTo(player.getPosition()) <= detectionRange;
+        return position.distanceTo(player.getPosition()) <= detectionRange && abs(position.getY() - player.getPosition().getY()) < 30;
     }
 
     @Override
@@ -303,7 +305,7 @@ public abstract class EnemyCharacter extends Character implements AIControllable
             anim = getAttackAnimationName();
         } else if (!isOnGround()) {
             anim = am.hasAnimation("jump") ? "jump" : "idle";
-        } else if (Math.abs(getVelocityX()) > 0.1f) {
+        } else if (abs(getVelocityX()) > 0.1f) {
             anim = "walk";
         } else {
             anim = "idle";

@@ -23,3 +23,4 @@ public interface GravityStrategy {
      */
     void apply(Physicable body, float deltaTime, List<Rectangle> platforms);
 }
+

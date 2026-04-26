@@ -42,7 +42,7 @@ public class Wizzard extends PlayerCharacter {
      * @param position initial world position; overwritten by Tiled spawn data when the level loads
      */
     public Wizzard(Vector2D position) {
-        super("Wizzard", 7000, 40, 2.5f, position, MAX_ARMOR);
+        super("Wizzard", 200, 40, 2.5f, position, MAX_ARMOR);
         this.mana = 100;
         this.maxMana = 100;
         this.gravityStrategy = new NormalGravity();

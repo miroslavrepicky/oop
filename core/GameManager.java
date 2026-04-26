@@ -35,7 +35,7 @@ public class GameManager {
     private Level currentLevel;
 
     /** Maximum number of levels in the game. Used to determine win condition. */
-    private static final int MAX_LEVELS = 1;
+    private static final int MAX_LEVELS = 2;
     private static final Logger log = GameLogger.get(GameManager.class);
 
     private GameManager() {
@@ -72,7 +72,7 @@ public class GameManager {
         }
         log.info("Starting level: level={}", levelNumber);
         this.currentLevel = new Level(levelNumber);
-        this.currentLevel.load("test_map.tmx", inventory.getActive());
+        this.currentLevel.load("level" + 2 + ".tmx", inventory.getActive());
         log.info("Level loaded: level={}, enemies={}, items={}",
             levelNumber,
             currentLevel.getEnemies().size(),

@@ -39,9 +39,8 @@ public final class SaveData implements Serializable {
      * incompatible with previously written save files. {@link SaveManager#load()}
      * discards files whose {@link #saveVersion} does not match.
      */
-    public static final int SAVE_VERSION = 3;
-
-    private static final long serialVersionUID = 3L;
+    public static final int SAVE_VERSION = 4;
+    private static final long serialVersionUID = 4L;
 
     // -------------------------------------------------------------------------
     //  Saved-state fields
@@ -100,7 +99,7 @@ public final class SaveData implements Serializable {
      * Serialisable snapshot of a single party member at save time.
      */
     public static final class CharacterData implements Serializable {
-        private static final long serialVersionUID = 2L;
+        private static final long serialVersionUID = 4L;
 
         /** Simple class name of the character, e.g. {@code "Knight"}, {@code "Wizzard"}, {@code "Archer"}. */
         public final String  characterType;
@@ -149,7 +148,7 @@ public final class SaveData implements Serializable {
      * Items of the same type are grouped into a single entry with a {@code count}.
      */
     public static final class ItemData implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 4L;
 
         /** Simple class name of the item, e.g. {@code "HealingPotion"}, {@code "Armour"}. */
         public final String itemType;
@@ -175,7 +174,7 @@ public final class SaveData implements Serializable {
      * Snapshot of a single living enemy in the level at save time.
      */
     public static final class EnemyData implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 4L;
 
         /** Simple class name, e.g. {@code "EnemyKnight"}, {@code "DarkKnight"}. */
         public final String type;
@@ -208,7 +207,7 @@ public final class SaveData implements Serializable {
      * Snapshot of a single item lying on the ground in the level at save time.
      */
     public static final class GroundItemData implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 4L;
 
         /** Simple class name, e.g. {@code "HealingPotion"}, {@code "Armour"}. */
         public final String type;
@@ -235,7 +234,7 @@ public final class SaveData implements Serializable {
      * Snapshot of a single living duck in the level at save time.
      */
     public static final class DuckData implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 4L;
 
         /** World position at save time. */
         public final float x, y;

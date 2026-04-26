@@ -18,3 +18,5 @@ public class InventoryException extends ShadowQuestException {
     public int getTotalSlots() { return totalSlots; }
     public int getFreeSlots()  { return totalSlots - usedSlots; }
 }
+
+

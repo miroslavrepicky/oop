@@ -19,3 +19,5 @@ public class AssetLoadException extends ShadowQuestException {
     /** @return the path of the asset that could not be loaded */
     public String getAssetPath() { return assetPath; }
 }
+
+
